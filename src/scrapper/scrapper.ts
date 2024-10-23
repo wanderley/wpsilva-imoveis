@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { scrapFilesTable, scrapsTable } from "@/db/schema";
 import { parse } from "date-fns";
 import { fromZonedTime } from "date-fns-tz";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import puppeteer from "puppeteer";
 import { Page } from "puppeteer";
 
@@ -240,20 +240,24 @@ const parseBrazilianDate = (dateString: string | null | undefined) => {
 
 export async function refreshScraps(scrapID: string): Promise<void> {
   const browser = await puppeteer.launch();
-  const page = await browser.newPage();
-  await page.setViewport({ width: 1080, height: 1024 });
-  const urls = [...new Set(await Wspleiloes.search(page))];
+  try {
+    const page = await browser.newPage();
+    await page.setViewport({ width: 1080, height: 1024 });
+    const urls = [...new Set(await Wspleiloes.search(page))];
 
-  for (const url of urls) {
-    const existingScrap = await db
-      .select()
-      .from(scrapsTable)
-      .where(
-        and(eq(scrapsTable.scrapper_id, scrapID), eq(scrapsTable.url, url)),
-      )
-      .execute();
-
-    if (existingScrap.length === 0) {
+    const existingURLs = new Set(
+      (
+        await db
+          .select({ url: scrapsTable.url })
+          .from(scrapsTable)
+          .where(inArray(scrapsTable.url, urls))
+          .execute()
+      ).map((r) => r.url),
+    );
+    for (const url of urls) {
+      if (existingURLs.has(url)) {
+        continue;
+      }
       await db
         .insert(scrapsTable)
         .values({
@@ -263,9 +267,12 @@ export async function refreshScraps(scrapID: string): Promise<void> {
         })
         .execute();
     }
+  } catch (error) {
+    console.error("Error refreshing scraps:", error);
+    throw error;
+  } finally {
+    await browser.close();
   }
-
-  await browser.close();
 }
 
 async function scrapLink(page: Page): Promise<Lot | null> {
