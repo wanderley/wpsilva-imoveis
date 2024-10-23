@@ -126,12 +126,10 @@ class Wspleiloes extends Scraper {
             /Processo:\s*(\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4})/,
           )![1],
     );
-    const caseLink = await page.evaluate(
-      (caseNumber) =>
-        Array.from(document.querySelectorAll("a"))
-          .find((a) => a.getAttribute("href")?.includes(caseNumber))
-          ?.getAttribute("href"),
-      caseNumber || "",
+    const caseLink = await page.evaluate(() =>
+      Array.from(document.querySelectorAll("a"))
+        .find((a) => a.getAttribute("download")?.includes("Processo.pdf"))
+        ?.getAttribute("href"),
     );
     const description = await page.evaluate(() =>
       document
