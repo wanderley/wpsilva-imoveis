@@ -209,46 +209,48 @@ export default function Page({ params }: { params: { id: number } }) {
       {!isLoading && data?.length != 0 && (
         <>
           <h2 className="text-xl mt-4 mb-2">Páginas encontradas:</h2>
-          <Table striped>
-            <Table.Head>
-              <Table.HeadCell>URL</Table.HeadCell>
-              <Table.HeadCell>Status</Table.HeadCell>
-              <Table.HeadCell>Ações</Table.HeadCell>
-            </Table.Head>
-            <Table.Body className="divide-y">
-              {data?.map((scrap) => (
-                <Table.Row
-                  key={scrap.id}
-                  className="bg-white dark:border-gray-700 dark:bg-gray-800"
-                >
-                  <Table.Cell
-                    onClick={() => setSelectedScrapId(scrap.id)}
-                    className="cursor-pointer hover:underline"
+          <div className="overflow-x-auto overflow-y-auto max-h-[500px] border border-gray-200 rounded-lg shadow">
+            <Table striped className="w-full">
+              <Table.Head className="sticky top-0 bg-white dark:bg-gray-800 z-10">
+                <Table.HeadCell>URL</Table.HeadCell>
+                <Table.HeadCell>Status</Table.HeadCell>
+                <Table.HeadCell>Ações</Table.HeadCell>
+              </Table.Head>
+              <Table.Body className="divide-y">
+                {data?.map((scrap) => (
+                  <Table.Row
+                    key={scrap.id}
+                    className="bg-white dark:border-gray-700 dark:bg-gray-800"
                   >
-                    {scrap.url}
-                  </Table.Cell>
-                  <Table.Cell className="text-center">
-                    <StatusBadge scrap={scrap} />
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Button
-                      size="sm"
-                      onClick={() => {
-                        updateMutation.mutate({
-                          scrapID,
-                          url: scrap.url,
-                          id: scrap.id,
-                        });
-                      }}
-                      disabled={updateMutation.isPending}
+                    <Table.Cell
+                      onClick={() => setSelectedScrapId(scrap.id)}
+                      className="cursor-pointer hover:underline truncate max-w-xs"
                     >
-                      Update
-                    </Button>
-                  </Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table>
+                      {scrap.url}
+                    </Table.Cell>
+                    <Table.Cell className="text-center">
+                      <StatusBadge scrap={scrap} />
+                    </Table.Cell>
+                    <Table.Cell>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          updateMutation.mutate({
+                            scrapID,
+                            url: scrap.url,
+                            id: scrap.id,
+                          });
+                        }}
+                        disabled={updateMutation.isPending}
+                      >
+                        Update
+                      </Button>
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table>
+          </div>
         </>
       )}
       <ScrapDetails scrapId={selectedScrapId} />
