@@ -24,6 +24,9 @@ export const scrapsTable = mysqlTable("scraps", {
   first_auction_bid: float(),
   second_auction_date: datetime(),
   second_auction_bid: float(),
+  laudo_link: varchar({ length: 1020 }),
+  matricula_link: varchar({ length: 1020 }),
+  edital_link: varchar({ length: 1020 }),
   fetch_status: mysqlEnum(["not-fetched", "fetched", "failed"]).default(
     "not-fetched",
   ),
@@ -39,8 +42,7 @@ export const scrapsTable = mysqlTable("scraps", {
 export const scrapFilesTable = mysqlTable("scrap_files", {
   id: int().primaryKey().autoincrement(),
   scrap_id: int().references(() => scrapsTable.id, { onDelete: "cascade" }),
-  file_type: mysqlEnum(["jpg", "pdf"]),
-  document_type: mysqlEnum(["imagem_lote", "edital", "laudo", "matricula"]),
+  file_type: mysqlEnum(["jpg", "pdf"]).notNull(),
   url: varchar({ length: 1020 }).notNull(),
   created_at: timestamp("created_at")
     .notNull()

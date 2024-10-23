@@ -8,17 +8,6 @@ import { and, eq, inArray } from "drizzle-orm";
 import puppeteer from "puppeteer";
 import { Page } from "puppeteer";
 
-enum DocumentType {
-  EDITAL = "edital",
-  LAUDO = "laudo",
-  MATRICULA = "matricula",
-}
-
-type Document = {
-  type: DocumentType;
-  link: string;
-};
-
 type Lot = {
   name: string;
   address: string;
@@ -32,7 +21,9 @@ type Lot = {
   secondAuctionDate?: string | null;
   secondAuctionBid?: number | null;
   images: Array<string>;
-  documents: Array<Document>;
+  laudo_link?: string | null;
+  matricula_link?: string | null;
+  edital_link?: string | null;
 };
 
 type ScraperType = {
@@ -50,7 +41,9 @@ type ScraperType = {
   secondAuctionDate: (page: Page) => Promise<string | undefined>;
   secondAuctionBid: (page: Page) => Promise<number | undefined>;
   images: (page: Page) => Promise<Array<string>>;
-  documents: (page: Page) => Promise<Array<Document>>;
+  laudo_link: (page: Page) => Promise<string | undefined>;
+  matricula_link: (page: Page) => Promise<string | undefined>;
+  edital_link: (page: Page) => Promise<string | undefined>;
 };
 
 async function notFound<T>(_page: Page): Promise<T | undefined> {
@@ -189,34 +182,24 @@ const Wspleiloes: ScraperType = {
         .map((a) => a.getAttribute("href"))
         .filter((href): href is string => href !== null),
     )) || [],
-  documents: async (page) => {
-    const documents = [];
-    const laudo = await page.evaluate(() =>
+  laudo_link: async (page) =>
+    (await page.evaluate(() =>
       Array.from(document.querySelectorAll("a"))
         .find((elem) => elem.textContent?.includes("LAUDO"))
         ?.getAttribute("href"),
-    );
-    if (laudo != null) {
-      documents.push({ type: DocumentType.LAUDO, link: laudo });
-    }
-    const matricula = await page.evaluate(() =>
+    )) ?? undefined,
+  matricula_link: async (page) =>
+    (await page.evaluate(() =>
       Array.from(document.querySelectorAll("a"))
-        .find((elem) => elem.textContent?.includes("MATRICULA"))
+        .find((elem) => elem.textContent?.includes("MATRÍCULA"))
         ?.getAttribute("href"),
-    );
-    if (matricula != null) {
-      documents.push({ type: DocumentType.MATRICULA, link: matricula });
-    }
-    const edital = await page.evaluate(() =>
+    )) ?? undefined,
+  edital_link: async (page) =>
+    (await page.evaluate(() =>
       Array.from(document.querySelectorAll("a"))
         .find((elem) => elem.textContent?.includes("EDITAL"))
         ?.getAttribute("href"),
-    );
-    if (edital != null) {
-      documents.push({ type: DocumentType.EDITAL, link: edital });
-    }
-    return documents;
-  },
+    )) ?? undefined,
 };
 
 function realToNumber(real: string | null | undefined): number | undefined {
@@ -313,7 +296,9 @@ async function scrapLink(page: Page): Promise<Lot | null> {
     secondAuctionDate: await tryFetchField(Wspleiloes.secondAuctionDate),
     secondAuctionBid: await tryFetchField(Wspleiloes.secondAuctionBid),
     images: (await tryFetchField(Wspleiloes.images)) || [],
-    documents: (await tryFetchField(Wspleiloes.documents)) || [],
+    laudo_link: await tryFetchField(Wspleiloes.laudo_link),
+    matricula_link: await tryFetchField(Wspleiloes.matricula_link),
+    edital_link: await tryFetchField(Wspleiloes.edital_link),
   };
   return lot;
 }
@@ -362,6 +347,9 @@ export async function updateScrap(
           first_auction_bid: scrapData.firstAuctionBid,
           second_auction_date: parseBrazilianDate(scrapData.secondAuctionDate),
           second_auction_bid: scrapData.secondAuctionBid,
+          laudo_link: scrapData.laudo_link,
+          matricula_link: scrapData.matricula_link,
+          edital_link: scrapData.edital_link,
         })
         .where(
           and(
@@ -400,21 +388,7 @@ export async function updateScrap(
             .values({
               scrap_id: scrapId,
               file_type: "jpg",
-              document_type: "imagem_lote",
               url: imageUrl,
-            })
-            .execute();
-        }
-
-        // Insert new documents
-        for (const doc of scrapData.documents) {
-          await db
-            .insert(scrapFilesTable)
-            .values({
-              scrap_id: scrapId,
-              file_type: "pdf",
-              document_type: doc.type,
-              url: doc.link,
             })
             .execute();
         }

@@ -48,7 +48,7 @@ const ScrapDetails = ({ scrapId }: { scrapId: number | null }) => {
   if (!scrapDetails) return null;
 
   const images = scrapDetails.documents?.filter(
-    (doc) => doc?.document_type === "imagem_lote",
+    (doc) => doc?.file_type === "jpg",
   );
 
   return (
@@ -123,30 +123,45 @@ const ScrapDetails = ({ scrapId }: { scrapId: number | null }) => {
         </div>
       )}
 
-      {scrapDetails.documents && scrapDetails.documents.length > 0 && (
+      {(scrapDetails.laudo_link ||
+        scrapDetails.matricula_link ||
+        scrapDetails.edital_link) && (
         <div className="mt-4">
           <h4 className="text-lg mb-2">Documentos:</h4>
           <ul className="list-disc pl-5">
-            {scrapDetails.documents
-              .filter((doc) => doc?.document_type !== "imagem_lote")
-              .map((doc, index) => (
-                <li key={index}>
-                  <a
-                    href={doc?.url || ""}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline"
-                  >
-                    {doc?.document_type === "edital"
-                      ? "Edital"
-                      : doc?.document_type === "laudo"
-                        ? "Laudo"
-                        : doc?.document_type === "matricula"
-                          ? "Matrícula"
-                          : "Documento"}
-                  </a>
-                </li>
-              ))}
+            {scrapDetails.edital_link && (
+              <li>
+                <a
+                  href={scrapDetails.edital_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Edital
+                </a>
+              </li>
+            )}
+            {scrapDetails.matricula_link && (
+              <li>
+                <a
+                  href={scrapDetails.matricula_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Matrícula
+                </a>
+              </li>
+            )}
+            {scrapDetails.laudo_link && (
+              <li>
+                <a
+                  href={scrapDetails.laudo_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Laudo
+                </a>
+              </li>
+            )}
           </ul>
         </div>
       )}
