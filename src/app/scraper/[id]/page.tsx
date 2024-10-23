@@ -6,11 +6,36 @@ import {
   refreshScraps,
   updateScrap,
 } from "@/actions";
+import { SelectScrap } from "@/db/schema";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Badge, Button, Carousel, Table } from "flowbite-react";
 import { useState } from "react";
 
 import { SCRAPERS } from "../constants";
+
+const StatusBadge = ({ scrap }: { scrap: SelectScrap }) => {
+  let color = "success";
+  let text = "Carregado";
+  switch (scrap.fetch_status) {
+    case "not-fetched":
+      color = "warning";
+      text = "Não carregado";
+      break;
+    case "fetched":
+      color = "success";
+      text = "Carregado";
+      break;
+    case "failed":
+      color = "failure";
+      text = "Falha";
+      break;
+  }
+  return (
+    <Badge color={color} className="inline-block">
+      {text}
+    </Badge>
+  );
+};
 
 const ScrapDetails = ({ scrapId }: { scrapId: number | null }) => {
   const { data: scrapDetails, isLoading: isLoadingDetails } = useQuery({
@@ -161,6 +186,10 @@ export default function Page({ params }: { params: { id: number } }) {
       queryClient.invalidateQueries({ queryKey: ["scrapDetails", id] });
       setSelectedScrapId(id);
     },
+    onError: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: ["scraps", scrapID] });
+      queryClient.invalidateQueries({ queryKey: ["scrapDetails", id] });
+    },
   });
 
   return (
@@ -199,12 +228,7 @@ export default function Page({ params }: { params: { id: number } }) {
                     {scrap.url}
                   </Table.Cell>
                   <Table.Cell className="text-center">
-                    <Badge
-                      color={scrap.is_fetched ? "success" : "warning"}
-                      className="inline-block"
-                    >
-                      {scrap.is_fetched ? "Carregado" : "Não carregado"}
-                    </Badge>
+                    <StatusBadge scrap={scrap} />
                   </Table.Cell>
                   <Table.Cell>
                     <Button

@@ -15,7 +15,6 @@ export const scrapsTable = mysqlTable("scraps", {
   id: int().primaryKey().autoincrement(),
   scrapper_id: varchar({ length: 1020 }).notNull(),
   url: varchar({ length: 1020 }).notNull(),
-  is_fetched: boolean().default(false),
   address: varchar({ length: 1020 }),
   description: text(),
   case_number: varchar({ length: 255 }),
@@ -26,6 +25,9 @@ export const scrapsTable = mysqlTable("scraps", {
   first_auction_bid: float(),
   second_auction_date: datetime(),
   second_auction_bid: float(),
+  fetch_status: mysqlEnum(["not-fetched", "fetched", "failed"]).default(
+    "not-fetched",
+  ),
   created_at: timestamp("created_at")
     .notNull()
     .default(sql`now()`),

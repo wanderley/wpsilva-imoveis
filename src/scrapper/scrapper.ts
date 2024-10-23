@@ -258,7 +258,7 @@ export async function refreshScraps(scrapID: string): Promise<void> {
         .values({
           scrapper_id: scrapID,
           url,
-          is_fetched: false,
+          fetch_status: "not-fetched",
         })
         .execute();
     }
@@ -278,12 +278,30 @@ export async function updateScrap(
 
   try {
     await page.goto(url);
-    const scrapData = await scrapper.scrapLink(page);
-    if (scrapData) {
+    let scrapData;
+    try {
+      scrapData = await scrapper.scrapLink(page);
+    } catch (error) {
+      scrapData = null;
+    }
+    if (!scrapData) {
       await db
         .update(scrapsTable)
         .set({
-          is_fetched: true,
+          fetch_status: "failed",
+        })
+        .where(
+          and(
+            eq(scrapsTable.scrapper_id, scrapperID),
+            eq(scrapsTable.url, url),
+          ),
+        )
+        .execute();
+    } else if (scrapData) {
+      await db
+        .update(scrapsTable)
+        .set({
+          fetch_status: "fetched",
           address: scrapData.address,
           description: scrapData.description,
           case_number: scrapData.caseNumber,
@@ -354,6 +372,15 @@ export async function updateScrap(
     }
   } catch (error) {
     console.error("Error updating scrap:", error);
+    await db
+      .update(scrapsTable)
+      .set({
+        fetch_status: "failed",
+      })
+      .where(
+        and(eq(scrapsTable.scrapper_id, scrapperID), eq(scrapsTable.url, url)),
+      )
+      .execute();
     throw error;
   } finally {
     await browser.close();
