@@ -35,23 +35,55 @@ type Lot = {
   documents: Array<Document>;
 };
 
-abstract class Scraper {
-  static readonly url: string;
+type ScraperType = {
+  url: string;
+  search: (page: Page) => Promise<Array<string>>;
+  name: (page: Page) => Promise<string | undefined>;
+  address: (page: Page) => Promise<string>;
+  description: (page: Page) => Promise<string | undefined>;
+  caseNumber: (page: Page) => Promise<string | undefined>;
+  caseLink: (page: Page) => Promise<string | undefined>;
+  bid: (page: Page) => Promise<number | undefined>;
+  minimumIncrement: (page: Page) => Promise<number | undefined>;
+  firstAuctionDate: (page: Page) => Promise<string | undefined>;
+  firstAuctionBid: (page: Page) => Promise<number | undefined>;
+  secondAuctionDate: (page: Page) => Promise<string | undefined>;
+  secondAuctionBid: (page: Page) => Promise<number | undefined>;
+  images: (page: Page) => Promise<Array<string>>;
+  documents: (page: Page) => Promise<Array<Document>>;
+};
 
-  abstract search(page: Page): Promise<Array<string>>;
-  abstract scrapLink(page: Page): Promise<Lot | null>;
-  abstract getID(url: string): string;
+async function notFound<T>(_page: Page): Promise<T | undefined> {
+  return undefined;
 }
 
-class Wspleiloes extends Scraper {
-  url = "www.wspleiloes.com.br";
-  // example: https://www.wspleiloes.com.br/item/873/detalhes?page=1
+const Wspleiloes: ScraperType = {
+  url: "www.wspleiloes.com.br",
+  search: async (page) => {
+    function getSearchURL(pageNumber: number): string {
+      const searchParams = new URLSearchParams({
+        tipo: "imovel",
+        categoria_id: "",
+        data_leilao_ini: "",
+        data_leilao_fim: "",
+        lance_inicial_ini: "",
+        lance_inicial_fim: "",
+        address_uf: "SP",
+        address_cidade_ibge: "3550308", // Cidade: Sao Paulo
+        address_logradouro: "",
+        comitente_id: "",
+        search: "",
+        page: pageNumber.toString(),
+      });
+      return (
+        "https://www.wspleiloes.com.br/lotes/imovel?" + searchParams.toString()
+      );
+    }
 
-  async search(page: Page): Promise<Array<string>> {
     let pageNumber = 1;
     const links = [];
     while (pageNumber < 10) {
-      await page.goto(this.getSearchURL(pageNumber++));
+      await page.goto(getSearchURL(pageNumber++));
       const isLastPage = await page.evaluate(() =>
         document.body.innerText.includes("NENHUM LOTE ENCONTRADO NO MOMENTO"),
       );
@@ -72,105 +104,92 @@ class Wspleiloes extends Scraper {
       );
     }
     return links;
-  }
-
-  private getSearchURL(pageNumber: number): string {
-    const searchParams = new URLSearchParams({
-      tipo: "imovel",
-      categoria_id: "",
-      data_leilao_ini: "",
-      data_leilao_fim: "",
-      lance_inicial_ini: "",
-      lance_inicial_fim: "",
-      address_uf: "SP",
-      address_cidade_ibge: "3550308", // Cidade: Sao Paulo
-      address_logradouro: "",
-      comitente_id: "",
-      search: "",
-      page: pageNumber.toString(),
-    });
-    return (
-      "https://www.wspleiloes.com.br/lotes/imovel?" + searchParams.toString()
-    );
-  }
-
-  async scrapLink(page: Page): Promise<Lot | null> {
-    const name = await page.evaluate(() =>
+  },
+  name: async (page) =>
+    await page.evaluate(() =>
       document
         .querySelector(".detalhes-lote > div > h4:nth-child(2)")
         ?.textContent?.trim(),
-    );
-    if (name == null) {
-      return null;
-    }
-    const address =
-      (await page.evaluate(() =>
-        document
-          .evaluate(
-            "//h5[contains(text(), 'Localização do Imóvel')]/following-sibling::div",
-            document,
-            null,
-            XPathResult.FIRST_ORDERED_NODE_TYPE,
-            null,
-          )
-          ?.singleNodeValue?.textContent?.replace(/\s+/g, " ")
-          .replace("Endereço:", "")
-          .trim()
-          .replace(/( Cidade: | - CEP: )/g, " - "),
-      )) || "";
-    const caseNumber = await page.evaluate(
-      () =>
-        document
-          .querySelector(".detalhes-lote")
-          ?.textContent?.match(
-            /Processo:\s*(\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4})/,
-          )![1],
-    );
-    const caseLink = await page.evaluate(() =>
-      Array.from(document.querySelectorAll("a"))
-        .find((a) => a.getAttribute("download")?.includes("Processo.pdf"))
-        ?.getAttribute("href"),
-    );
-    const description = await page.evaluate(() =>
+    ),
+  address: async (page) =>
+    (await page.evaluate(() =>
+      document
+        .evaluate(
+          "//h5[contains(text(), 'Localização do Imóvel')]/following-sibling::div",
+          document,
+          null,
+          XPathResult.FIRST_ORDERED_NODE_TYPE,
+          null,
+        )
+        ?.singleNodeValue?.textContent?.replace(/\s+/g, " ")
+        .replace("Endereço:", "")
+        .trim()
+        .replace(/( Cidade: | - CEP: )/g, " - "),
+    )) || "",
+  description: async (page) =>
+    await page.evaluate(() =>
       document
         .querySelector(".detalhes-lote")
         ?.textContent?.trim()
         .replace(/[ ]+/g, " ")
         .replace(/\s*\n+/g, "\n")
         .replace(/\n /g, "\n"),
-    );
-    const firstAuctionDate = await page.evaluate(() =>
+    ),
+  caseNumber: async (page) =>
+    await page.evaluate(
+      () =>
+        document
+          .querySelector(".detalhes-lote")
+          ?.textContent?.match(
+            /Processo:\s*(\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4})/,
+          )![1],
+    ),
+  caseLink: async (page) =>
+    await page.evaluate(
+      () =>
+        Array.from(document.querySelectorAll("a"))
+          .find((a) => a.getAttribute("download")?.includes("Processo.pdf"))
+          ?.getAttribute("href") || undefined,
+    ),
+  bid: notFound,
+  minimumIncrement: notFound,
+  firstAuctionDate: async (page) =>
+    await page.evaluate(() =>
       Array.from(document.querySelectorAll("h6"))
         .find((elem) => elem.textContent?.includes("Data 1º Leilão:"))
         ?.textContent?.replace("Data 1º Leilão: ", ""),
-    );
-    const firstAuctionBid = realToNumber(
+    ),
+  firstAuctionBid: async (page) =>
+    realToNumber(
       await page.evaluate(
         () =>
           Array.from(document.querySelectorAll("h6"))
             .find((elem) => elem.textContent?.includes("Data 1º Leilão:"))
             ?.nextElementSibling?.textContent?.match(/R\$([\d.,]+)/)?.[1],
       ),
-    );
-    const secondAuctionDate = await page.evaluate(() =>
+    ),
+  secondAuctionDate: async (page) =>
+    await page.evaluate(() =>
       Array.from(document.querySelectorAll("h6"))
         .find((elem) => elem.textContent?.includes("Data 2º Leilão:"))
         ?.textContent?.replace("Data 2º Leilão: ", ""),
-    );
-    const secondAuctionBid = realToNumber(
+    ),
+  secondAuctionBid: async (page) =>
+    realToNumber(
       await page.evaluate(
         () =>
           Array.from(document.querySelectorAll("h6"))
             .find((elem) => elem.textContent?.includes("Data 2º Leilão:"))
             ?.nextElementSibling?.textContent?.match(/R\$([\d.,]+)/)?.[1],
       ),
-    );
-    const images: string[] =
-      (await page.evaluate(() =>
-        Array.from(document.querySelectorAll(".carousel-item > a"))
-          .map((a) => a.getAttribute("href"))
-          .filter((href): href is string => href !== null),
-      )) || [];
+    ),
+  images: async (page) =>
+    (await page.evaluate(() =>
+      Array.from(document.querySelectorAll(".carousel-item > a"))
+        .map((a) => a.getAttribute("href"))
+        .filter((href): href is string => href !== null),
+    )) || [],
+  documents: async (page) => {
     const documents = [];
     const laudo = await page.evaluate(() =>
       Array.from(document.querySelectorAll("a"))
@@ -196,30 +215,13 @@ class Wspleiloes extends Scraper {
     if (edital != null) {
       documents.push({ type: DocumentType.EDITAL, link: edital });
     }
+    return documents;
+  },
+};
 
-    return {
-      name,
-      address,
-      caseNumber,
-      caseLink,
-      description: description || "Nenhuma descrição encontrada",
-      firstAuctionDate,
-      firstAuctionBid,
-      secondAuctionDate,
-      secondAuctionBid,
-      images: images || [],
-      documents,
-    };
-  }
-
-  getID(url: string): string {
-    return url.match(/\/item\/(\d+)\//)![1];
-  }
-}
-
-function realToNumber(real: string | null | undefined): number | null {
+function realToNumber(real: string | null | undefined): number | undefined {
   if (real == null) {
-    return null;
+    return undefined;
   }
   return Number(
     real
@@ -237,11 +239,10 @@ const parseBrazilianDate = (dateString: string | null | undefined) => {
 };
 
 export async function refreshScraps(scrapID: string): Promise<void> {
-  const scrapper = new Wspleiloes();
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
   await page.setViewport({ width: 1080, height: 1024 });
-  const urls = [...new Set(await scrapper.search(page))];
+  const urls = [...new Set(await Wspleiloes.search(page))];
 
   for (const url of urls) {
     const existingScrap = await db
@@ -267,11 +268,49 @@ export async function refreshScraps(scrapID: string): Promise<void> {
   await browser.close();
 }
 
+async function scrapLink(page: Page): Promise<Lot | null> {
+  // TODO: Log fields that couldn't be fetched
+  async function tryFetchField<T>(
+    field: (page: Page) => Promise<T>,
+  ): Promise<T | undefined> {
+    try {
+      return await field(page);
+    } catch (_) {
+      return undefined;
+    }
+  }
+  const name = await tryFetchField(Wspleiloes.name);
+  if (name == undefined) {
+    return null;
+  }
+  const address = await tryFetchField(Wspleiloes.address);
+  if (address == undefined) {
+    return null;
+  }
+  const lot = {
+    name,
+    address,
+    description:
+      (await tryFetchField(Wspleiloes.description)) ||
+      "Descrição não encontrada",
+    caseNumber: await tryFetchField(Wspleiloes.caseNumber),
+    caseLink: await tryFetchField(Wspleiloes.caseLink),
+    bid: await tryFetchField(Wspleiloes.bid),
+    minimumIncrement: await tryFetchField(Wspleiloes.minimumIncrement),
+    firstAuctionDate: await tryFetchField(Wspleiloes.firstAuctionDate),
+    firstAuctionBid: await tryFetchField(Wspleiloes.firstAuctionBid),
+    secondAuctionDate: await tryFetchField(Wspleiloes.secondAuctionDate),
+    secondAuctionBid: await tryFetchField(Wspleiloes.secondAuctionBid),
+    images: (await tryFetchField(Wspleiloes.images)) || [],
+    documents: (await tryFetchField(Wspleiloes.documents)) || [],
+  };
+  return lot;
+}
+
 export async function updateScrap(
   scrapperID: string,
   url: string,
 ): Promise<void> {
-  const scrapper = new Wspleiloes();
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
   await page.setViewport({ width: 1080, height: 1024 });
@@ -280,8 +319,8 @@ export async function updateScrap(
     await page.goto(url);
     let scrapData;
     try {
-      scrapData = await scrapper.scrapLink(page);
-    } catch (error) {
+      scrapData = await scrapLink(page);
+    } catch (_) {
       scrapData = null;
     }
     if (!scrapData) {
