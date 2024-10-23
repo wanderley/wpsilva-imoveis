@@ -223,13 +223,16 @@ function realToNumber(real: string | null | undefined): number | undefined {
   if (real == null) {
     return undefined;
   }
-  return Number(
-    real
-      .replace("R$", "")
-      .replace(/\s+/g, "")
-      .replace(".", "")
-      .replace(",", "."),
-  );
+  const normalized = real
+    .replace("R$", "")
+    .replace(/\s+/g, "")
+    .replace(/\./g, "")
+    .replace(",", ".");
+  const ret = Number(normalized);
+  if (isNaN(ret)) {
+    throw new Error(`Invalid number in ${real} (${normalized})`);
+  }
+  return ret;
 }
 
 const parseBrazilianDate = (dateString: string | null | undefined) => {
@@ -282,7 +285,8 @@ async function scrapLink(page: Page): Promise<Lot | null> {
   ): Promise<T | undefined> {
     try {
       return await field(page);
-    } catch (_) {
+    } catch (error) {
+      console.error(`Error fetching field: ${error}`);
       return undefined;
     }
   }
