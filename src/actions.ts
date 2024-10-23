@@ -2,7 +2,7 @@
 
 import { db } from "@/db/index";
 import { scrapFilesTable, scrapsTable } from "@/db/schema";
-import { refreshScraps, updateScrap } from "@/scrapper/scrapper";
+import { refreshScraps, updateScrap } from "@/scrapper/actions";
 import { eq } from "drizzle-orm";
 
 export async function getScraps(scraperID: string) {
