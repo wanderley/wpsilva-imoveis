@@ -9,7 +9,7 @@ export async function getScraps(scraperID: string) {
   return await db
     .select()
     .from(scrapsTable)
-    .where(eq(scrapsTable.scrapper_id, scraperID));
+    .where(eq(scrapsTable.scraper_id, scraperID));
 }
 
 export async function getScrapDetails(scrapId: number) {

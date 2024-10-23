@@ -36,7 +36,7 @@ export async function refreshScraps(scraperID: string): Promise<void> {
       await db
         .insert(scrapsTable)
         .values({
-          scrapper_id: scraperID,
+          scraper_id: scraperID,
           url,
           fetch_status: "not-fetched",
         })
@@ -118,7 +118,7 @@ export async function updateScrap(
           fetch_status: "failed",
         })
         .where(
-          and(eq(scrapsTable.scrapper_id, scraperID), eq(scrapsTable.url, url)),
+          and(eq(scrapsTable.scraper_id, scraperID), eq(scrapsTable.url, url)),
         )
         .execute();
     } else if (scrapData) {
@@ -141,7 +141,7 @@ export async function updateScrap(
           edital_link: scrapData.edital_link,
         })
         .where(
-          and(eq(scrapsTable.scrapper_id, scraperID), eq(scrapsTable.url, url)),
+          and(eq(scrapsTable.scraper_id, scraperID), eq(scrapsTable.url, url)),
         )
         .execute();
 
@@ -150,7 +150,7 @@ export async function updateScrap(
         .select({ id: scrapsTable.id })
         .from(scrapsTable)
         .where(
-          and(eq(scrapsTable.scrapper_id, scraperID), eq(scrapsTable.url, url)),
+          and(eq(scrapsTable.scraper_id, scraperID), eq(scrapsTable.url, url)),
         )
         .limit(1)
         .execute();
@@ -185,7 +185,7 @@ export async function updateScrap(
         fetch_status: "failed",
       })
       .where(
-        and(eq(scrapsTable.scrapper_id, scraperID), eq(scrapsTable.url, url)),
+        and(eq(scrapsTable.scraper_id, scraperID), eq(scrapsTable.url, url)),
       )
       .execute();
     throw error;

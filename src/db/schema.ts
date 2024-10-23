@@ -12,7 +12,7 @@ import {
 
 export const scrapsTable = mysqlTable("scraps", {
   id: int().primaryKey().autoincrement(),
-  scrapper_id: varchar({ length: 1020 }).notNull(),
+  scraper_id: varchar({ length: 1020 }).notNull(),
   url: varchar({ length: 1020 }).notNull(),
   address: varchar({ length: 1020 }),
   description: text(),
