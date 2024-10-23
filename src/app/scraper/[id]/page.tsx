@@ -7,7 +7,7 @@ import {
   updateScrap,
 } from "@/actions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button } from "flowbite-react";
+import { Badge, Button, Carousel, Table } from "flowbite-react";
 import { useState } from "react";
 
 import { SCRAPERS } from "../constants";
@@ -21,6 +21,10 @@ const ScrapDetails = ({ scrapId }: { scrapId: number | null }) => {
 
   if (isLoadingDetails) return <p>Carregando detalhes...</p>;
   if (!scrapDetails) return null;
+
+  const images = scrapDetails.documents?.filter(
+    (doc) => doc?.document_type === "imagem_lote",
+  );
 
   return (
     <div className="mt-4 p-4 border rounded">
@@ -72,21 +76,24 @@ const ScrapDetails = ({ scrapId }: { scrapId: number | null }) => {
         {scrapDetails.second_auction_bid?.toFixed(2)}
       </p>
 
-      {scrapDetails.documents && scrapDetails.documents.length > 0 && (
+      {images && images.length > 0 && (
         <div className="mt-4">
           <h4 className="text-lg mb-2">Imagens:</h4>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {scrapDetails.documents
-              .filter((doc) => doc?.document_type === "imagem_lote")
-              .map((doc, index) => (
-                <div key={index} className="relative h-48">
+          <div className="h-64 sm:h-72 md:h-80 lg:h-96">
+            <Carousel>
+              {images.map((doc, index) => (
+                <div
+                  key={index}
+                  className="flex h-full items-center justify-center bg-gray-900 dark:bg-black"
+                >
                   <img
                     src={doc?.url || ""}
                     alt={`Imagem ${index + 1}`}
-                    className="rounded"
+                    className="max-h-full max-w-full object-contain"
                   />
                 </div>
               ))}
+            </Carousel>
           </div>
         </div>
       )}
@@ -172,32 +179,52 @@ export default function Page({ params }: { params: { id: number } }) {
       {!isLoading && data?.length == 0 && <p>Nenhum lote encontrado!</p>}
       {!isLoading && data?.length != 0 && (
         <>
-          <h2>Páginas encontradas:</h2>
-          <ul>
-            {data?.map((scrap) => (
-              <li key={scrap.id} className="mb-2">
-                <span
-                  onClick={() => setSelectedScrapId(scrap.id)}
-                  className="cursor-pointer hover:underline"
+          <h2 className="text-xl mt-4 mb-2">Páginas encontradas:</h2>
+          <Table striped>
+            <Table.Head>
+              <Table.HeadCell>URL</Table.HeadCell>
+              <Table.HeadCell>Status</Table.HeadCell>
+              <Table.HeadCell>Ações</Table.HeadCell>
+            </Table.Head>
+            <Table.Body className="divide-y">
+              {data?.map((scrap) => (
+                <Table.Row
+                  key={scrap.id}
+                  className="bg-white dark:border-gray-700 dark:bg-gray-800"
                 >
-                  {scrap.url}
-                </span>
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    updateMutation.mutate({
-                      scrapID,
-                      url: scrap.url,
-                      id: scrap.id,
-                    });
-                  }}
-                  disabled={updateMutation.isPending}
-                >
-                  Update
-                </Button>
-              </li>
-            ))}
-          </ul>
+                  <Table.Cell
+                    onClick={() => setSelectedScrapId(scrap.id)}
+                    className="cursor-pointer hover:underline"
+                  >
+                    {scrap.url}
+                  </Table.Cell>
+                  <Table.Cell className="text-center">
+                    <Badge
+                      color={scrap.is_fetched ? "success" : "warning"}
+                      className="inline-block"
+                    >
+                      {scrap.is_fetched ? "Carregado" : "Não carregado"}
+                    </Badge>
+                  </Table.Cell>
+                  <Table.Cell>
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        updateMutation.mutate({
+                          scrapID,
+                          url: scrap.url,
+                          id: scrap.id,
+                        });
+                      }}
+                      disabled={updateMutation.isPending}
+                    >
+                      Update
+                    </Button>
+                  </Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table>
         </>
       )}
       <ScrapDetails scrapId={selectedScrapId} />
