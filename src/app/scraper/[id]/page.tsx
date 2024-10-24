@@ -6,14 +6,14 @@ import {
   refreshScraps,
   updateScrap,
 } from "@/actions";
-import { SelectScrap } from "@/db/schema";
+import { ScrapWithFiles } from "@/db/schema";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Badge, Button, Carousel, Table } from "flowbite-react";
 import { useState } from "react";
 
 import { SCRAPERS } from "../constants";
 
-const StatusBadge = ({ scrap }: { scrap: SelectScrap }) => {
+const StatusBadge = ({ scrap }: { scrap: ScrapWithFiles }) => {
   let color = "success";
   let text = "Carregado";
   switch (scrap.fetch_status) {
@@ -47,9 +47,7 @@ const ScrapDetails = ({ scrapId }: { scrapId: number | null }) => {
   if (isLoadingDetails) return <p>Carregando detalhes...</p>;
   if (!scrapDetails) return null;
 
-  const images = scrapDetails.documents?.filter(
-    (doc) => doc?.file_type === "jpg",
-  );
+  const images = scrapDetails.files.filter((file) => file.file_type === "jpg");
 
   return (
     <div className="mt-4 p-4 border rounded">

@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
   datetime,
   float,
@@ -39,6 +39,10 @@ export const scrapsTable = mysqlTable("scraps", {
     .onUpdateNow(),
 });
 
+export const scrapRelations = relations(scrapsTable, ({ many }) => ({
+  files: many(scrapFilesTable),
+}));
+
 export const scrapFilesTable = mysqlTable("scrap_files", {
   id: int().primaryKey().autoincrement(),
   scrap_id: int().references(() => scrapsTable.id, { onDelete: "cascade" }),
@@ -53,8 +57,13 @@ export const scrapFilesTable = mysqlTable("scrap_files", {
     .onUpdateNow(),
 });
 
-export type Scrap = typeof scrapsTable.$inferInsert;
-export type SelectScrap = typeof scrapsTable.$inferSelect;
+export const scrapFilesRelations = relations(scrapFilesTable, ({ one }) => ({
+  scrap: one(scrapsTable, {
+    fields: [scrapFilesTable.scrap_id],
+    references: [scrapsTable.id],
+  }),
+}));
 
-export type ScrapFile = typeof scrapFilesTable.$inferInsert;
-export type SelectScrapFile = typeof scrapFilesTable.$inferSelect;
+export type ScrapWithFiles = typeof scrapsTable.$inferSelect & {
+  files: (typeof scrapFilesTable.$inferSelect)[];
+};
