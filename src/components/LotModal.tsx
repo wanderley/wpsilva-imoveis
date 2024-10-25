@@ -1,6 +1,5 @@
 import { getScrapDetails } from "@/actions";
 import { LotStatusBadge } from "@/components/LotStatusBadge";
-import { ScrapWithFiles } from "@/db/schema";
 import { useQuery } from "@tanstack/react-query";
 import { Button, Carousel, Modal } from "flowbite-react";
 import React, { useEffect } from "react";

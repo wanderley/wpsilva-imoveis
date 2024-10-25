@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  getScrapDetails,
-  getScraps,
-  refreshScraps,
-  updateScrap,
-} from "@/actions";
+import { getScraps, refreshScraps, updateScrap } from "@/actions";
 import { SCRAPERS } from "@/app/scraper/constants";
 import { LotModal } from "@/components/LotModal";
 import { LotStatusBadge } from "@/components/LotStatusBadge";

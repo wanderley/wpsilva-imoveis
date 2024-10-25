@@ -47,7 +47,7 @@ export default function LotCard({ imovel }: { imovel: ScrapWithFiles }) {
             <div className="flex justify-between items-center mt-1">
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 {/* Avaliação: R$ {imovel.avaliacao?.toLocaleString() || "N/A"} */}
-                Avaliação: R$ "N/A"
+                Avaliação: R$ &quot;N/A&quot;
               </p>
               <Badge color="success" className="text-xs">
                 {desconto.toFixed(2)}% desc.
