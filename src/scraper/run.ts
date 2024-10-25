@@ -1,0 +1,55 @@
+import { db } from "@/db";
+import { scrapsTable } from "@/db/schema";
+import { and, eq, gte, or } from "drizzle-orm";
+
+import { scrapers } from ".";
+import { refreshScraps, updateScrap } from "./actions";
+
+async function updateAllScraps() {
+  console.log("Starting to update all scraps...");
+
+  for (const scraper of scrapers) {
+    console.log(`Refreshing scraps for scraper: ${scraper.url}`);
+    await refreshScraps(scraper.url);
+
+    const scrapsToUpdate = await db
+      .select({ url: scrapsTable.url })
+      .from(scrapsTable)
+      .where(
+        and(
+          eq(scrapsTable.scraper_id, scraper.url),
+          or(
+            eq(scrapsTable.fetch_status, "not-fetched"),
+            gte(scrapsTable.first_auction_date, new Date()),
+            gte(scrapsTable.second_auction_date, new Date()),
+          ),
+        ),
+      )
+      .execute();
+
+    console.log(
+      `Updating ${scrapsToUpdate.length} scraps for scraper: ${scraper.url}`,
+    );
+
+    for (const scrap of scrapsToUpdate) {
+      try {
+        await updateScrap(scraper.url, scrap.url);
+        console.log(`Updated scrap: ${scrap.url}`);
+      } catch (error) {
+        console.error(`Error updating scrap ${scrap.url}:`, error);
+      }
+    }
+  }
+  console.log("Finished updating all scraps.");
+}
+
+updateAllScraps()
+  .catch((error) => {
+    console.error("Error running updateAllScraps:", error);
+    process.exit(1);
+  })
+  .finally(async () => {
+    console.log("Closing database connection");
+    await db.$client.end();
+    process.exit(0);
+  });
