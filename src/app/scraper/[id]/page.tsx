@@ -6,170 +6,17 @@ import {
   refreshScraps,
   updateScrap,
 } from "@/actions";
-import { ScrapWithFiles } from "@/db/schema";
+import { SCRAPERS } from "@/app/scraper/constants";
+import { LotModal } from "@/components/LotModal";
+import { LotStatusBadge } from "@/components/LotStatusBadge";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Badge, Button, Carousel, Table } from "flowbite-react";
+import { Button, Table } from "flowbite-react";
 import { useState } from "react";
-
-import { SCRAPERS } from "../constants";
-
-const StatusBadge = ({ scrap }: { scrap: ScrapWithFiles }) => {
-  let color = "success";
-  let text = "Carregado";
-  switch (scrap.fetch_status) {
-    case "not-fetched":
-      color = "warning";
-      text = "Não carregado";
-      break;
-    case "fetched":
-      color = "success";
-      text = "Carregado";
-      break;
-    case "failed":
-      color = "failure";
-      text = "Falha";
-      break;
-  }
-  return (
-    <Badge color={color} className="inline-block">
-      {text}
-    </Badge>
-  );
-};
-
-const ScrapDetails = ({ scrapId }: { scrapId: number | null }) => {
-  const { data: scrapDetails, isLoading: isLoadingDetails } = useQuery({
-    queryKey: ["scrapDetails", scrapId],
-    queryFn: async () => (scrapId ? await getScrapDetails(scrapId) : null),
-    enabled: !!scrapId,
-  });
-
-  if (isLoadingDetails) return <p>Carregando detalhes...</p>;
-  if (!scrapDetails) return null;
-
-  const images = scrapDetails.files.filter((file) => file.file_type === "jpg");
-
-  return (
-    <div className="mt-4 p-4 border rounded">
-      <h3 className="text-xl mb-2">Detalhes do Lote</h3>
-      <p>
-        <strong>Endereço:</strong> {scrapDetails.address}
-      </p>
-      <p>
-        <strong>Descrição:</strong> {scrapDetails.description}
-      </p>
-      <p>
-        <strong>Número do Caso:</strong> {scrapDetails.case_number}
-      </p>
-      <p>
-        <strong>Link do Caso:</strong>{" "}
-        <a
-          href={scrapDetails.case_link || ""}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {scrapDetails.case_link || ""}
-        </a>
-      </p>
-      <p>
-        <strong>Lance:</strong> R$ {scrapDetails.bid?.toFixed(2)}
-      </p>
-      <p>
-        <strong>Incremento Mínimo:</strong> R${" "}
-        {scrapDetails.minimum_increment?.toFixed(2)}
-      </p>
-      <p>
-        <strong>Data do Primeiro Leilão:</strong>{" "}
-        {scrapDetails.first_auction_date?.toLocaleString("pt-BR", {
-          timeZone: "America/Sao_Paulo",
-        })}
-      </p>
-      <p>
-        <strong>Lance do Primeiro Leilão:</strong> R${" "}
-        {scrapDetails.first_auction_bid?.toFixed(2)}
-      </p>
-      <p>
-        <strong>Data do Segundo Leilão:</strong>{" "}
-        {scrapDetails.second_auction_date?.toLocaleString("pt-BR", {
-          timeZone: "America/Sao_Paulo",
-        })}
-      </p>
-      <p>
-        <strong>Lance do Segundo Leilão:</strong> R${" "}
-        {scrapDetails.second_auction_bid?.toFixed(2)}
-      </p>
-
-      {images && images.length > 0 && (
-        <div className="mt-4">
-          <h4 className="text-lg mb-2">Imagens:</h4>
-          <div className="h-64 sm:h-72 md:h-80 lg:h-96">
-            <Carousel>
-              {images.map((doc, index) => (
-                <div
-                  key={index}
-                  className="flex h-full items-center justify-center bg-gray-900 dark:bg-black"
-                >
-                  <img
-                    src={doc?.url || ""}
-                    alt={`Imagem ${index + 1}`}
-                    className="max-h-full max-w-full object-contain"
-                  />
-                </div>
-              ))}
-            </Carousel>
-          </div>
-        </div>
-      )}
-
-      {(scrapDetails.laudo_link ||
-        scrapDetails.matricula_link ||
-        scrapDetails.edital_link) && (
-        <div className="mt-4">
-          <h4 className="text-lg mb-2">Documentos:</h4>
-          <ul className="list-disc pl-5">
-            {scrapDetails.edital_link && (
-              <li>
-                <a
-                  href={scrapDetails.edital_link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Edital
-                </a>
-              </li>
-            )}
-            {scrapDetails.matricula_link && (
-              <li>
-                <a
-                  href={scrapDetails.matricula_link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Matrícula
-                </a>
-              </li>
-            )}
-            {scrapDetails.laudo_link && (
-              <li>
-                <a
-                  href={scrapDetails.laudo_link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Laudo
-                </a>
-              </li>
-            )}
-          </ul>
-        </div>
-      )}
-    </div>
-  );
-};
 
 export default function Page({ params }: { params: { id: number } }) {
   const scrapID = SCRAPERS[params.id];
   const [selectedScrapId, setSelectedScrapId] = useState<number | null>(null);
+  const [showModal, setShowModal] = useState(false);
 
   const queryClient = useQueryClient();
   const { isLoading, data } = useQuery({
@@ -236,13 +83,16 @@ export default function Page({ params }: { params: { id: number } }) {
                     className="bg-white dark:border-gray-700 dark:bg-gray-800"
                   >
                     <Table.Cell
-                      onClick={() => setSelectedScrapId(scrap.id)}
+                      onClick={() => {
+                        setSelectedScrapId(scrap.id);
+                        setShowModal(true);
+                      }}
                       className="cursor-pointer hover:underline truncate max-w-xs"
                     >
                       {scrap.url}
                     </Table.Cell>
                     <Table.Cell className="text-center">
-                      <StatusBadge scrap={scrap} />
+                      <LotStatusBadge scrap={scrap} />
                     </Table.Cell>
                     <Table.Cell>
                       <Button
@@ -266,7 +116,13 @@ export default function Page({ params }: { params: { id: number } }) {
           </div>
         </>
       )}
-      <ScrapDetails scrapId={selectedScrapId} />
+      {selectedScrapId && (
+        <LotModal
+          scrapID={selectedScrapId}
+          showModal={showModal}
+          setShowModal={setShowModal}
+        />
+      )}
     </div>
   );
 }

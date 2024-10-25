@@ -26,3 +26,12 @@ export async function getScrapDetails(
 }
 
 export { refreshScraps, updateScrap };
+
+export async function getPendingReviewLots(): Promise<ScrapWithFiles[]> {
+  return await db.query.scrapsTable.findMany({
+    with: {
+      files: true,
+    },
+    where: eq(scrapsTable.fetch_status, "fetched"),
+  });
+}

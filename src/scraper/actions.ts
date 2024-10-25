@@ -125,6 +125,7 @@ export async function updateScrap(
       await db
         .update(scrapsTable)
         .set({
+          name: scrapData.name,
           fetch_status: "fetched",
           address: scrapData.address,
           description: scrapData.description,
