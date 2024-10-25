@@ -34,12 +34,12 @@ export default function LotCard({ imovel }: { imovel: ScrapWithFiles }) {
           <div className="flex-grow">
             <h5
               className="text-sm font-semibold tracking-tight text-gray-900 dark:text-white mb-1 line-clamp-1"
-              title={imovel.address || "Endereço não disponível"}
+              title={imovel.name || "N/A"}
             >
-              {imovel.address || "Endereço não disponível"}
+              {imovel.name || "N/A"}
             </h5>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">
-              Lote: {imovel.name || "N/A"}
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-1 line-clamp-1">
+              Endereço: {imovel.address || "Endereço não disponível"}
             </p>
             <p className="text-lg font-bold text-gray-700 dark:text-gray-300">
               Lance Atual: R$ {imovel.bid?.toLocaleString() || "N/A"}
