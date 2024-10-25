@@ -79,6 +79,10 @@ export function LotModal({ scrapID, showModal, setShowModal }: Props) {
                 : "Não disponível"}
             </p>
             <p>
+              <strong>Avaliação:</strong>
+              {` R$ ${scrap.appraisal?.toLocaleString()}`}
+            </p>
+            <p>
               <strong>Lance Atual:</strong> R${" "}
               {scrap.bid?.toLocaleString() || "N/A"}
             </p>

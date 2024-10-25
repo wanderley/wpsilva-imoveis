@@ -6,10 +6,10 @@ import { HiClock } from "react-icons/hi";
 
 export default function LotCard({ imovel }: { imovel: ScrapWithFiles }) {
   const [showModal, setShowModal] = useState(false);
-  // const desconto = imovel.avaliacao
-  //   ? ((imovel.avaliacao - (imovel.bid || 0)) / imovel.avaliacao) * 100
-  //   : 0;
-  const desconto = 0;
+  const discount = imovel.appraisal
+    ? ((imovel.appraisal - (imovel.bid || 0)) / imovel.appraisal) * 100
+    : 0;
+  const discountColor = discount > 40 ? "success" : "warning";
   return (
     <>
       <Card
@@ -46,11 +46,10 @@ export default function LotCard({ imovel }: { imovel: ScrapWithFiles }) {
             </p>
             <div className="flex justify-between items-center mt-1">
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                {/* Avaliação: R$ {imovel.avaliacao?.toLocaleString() || "N/A"} */}
-                Avaliação: R$ &quot;N/A&quot;
+                Avaliação: R$ {imovel.appraisal?.toLocaleString() || "N/A"}
               </p>
-              <Badge color="success" className="text-xs">
-                {desconto.toFixed(2)}% desc.
+              <Badge color={discountColor} className="text-xs">
+                {discount.toFixed(0)}% desc.
               </Badge>
             </div>
           </div>

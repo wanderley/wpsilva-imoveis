@@ -79,6 +79,7 @@ async function scrapLink(scraper: Scraper, page: Page): Promise<Lot | null> {
     caseLink: await tryFetchField(scraper.caseLink),
     bid: await tryFetchField(scraper.bid),
     minimumIncrement: await tryFetchField(scraper.minimumIncrement),
+    appraisal: await tryFetchField(scraper.appraisal),
     firstAuctionDate: await tryFetchField(scraper.firstAuctionDate),
     firstAuctionBid: await tryFetchField(scraper.firstAuctionBid),
     secondAuctionDate: await tryFetchField(scraper.secondAuctionDate),
@@ -131,8 +132,9 @@ export async function updateScrap(
           description: scrapData.description,
           case_number: scrapData.caseNumber,
           case_link: scrapData.caseLink,
-          bid: scrapData.secondAuctionBid || scrapData.firstAuctionBid,
+          bid: scrapData.bid,
           minimum_increment: null, // Not provided in the current scraper
+          appraisal: scrapData.appraisal,
           first_auction_date: parseBrazilianDate(scrapData.firstAuctionDate),
           first_auction_bid: scrapData.firstAuctionBid,
           second_auction_date: parseBrazilianDate(scrapData.secondAuctionDate),

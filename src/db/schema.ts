@@ -21,6 +21,7 @@ export const scrapsTable = mysqlTable("scraps", {
   case_link: varchar({ length: 1020 }),
   bid: float(),
   minimum_increment: float(),
+  appraisal: float(),
   first_auction_date: datetime(),
   first_auction_bid: float(),
   second_auction_date: datetime(),

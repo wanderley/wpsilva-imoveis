@@ -8,6 +8,7 @@ export type Lot = {
   caseLink?: string | null;
   bid?: number | null;
   minimumIncrement?: number | null;
+  appraisal?: number | null;
   firstAuctionDate?: string | null;
   firstAuctionBid?: number | null;
   secondAuctionDate?: string | null;
@@ -28,6 +29,7 @@ export type Scraper = {
   caseLink: (page: Page) => Promise<string | undefined>;
   bid: (page: Page) => Promise<number | undefined>;
   minimumIncrement: (page: Page) => Promise<number | undefined>;
+  appraisal: (page: Page) => Promise<number | undefined>;
   firstAuctionDate: (page: Page) => Promise<string | undefined>;
   firstAuctionBid: (page: Page) => Promise<number | undefined>;
   secondAuctionDate: (page: Page) => Promise<string | undefined>;

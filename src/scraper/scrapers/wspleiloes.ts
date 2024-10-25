@@ -97,8 +97,22 @@ export const Wspleiloes: Scraper = {
           .find((a) => a.getAttribute("download")?.includes("Processo.pdf"))
           ?.getAttribute("href") || undefined,
     ),
-  bid: notFound,
+  bid: async (page) =>
+    realToNumber(
+      await page.evaluate(
+        () => document.querySelector("#lance_inicial")?.textContent,
+      ),
+    ),
   minimumIncrement: notFound,
+  appraisal: async (page) =>
+    realToNumber(
+      await page.evaluate(
+        () =>
+          Array.from(document.querySelectorAll("h6"))
+            .find((elem) => elem.textContent?.includes("Valor de Avaliação:"))
+            ?.textContent?.match(/R\$([\d.,]+)/)?.[1],
+      ),
+    ),
   firstAuctionDate: async (page) =>
     await page.evaluate(() =>
       Array.from(document.querySelectorAll("h6"))
