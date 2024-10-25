@@ -70,11 +70,13 @@ export const Wspleiloes: Scraper = {
         .trim()
         .replace(/( Cidade: | - CEP: )/g, " - "),
     )) || "",
+
   description: async (page) =>
     await page.evaluate(() =>
-      document
-        .querySelector(".detalhes-lote")
-        ?.textContent?.trim()
+      Array.from(document.querySelectorAll("b"))
+        .find((div) => div.textContent?.includes("Descrição:"))
+        ?.parentElement?.textContent?.trim()
+        .replace("Descrição:", "")
         .replace(/[ ]+/g, " ")
         .replace(/\s*\n+/g, "\n")
         .replace(/\n /g, "\n"),
