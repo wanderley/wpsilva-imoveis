@@ -2,15 +2,15 @@
 
 import { db } from "@/db";
 import { scrapFilesTable, scrapsTable } from "@/db/schema";
+import { getScraper } from "@/scraper";
 import { parseBrazilianDate } from "@/scraper/parsers";
 import { Lot, Scraper } from "@/scraper/scraper";
-import { getScrapper } from "@/scraper/scrapers";
 import { and, eq, inArray } from "drizzle-orm";
 import puppeteer from "puppeteer";
 import { Page } from "puppeteer";
 
 export async function refreshScraps(scraperID: string): Promise<void> {
-  const scraper = getScrapper(scraperID);
+  const scraper = getScraper(scraperID);
   if (!scraper) {
     throw new Error(`Scraper ${scraperID} not found`);
   }
@@ -95,7 +95,7 @@ export async function updateScrap(
   scraperID: string,
   url: string,
 ): Promise<void> {
-  const scraper = getScrapper(scraperID);
+  const scraper = getScraper(scraperID);
   if (!scraper) {
     throw new Error(`Scraper ${scraperID} not found`);
   }
