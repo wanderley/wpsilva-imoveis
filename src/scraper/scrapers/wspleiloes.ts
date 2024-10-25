@@ -99,9 +99,13 @@ export const Wspleiloes: Scraper = {
     ),
   bid: async (page) =>
     realToNumber(
-      await page.evaluate(
+      (await page.evaluate(
         () => document.querySelector("#lance_inicial")?.textContent,
-      ),
+      )) ||
+        (await page.evaluate(
+          () =>
+            document.querySelector(".maior-lance > #valor_lance")?.textContent,
+        )),
     ),
   minimumIncrement: notFound,
   appraisal: async (page) =>
