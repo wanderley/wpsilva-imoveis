@@ -155,6 +155,10 @@ export function LotModal({ scrapID, showModal, setShowModal }: Props) {
                   Processo
                 </Button>
               )}
+              <Button size="sm" color="light" href={scrap.url} target="_blank">
+                <HiExternalLink className="mr-1" size={16} />
+                Site do Leilão
+              </Button>
             </div>
           </div>
         )}
