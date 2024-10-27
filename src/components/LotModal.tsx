@@ -86,12 +86,6 @@ export function LotModal({ scrapID, showModal, setShowModal }: Props) {
                     </dd>
                   </div>
                   <div>
-                    <dt className="font-semibold">Incremento Mínimo:</dt>
-                    <dd>
-                      R$ {scrap.minimum_increment?.toLocaleString() || "N/A"}
-                    </dd>
-                  </div>
-                  <div>
                     <dt className="font-semibold">1º Leilão:</dt>
                     <dd>
                       {scrap.first_auction_date

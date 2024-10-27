@@ -107,7 +107,6 @@ export const Wspleiloes: Scraper = {
             document.querySelector(".maior-lance > #valor_lance")?.textContent,
         )),
     ),
-  minimumIncrement: notFound,
   appraisal: async (page) =>
     realToNumber(
       await page.evaluate(
