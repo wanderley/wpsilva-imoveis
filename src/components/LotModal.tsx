@@ -40,7 +40,7 @@ export function LotModal({ scrapID, showModal, setShowModal }: Props) {
         {isLoading && <p>Carregando...</p>}
         {scrap && (
           <div className="space-y-4">
-            <div className="h-56 sm:h-64 xl:h-80 2xl:h-96 mb-4 bg-gray-100 rounded-lg overflow-hidden">
+            <div className="h-56 sm:h-64 xl:h-80 2xl:h-96 mb-4 bg-gray-950 rounded-lg overflow-hidden">
               <Carousel className="h-full">
                 {scrap.files
                   .filter((file) => file.file_type === "jpg")
