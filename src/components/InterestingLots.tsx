@@ -3,7 +3,7 @@ import LotCard from "@/components/LotCard";
 import { ScrapWithFiles } from "@/db/schema";
 import { useQuery } from "@tanstack/react-query";
 import { Pagination, Spinner } from "flowbite-react";
-import React, { useState } from "react";
+import { useState } from "react";
 import { FaFolderOpen } from "react-icons/fa";
 
 function EmptyState() {

@@ -1,7 +1,7 @@
 import { LotModal } from "@/components/LotModal";
 import { ScrapWithFiles } from "@/db/schema";
 import { Badge, Card, Carousel } from "flowbite-react";
-import React, { useState } from "react";
+import { useState } from "react";
 import { HiClock } from "react-icons/hi";
 
 export default function LotCard({ imovel }: { imovel: ScrapWithFiles }) {
@@ -28,6 +28,7 @@ export default function LotCard({ imovel }: { imovel: ScrapWithFiles }) {
               {imovel.files
                 .filter((file) => file.file_type === "jpg")
                 .map((image, index) => (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     key={image.id}
                     src={image.url}

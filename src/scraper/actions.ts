@@ -6,8 +6,7 @@ import { getScraper } from "@/scraper";
 import { parseBrazilianDate } from "@/scraper/parsers";
 import { Lot, Scraper } from "@/scraper/scraper";
 import { and, eq, inArray } from "drizzle-orm";
-import puppeteer from "puppeteer";
-import { Page } from "puppeteer";
+import puppeteer, { Page } from "puppeteer";
 
 export async function refreshScraps(scraperID: string): Promise<void> {
   const scraper = getScraper(scraperID);

@@ -1,5 +1,5 @@
 import { realToNumber } from "@/scraper/parsers";
-import { Scraper, notFound } from "@/scraper/scraper";
+import { Scraper } from "@/scraper/scraper";
 
 export const Wspleiloes: Scraper = {
   url: "www.wspleiloes.com.br",

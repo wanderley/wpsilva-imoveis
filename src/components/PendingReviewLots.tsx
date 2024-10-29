@@ -1,9 +1,7 @@
-import { getPendingReviewLots } from "@/actions";
 import LotCard from "@/components/LotCard";
 import { usePendingReviewLots } from "@/hooks";
-import { useQuery } from "@tanstack/react-query";
-import { Button, Label, Pagination, Select, TextInput } from "flowbite-react";
-import React, { useState } from "react";
+import { Button, Pagination } from "flowbite-react";
+import { useState } from "react";
 import { FaClipboardCheck } from "react-icons/fa";
 
 function EmptyState() {
@@ -22,9 +20,9 @@ function EmptyState() {
 
 export function PendingReviewLots() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [valorMinimo, setValorMinimo] = useState<string>("");
-  const [valorMaximo, setValorMaximo] = useState<string>("");
-  const [descontoMinimo, setDescontoMinimo] = useState<string>("");
+  // const [valorMinimo, setValorMinimo] = useState<string>("");
+  // const [valorMaximo, setValorMaximo] = useState<string>("");
+  // const [descontoMinimo, setDescontoMinimo] = useState<string>("");
   const itemsPerPage = 3;
 
   // const filtrarImoveis = (imoveis: Imovel[]) => {

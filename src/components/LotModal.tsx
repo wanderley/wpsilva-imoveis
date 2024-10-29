@@ -1,6 +1,5 @@
 "use client";
 
-import { getScrapDetails, requestAnalysis, saveScrap } from "@/actions";
 import { LotStatusBadge } from "@/components/LotStatusBadge";
 import { ScrapWithFiles } from "@/db/schema";
 import {
@@ -8,24 +7,17 @@ import {
   useScrapDetails,
   useUpdateScrapMutation,
 } from "@/hooks";
+import { UseMutateFunction } from "@tanstack/react-query";
 import {
-  UseMutateFunction,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
-import {
-  Badge,
   Button,
   Card,
   Carousel,
   Label,
   Modal,
   Progress,
-  Spinner,
   TextInput,
 } from "flowbite-react";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   BarChart,
   Check,
@@ -46,7 +38,6 @@ interface Props {
 }
 
 function AnalysisCard({ scrap }: { scrap: ScrapWithFiles }) {
-  const queryClient = useQueryClient();
   const [isRequestingAnalysis, setIsRequestingAnalysis] = useState(false);
   const { mutate: requestAnalysisMutation } = useRequestAnalysisMutation(
     scrap.id,
@@ -931,7 +922,7 @@ function PotentialProfitCard({
 
 export function LotModal({ scrapID, showModal, setShowModal }: Props) {
   const { data: scrap, isLoading } = useScrapDetails(scrapID);
-  const { mutate } = useUpdateScrapMutation(scrapID);
+  const { mutate } = useUpdateScrapMutation();
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -965,6 +956,7 @@ export function LotModal({ scrapID, showModal, setShowModal }: Props) {
                       key={image.id}
                       className="flex items-center justify-center h-full"
                     >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={image.url}
                         alt={`Imagem ${image.id}`}

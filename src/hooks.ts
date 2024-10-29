@@ -84,7 +84,7 @@ export function useScrapDetails(id: number) {
   });
 }
 
-export function useUpdateScrapMutation(scrapID: number) {
+export function useUpdateScrapMutation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (scrap: ScrapWithFiles) => await saveScrap(scrap),

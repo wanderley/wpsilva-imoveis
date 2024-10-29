@@ -3,18 +3,7 @@
 import { db } from "@/db/index";
 import { ScrapWithFiles, scrapsTable } from "@/db/schema";
 import { refreshScraps, updateScrap } from "@/scraper/actions";
-import {
-  SQLWrapper,
-  and,
-  asc,
-  desc,
-  eq,
-  gte,
-  isNull,
-  lte,
-  max,
-  sql,
-} from "drizzle-orm";
+import { SQLWrapper, and, asc, desc, eq, gte, isNull, sql } from "drizzle-orm";
 import OpenAI from "openai";
 
 export async function getScraps(scraperID: string): Promise<ScrapWithFiles[]> {
