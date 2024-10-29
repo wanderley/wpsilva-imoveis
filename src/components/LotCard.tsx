@@ -10,6 +10,12 @@ export default function LotCard({ imovel }: { imovel: ScrapWithFiles }) {
     ? ((imovel.appraisal - (imovel.bid || 0)) / imovel.appraisal) * 100
     : 0;
   const discountColor = discount > 40 ? "success" : "warning";
+  const nextAuctionDate =
+    imovel.first_auction_date && imovel.first_auction_date >= new Date()
+      ? new Date(imovel.first_auction_date)
+      : imovel.second_auction_date && imovel.second_auction_date >= new Date()
+        ? new Date(imovel.second_auction_date)
+        : null;
   return (
     <>
       <Card
@@ -56,8 +62,8 @@ export default function LotCard({ imovel }: { imovel: ScrapWithFiles }) {
           <div className="flex justify-end items-center mt-2">
             <p className="text-xs text-gray-600 dark:text-gray-400 flex items-center">
               <HiClock className="mr-1" size={12} />
-              {imovel.first_auction_date
-                ? new Date(imovel.first_auction_date).toLocaleDateString()
+              {nextAuctionDate
+                ? nextAuctionDate.toLocaleDateString()
                 : "Data não definida"}
             </p>
           </div>

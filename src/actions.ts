@@ -29,22 +29,25 @@ export async function getScrapDetails(
 export { refreshScraps, updateScrap };
 
 export async function getPendingReviewLots(): Promise<ScrapWithFiles[]> {
+  const nextAuctionDate = sql<Date | null>`CASE 
+          WHEN DATE(${scrapsTable.first_auction_date}) >= CURRENT_DATE THEN DATE(${scrapsTable.first_auction_date})
+          WHEN DATE(${scrapsTable.second_auction_date}) >= CURRENT_DATE THEN DATE(${scrapsTable.second_auction_date})
+          ELSE NULL
+        END`;
+  const discount = sql<number>`(${scrapsTable.appraisal} - COALESCE(${scrapsTable.bid}, 0)) / ${scrapsTable.appraisal} * 100`;
   return await db.query.scrapsTable.findMany({
+    extras: {
+      next_auction_date: nextAuctionDate.as("next_auction_date"),
+      discount: discount.as("discount"),
+    },
     with: {
       files: true,
     },
     where: and(
       eq(scrapsTable.fetch_status, "fetched"),
-      gte(
-        sql`GREATEST(${scrapsTable.first_auction_date}, ${scrapsTable.second_auction_date})`,
-        sql`CURRENT_DATE`,
-      ),
+      gte(nextAuctionDate, sql`CURRENT_DATE`),
     ),
-    orderBy: [
-      asc(
-        sql`GREATEST(${scrapsTable.first_auction_date}, ${scrapsTable.second_auction_date})`,
-      ),
-    ],
+    orderBy: [asc(nextAuctionDate), desc(discount)],
   });
 }
 
