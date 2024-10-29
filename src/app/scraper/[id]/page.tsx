@@ -4,6 +4,11 @@ import { getScraps, refreshScraps, updateScrap } from "@/actions";
 import { SCRAPERS } from "@/app/scraper/constants";
 import { LotModal } from "@/components/LotModal";
 import { LotStatusBadge } from "@/components/LotStatusBadge";
+import {
+  useRefreshScrapsMutation,
+  useScraps,
+  useUpdateScraperMutation,
+} from "@/hooks";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, Table } from "flowbite-react";
 import { useState } from "react";
@@ -13,39 +18,9 @@ export default function Page({ params }: { params: { id: number } }) {
   const [selectedScrapId, setSelectedScrapId] = useState<number | null>(null);
   const [showModal, setShowModal] = useState(false);
 
-  const queryClient = useQueryClient();
-  const { isLoading, data } = useQuery({
-    queryKey: ["scraps", scrapID],
-    queryFn: async () => await getScraps(scrapID),
-  });
-
-  const { isPending, mutate } = useMutation({
-    mutationFn: async ({ scrapID }: { scrapID: string }) =>
-      await refreshScraps(scrapID),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["scraps", scrapID] });
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: async ({
-      scrapID,
-      url,
-    }: {
-      scrapID: string;
-      url: string;
-      id: number;
-    }) => await updateScrap(scrapID, url),
-    onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: ["scraps", scrapID] });
-      queryClient.invalidateQueries({ queryKey: ["scrapDetails", id] });
-      setSelectedScrapId(id);
-    },
-    onError: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: ["scraps", scrapID] });
-      queryClient.invalidateQueries({ queryKey: ["scrapDetails", id] });
-    },
-  });
+  const { isLoading, data } = useScraps(scrapID);
+  const { isPending, mutate } = useRefreshScrapsMutation(scrapID);
+  const updateMutation = useUpdateScraperMutation(scrapID);
 
   return (
     <div>

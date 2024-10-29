@@ -4,6 +4,11 @@ import { getScrapDetails, requestAnalysis, saveScrap } from "@/actions";
 import { LotStatusBadge } from "@/components/LotStatusBadge";
 import { ScrapWithFiles } from "@/db/schema";
 import {
+  useRequestAnalysisMutation,
+  useScrapDetails,
+  useUpdateScrapMutation,
+} from "@/hooks";
+import {
   UseMutateFunction,
   useMutation,
   useQuery,
@@ -43,16 +48,17 @@ interface Props {
 function AnalysisCard({ scrap }: { scrap: ScrapWithFiles }) {
   const queryClient = useQueryClient();
   const [isRequestingAnalysis, setIsRequestingAnalysis] = useState(false);
-  const { mutate: requestAnalysisMutation } = useMutation({
-    mutationFn: async () => await requestAnalysis(scrap.id),
-    onMutate: () => {
-      setIsRequestingAnalysis(true);
+  const { mutate: requestAnalysisMutation } = useRequestAnalysisMutation(
+    scrap.id,
+    {
+      onMutate: () => {
+        setIsRequestingAnalysis(true);
+      },
+      onSuccess: () => {
+        setIsRequestingAnalysis(false);
+      },
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["scrapDetails", scrap.id] });
-      setIsRequestingAnalysis(false);
-    },
-  });
+  );
 
   return (
     <Card>
@@ -924,18 +930,8 @@ function PotentialProfitCard({
 }
 
 export function LotModal({ scrapID, showModal, setShowModal }: Props) {
-  const { data: scrap, isLoading } = useQuery({
-    queryKey: ["scrapDetails", scrapID],
-    queryFn: async () => await getScrapDetails(scrapID),
-  });
-  const queryClient = useQueryClient();
-  // update scrap with useMutation
-  const { mutate } = useMutation({
-    mutationFn: async (scrap: ScrapWithFiles) => await saveScrap(scrap),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["scrapDetails", scrapID] });
-    },
-  });
+  const { data: scrap, isLoading } = useScrapDetails(scrapID);
+  const { mutate } = useUpdateScrapMutation(scrapID);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {

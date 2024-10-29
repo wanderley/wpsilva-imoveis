@@ -1,5 +1,6 @@
 import { getPendingReviewLots } from "@/actions";
 import LotCard from "@/components/LotCard";
+import { usePendingReviewLots } from "@/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { Button, Label, Pagination, Select, TextInput } from "flowbite-react";
 import React, { useState } from "react";
@@ -45,11 +46,7 @@ export function PendingReviewLots() {
   // };
 
   // const imoveisFiltrados = filtrarImoveis(imoveisPendentes);
-  const { data: pendingReviewLots } = useQuery({
-    queryKey: ["pending-review-lots"],
-    queryFn: async () => await getPendingReviewLots(),
-    initialData: [],
-  });
+  const { data: pendingReviewLots } = usePendingReviewLots();
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = pendingReviewLots.slice(
