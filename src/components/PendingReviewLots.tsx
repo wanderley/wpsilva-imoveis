@@ -57,7 +57,7 @@ export function PendingReviewLots() {
           </Button>
         )}
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+      {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
         <div>
           <Label htmlFor="valorMinimo">Valor Mínimo</Label>
           <TextInput
@@ -93,7 +93,7 @@ export function PendingReviewLots() {
             <option value="50">50% ou mais</option>
           </Select>
         </div>
-      </div>
+      </div> */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-4">
         {currentItems.map((imovel) => (
           <LotCard key={imovel.id} imovel={imovel} />
