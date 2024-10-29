@@ -50,6 +50,9 @@ export const scrapsTable = mysqlTable("scraps", {
   custo_pos_venda_imposto_ganho_capita_percentual: float()
     .default(0.15)
     .notNull(),
+  analysis_status: text("analysis_status").default("none"),
+  analysis_thread_id: text("analysis_thread_id"),
+  analysis_result: text("analysis_result"),
   created_at: timestamp("created_at")
     .notNull()
     .default(sql`now()`),

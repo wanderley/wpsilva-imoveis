@@ -1,6 +1,6 @@
 "use client";
 
-import { getScrapDetails, saveScrap } from "@/actions";
+import { getScrapDetails, requestAnalysis, saveScrap } from "@/actions";
 import { LotStatusBadge } from "@/components/LotStatusBadge";
 import { ScrapWithFiles } from "@/db/schema";
 import {
@@ -10,16 +10,19 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import {
+  Badge,
   Button,
   Card,
   Carousel,
   Label,
   Modal,
   Progress,
+  Spinner,
   TextInput,
 } from "flowbite-react";
 import React, { useEffect, useState } from "react";
 import {
+  BarChart,
   Check,
   CheckSquare,
   Edit3,
@@ -33,6 +36,64 @@ interface Props {
   scrapID: number;
   showModal: boolean;
   setShowModal: (show: boolean) => void;
+}
+
+function AnalysisCard({ scrap }: { scrap: ScrapWithFiles }) {
+  const queryClient = useQueryClient();
+  const [isRequestingAnalysis, setIsRequestingAnalysis] = useState(false);
+  const { mutate: requestAnalysisMutation } = useMutation({
+    mutationFn: async () => await requestAnalysis(scrap.id),
+    onMutate: () => {
+      setIsRequestingAnalysis(true);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["scrapDetails", scrap.id] });
+      setIsRequestingAnalysis(false);
+    },
+  });
+
+  return (
+    <Card>
+      <h2 className="text-2xl font-bold mb-4">Análise do Lote</h2>
+      {!scrap.analysis_result && (
+        <div className="flex flex-col items-center justify-center p-6">
+          <BarChart className="w-16 h-16 text-gray-400 mb-4" />
+          <h3 className="text-xl font-semibold mb-2">
+            {isRequestingAnalysis
+              ? "Solicitando análise..."
+              : "Análise não realizada"}
+          </h3>
+          <p className="text-gray-600 text-center mb-4">
+            Solicite uma análise detalhada para obter informações cruciais sobre
+            este lote.
+          </p>
+          <Button
+            color="dark"
+            onClick={() => requestAnalysisMutation()}
+            className="flex items-center gap-2"
+            disabled={isRequestingAnalysis}
+          >
+            <BarChart className="w-5 h-5" />
+            Solicitar Análise
+          </Button>
+        </div>
+      )}
+      {scrap.analysis_result && (
+        <div>
+          <div>
+            <p className="text-sm text-gray-600">
+              {scrap.analysis_result.split("\n").map((line, index) => (
+                <span key={index}>
+                  {line}
+                  <br />
+                </span>
+              ))}
+            </p>
+          </div>
+        </div>
+      )}
+    </Card>
+  );
 }
 
 function DescriptionCard({ scrap }: { scrap: ScrapWithFiles }) {
@@ -868,6 +929,7 @@ export function LotModal({ scrapID, showModal, setShowModal }: Props) {
             </div>
             <DescriptionCard scrap={scrap} />
             <PotentialProfitCard scrap={scrap} mutate={mutate} />
+            <AnalysisCard scrap={scrap} />
           </div>
         )}
       </Modal.Body>
