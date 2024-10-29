@@ -3,7 +3,18 @@
 import { db } from "@/db/index";
 import { ScrapWithFiles, scrapsTable } from "@/db/schema";
 import { refreshScraps, updateScrap } from "@/scraper/actions";
-import { and, asc, desc, eq, gte, lte, max, sql } from "drizzle-orm";
+import {
+  SQLWrapper,
+  and,
+  asc,
+  desc,
+  eq,
+  gte,
+  isNull,
+  lte,
+  max,
+  sql,
+} from "drizzle-orm";
 import OpenAI from "openai";
 
 export async function getScraps(scraperID: string): Promise<ScrapWithFiles[]> {
@@ -28,12 +39,12 @@ export async function getScrapDetails(
 
 export { refreshScraps, updateScrap };
 
-export async function getPendingReviewLots(): Promise<ScrapWithFiles[]> {
+async function getLots(extraWhere?: SQLWrapper) {
   const nextAuctionDate = sql<Date | null>`CASE 
-          WHEN DATE(${scrapsTable.first_auction_date}) >= CURRENT_DATE THEN DATE(${scrapsTable.first_auction_date})
-          WHEN DATE(${scrapsTable.second_auction_date}) >= CURRENT_DATE THEN DATE(${scrapsTable.second_auction_date})
-          ELSE NULL
-        END`;
+      WHEN DATE(${scrapsTable.first_auction_date}) >= CURRENT_DATE THEN DATE(${scrapsTable.first_auction_date})
+      WHEN DATE(${scrapsTable.second_auction_date}) >= CURRENT_DATE THEN DATE(${scrapsTable.second_auction_date})
+      ELSE NULL
+    END`;
   const discount = sql<number>`(${scrapsTable.appraisal} - COALESCE(${scrapsTable.bid}, 0)) / ${scrapsTable.appraisal} * 100`;
   return await db.query.scrapsTable.findMany({
     extras: {
@@ -46,9 +57,18 @@ export async function getPendingReviewLots(): Promise<ScrapWithFiles[]> {
     where: and(
       eq(scrapsTable.fetch_status, "fetched"),
       gte(nextAuctionDate, sql`CURRENT_DATE`),
+      extraWhere,
     ),
     orderBy: [asc(nextAuctionDate), desc(discount)],
   });
+}
+
+export async function getPendingReviewLots(): Promise<ScrapWithFiles[]> {
+  return await getLots(isNull(scrapsTable.is_interesting));
+}
+
+export async function getInterestingLots(): Promise<ScrapWithFiles[]> {
+  return await getLots(eq(scrapsTable.is_interesting, 1));
 }
 
 export async function saveScrap(scrap: ScrapWithFiles): Promise<void> {

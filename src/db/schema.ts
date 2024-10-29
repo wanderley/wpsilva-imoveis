@@ -53,6 +53,7 @@ export const scrapsTable = mysqlTable("scraps", {
   analysis_status: text("analysis_status").default("none"),
   analysis_thread_id: text("analysis_thread_id"),
   analysis_result: text("analysis_result"),
+  is_interesting: int(),
   created_at: timestamp("created_at")
     .notNull()
     .default(sql`now()`),

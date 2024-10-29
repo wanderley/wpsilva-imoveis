@@ -29,6 +29,8 @@ import {
   ExternalLink,
   FileText,
   RotateCcw,
+  ThumbsDown,
+  ThumbsUp,
   X,
 } from "react-feather";
 
@@ -96,7 +98,13 @@ function AnalysisCard({ scrap }: { scrap: ScrapWithFiles }) {
   );
 }
 
-function DescriptionCard({ scrap }: { scrap: ScrapWithFiles }) {
+function DescriptionCard({
+  scrap,
+  mutate,
+}: {
+  scrap: ScrapWithFiles;
+  mutate: UseMutateFunction<void, Error, ScrapWithFiles, unknown>;
+}) {
   const isPastDate = (date: Date | null) => {
     if (!date) return false;
     return date < new Date();
@@ -167,6 +175,36 @@ function DescriptionCard({ scrap }: { scrap: ScrapWithFiles }) {
             </div>
           </dl>
           <div className="mt-6">
+            <div className="pb-2">
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  color={scrap.is_interesting === 1 ? "dark" : "light"}
+                  className="flex items-center justify-center gap-2"
+                  onClick={() => {
+                    mutate({
+                      ...scrap,
+                      is_interesting: scrap.is_interesting === 1 ? null : 1,
+                    });
+                  }}
+                >
+                  <ThumbsUp className="w-4 h-4 mr-1" />
+                  Interessante
+                </Button>
+                <Button
+                  color={scrap.is_interesting === 0 ? "dark" : "light"}
+                  className="flex items-center justify-center gap-2"
+                  onClick={() => {
+                    mutate({
+                      ...scrap,
+                      is_interesting: scrap.is_interesting === 0 ? null : 0,
+                    });
+                  }}
+                >
+                  <ThumbsDown className="w-4 h-4 mr-1" />
+                  Não interessante
+                </Button>
+              </div>
+            </div>
             <div className="pb-2">
               <Button
                 color="light"
@@ -940,7 +978,7 @@ export function LotModal({ scrapID, showModal, setShowModal }: Props) {
                   ))}
               </Carousel>
             </div>
-            <DescriptionCard scrap={scrap} />
+            <DescriptionCard scrap={scrap} mutate={mutate} />
             <PotentialProfitCard scrap={scrap} mutate={mutate} />
             <AnalysisCard scrap={scrap} />
           </div>
