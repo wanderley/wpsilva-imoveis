@@ -122,6 +122,12 @@ export async function updateScrap(
         )
         .execute();
     } else if (scrapData) {
+      const existingScrap = await db.query.scrapsTable.findFirst({
+        where: and(
+          eq(scrapsTable.scraper_id, scraperID),
+          eq(scrapsTable.url, url),
+        ),
+      });
       await db
         .update(scrapsTable)
         .set({
@@ -131,7 +137,7 @@ export async function updateScrap(
           description: scrapData.description,
           case_number: scrapData.caseNumber,
           case_link: scrapData.caseLink,
-          bid: scrapData.bid, // Not provided in the current scraper
+          bid: scrapData.bid,
           appraisal: scrapData.appraisal,
           first_auction_date: parseBrazilianDate(scrapData.firstAuctionDate),
           first_auction_bid: scrapData.firstAuctionBid,
@@ -140,6 +146,10 @@ export async function updateScrap(
           laudo_link: scrapData.laudo_link,
           matricula_link: scrapData.matricula_link,
           edital_link: scrapData.edital_link,
+          valor_arrematacao:
+            existingScrap?.valor_arrematacao || scrapData.bid || undefined,
+          valor_venda:
+            existingScrap?.valor_venda || scrapData.appraisal || undefined,
         })
         .where(
           and(eq(scrapsTable.scraper_id, scraperID), eq(scrapsTable.url, url)),

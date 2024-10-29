@@ -35,3 +35,7 @@ export async function getPendingReviewLots(): Promise<ScrapWithFiles[]> {
     where: eq(scrapsTable.fetch_status, "fetched"),
   });
 }
+
+export async function saveScrap(scrap: ScrapWithFiles): Promise<void> {
+  await db.update(scrapsTable).set(scrap).where(eq(scrapsTable.id, scrap.id));
+}

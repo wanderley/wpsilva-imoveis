@@ -1,10 +1,33 @@
-import { getScrapDetails } from "@/actions";
+"use client";
+
+import { getScrapDetails, saveScrap } from "@/actions";
 import { LotStatusBadge } from "@/components/LotStatusBadge";
 import { ScrapWithFiles } from "@/db/schema";
-import { useQuery } from "@tanstack/react-query";
-import { Button, Card, Carousel, Modal } from "flowbite-react";
-import React, { useEffect } from "react";
-import { CheckSquare, ExternalLink, FileText } from "react-feather";
+import {
+  UseMutateFunction,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import {
+  Button,
+  Card,
+  Carousel,
+  Label,
+  Modal,
+  Progress,
+  TextInput,
+} from "flowbite-react";
+import React, { useEffect, useState } from "react";
+import {
+  Check,
+  CheckSquare,
+  Edit3,
+  ExternalLink,
+  FileText,
+  RotateCcw,
+  X,
+} from "react-feather";
 
 interface Props {
   scrapID: number;
@@ -134,10 +157,672 @@ function DescriptionCard({ scrap }: { scrap: ScrapWithFiles }) {
   );
 }
 
+function PotentialProfitCard({
+  scrap,
+  mutate,
+}: {
+  scrap: ScrapWithFiles;
+  mutate: UseMutateFunction<void, Error, ScrapWithFiles, unknown>;
+}) {
+  const [activeSection, setActiveSection] = useState<string | null>(null);
+  const [editingField, setEditingField] = useState<string | null>(null);
+  const [valorArrematacao, setValorArrematacao] = useState<number>(
+    scrap.valor_arrematacao,
+  );
+  const [valorVenda, setValorVenda] = useState<number>(scrap.valor_venda);
+
+  const total_custo_arrematacao =
+    scrap.custo_arrematacao_comissao_leiloeiro_percentual * valorArrematacao +
+    scrap.custo_arrematacao_registro +
+    scrap.custo_arrematacao_itbi_percentual * valorArrematacao +
+    scrap.custo_arrematacao_advogado;
+  const total_custo_pos_imissao =
+    scrap.custo_pos_imissao_reforma +
+    scrap.custo_pos_imissao_divida_iptu +
+    scrap.custo_pos_imissao_divida_condominio +
+    scrap.custo_pos_imissao_outros;
+  const total_custo_pos_arrematacao =
+    scrap.custo_pos_arrematacao_prazo_de_venda_em_meses *
+    (scrap.custo_pos_arrematacao_valor_iptu_mensal +
+      scrap.custo_pos_arrematacao_valor_condominio_mensal);
+  const total_custo_sem_imposto_venda =
+    total_custo_arrematacao +
+    total_custo_pos_imissao +
+    total_custo_pos_arrematacao;
+  const total_custo_pos_venda =
+    scrap.custo_pos_venda_comissao_corretora_percentual * valorVenda +
+    scrap.custo_pos_venda_imposto_ganho_capita_percentual *
+      total_custo_sem_imposto_venda;
+  const total_custo_sem_arrematacao =
+    total_custo_arrematacao +
+    total_custo_pos_imissao +
+    total_custo_pos_arrematacao +
+    total_custo_pos_venda;
+  const total_custo = total_custo_sem_arrematacao + valorArrematacao;
+  const lucro = valorVenda - total_custo;
+  const lucro_percentual = (lucro / valorVenda) * 100;
+  const total_custo_arrematacao_percentual =
+    (total_custo_arrematacao / total_custo_sem_arrematacao) * 100;
+  const total_custo_pos_imissao_percentual =
+    (total_custo_pos_imissao / total_custo_sem_arrematacao) * 100;
+  const total_custo_pos_arrematacao_percentual =
+    (total_custo_pos_arrematacao / total_custo_sem_arrematacao) * 100;
+  const total_custo_pos_venda_percentual =
+    (total_custo_pos_venda / total_custo_sem_arrematacao) * 100;
+  return (
+    <Card>
+      <h2 className="text-2xl font-bold mb-4">Potencial de Lucro</h2>
+      <div>
+        <div className="mb-6">
+          <div className="h-4 w-full bg-gray-200 rounded-full overflow-hidden flex">
+            <div
+              className="h-full bg-blue-500 cursor-pointer"
+              style={{ width: `${total_custo_arrematacao_percentual}%` }}
+              onClick={() =>
+                setActiveSection(
+                  activeSection === "custoArrematacao"
+                    ? null
+                    : "custoArrematacao",
+                )
+              }
+              title={`R$ ${total_custo_arrematacao.toFixed(2)}`}
+            ></div>
+            <div
+              className="h-full bg-green-500 cursor-pointer"
+              style={{ width: `${total_custo_pos_imissao_percentual}%` }}
+              onClick={() =>
+                setActiveSection(
+                  activeSection === "extraPosImissao"
+                    ? null
+                    : "extraPosImissao",
+                )
+              }
+              title={`R$ ${total_custo_pos_imissao.toFixed(2)}`}
+            ></div>
+            <div
+              className="h-full bg-yellow-500 cursor-pointer"
+              style={{ width: `${total_custo_pos_arrematacao_percentual}%` }}
+              onClick={() =>
+                setActiveSection(
+                  activeSection === "custoPosArrematacao"
+                    ? null
+                    : "custoPosArrematacao",
+                )
+              }
+              title={`R$ ${total_custo_pos_arrematacao.toFixed(2)}`}
+            ></div>
+            <div
+              className="h-full bg-red-500 cursor-pointer"
+              style={{ width: `${total_custo_pos_venda_percentual}%` }}
+              onClick={() =>
+                setActiveSection(
+                  activeSection === "posVenda" ? null : "posVenda",
+                )
+              }
+              title={`R$ ${total_custo_pos_venda.toFixed(2)}`}
+            ></div>
+          </div>
+          <div className="flex justify-between mt-2 text-sm text-gray-600">
+            <div
+              className="flex items-center cursor-pointer"
+              onClick={() =>
+                setActiveSection(
+                  activeSection === "custoArrematacao"
+                    ? null
+                    : "custoArrematacao",
+                )
+              }
+            >
+              <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+              <span>Custos de Arrematação</span>
+            </div>
+            <div
+              className="flex items-center cursor-pointer"
+              onClick={() =>
+                setActiveSection(
+                  activeSection === "extraPosImissao"
+                    ? null
+                    : "extraPosImissao",
+                )
+              }
+            >
+              <div className="w-3 h-3 bg-green-500 rounded-full  mr-2"></div>
+              <span>Custos Pós Imissão</span>
+            </div>
+            <div
+              className="flex items-center cursor-pointer"
+              onClick={() =>
+                setActiveSection(
+                  activeSection === "custoPosArrematacao"
+                    ? null
+                    : "custoPosArrematacao",
+                )
+              }
+            >
+              <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+              <span>Custos Pós Arrematação</span>
+            </div>
+            <div
+              className="flex items-center cursor-pointer"
+              onClick={() =>
+                setActiveSection(
+                  activeSection === "posVenda" ? null : "posVenda",
+                )
+              }
+            >
+              <div className="w-3 h-3 bg-red-500 rounded-full  mr-2"></div>
+              <span>Custos Pós Venda</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid  grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="p-4 bg-gray-100 rounded-lg">
+            <h4 className="font-semibold mb-2">Valor da Arrematação</h4>
+            <div className="flex items-center">
+              {editingField === "valorArremate" ? (
+                <div className="flex items-center">
+                  <TextInput
+                    type="number"
+                    value={valorArrematacao?.toString() || ""}
+                    onChange={(e) => {
+                      setValorArrematacao(Number(e.currentTarget.value));
+                    }}
+                    addon={"R$"}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === "Tab") {
+                        mutate({
+                          ...scrap,
+                          valor_arrematacao: Number(valorArrematacao),
+                        });
+                        setEditingField(null);
+                      }
+                    }}
+                    step={1000}
+                  />
+                  <Check
+                    className="w-4 h-4 text-green-500 cursor-pointer ml-2"
+                    onClick={() => {
+                      mutate({
+                        ...scrap,
+                        valor_arrematacao: Number(valorArrematacao),
+                      });
+                      setEditingField(null);
+                    }}
+                  />
+                  <X
+                    className="w-4 h-4 text-red-500 cursor-pointer ml-2"
+                    onClick={() => {
+                      setValorArrematacao(scrap.valor_arrematacao);
+                      setEditingField(null);
+                    }}
+                  />
+                  <RotateCcw
+                    className="w-4 h-4 text-blue-500 cursor-pointer ml-2"
+                    onClick={() =>
+                      setValorArrematacao(scrap.bid || scrap.valor_arrematacao)
+                    }
+                  />
+                </div>
+              ) : (
+                <>
+                  <p className="text-2xl font-bold mr-2">
+                    R$ {valorArrematacao.toLocaleString()}
+                  </p>
+                  <Edit3
+                    className="w-4 h-4 text-gray-500 cursor-pointer"
+                    onClick={() => setEditingField("valorArremate")}
+                  />
+                </>
+              )}
+            </div>
+          </div>
+          <div className="p-4 bg-gray-100 rounded-lg">
+            <h4 className="font-semibold mb-2">Valor da Venda</h4>
+            <div className="flex items-center">
+              {editingField === "valorVenda" ? (
+                <div className="flex items-center">
+                  <input
+                    type="number"
+                    value={valorVenda?.toString() || ""}
+                    onChange={(e) => {
+                      setValorVenda(Number(e.currentTarget.value));
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === "Tab") {
+                        mutate({ ...scrap, valor_venda: valorVenda });
+                        setEditingField(null);
+                      }
+                    }}
+                    className="block w-full rounded-md border-0 py-1.5 pl-2 pr-8 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    step={1000}
+                  />
+                  <Check
+                    className="w-4 h-4 text-green-500 cursor-pointer ml-2"
+                    onClick={() => {
+                      mutate({ ...scrap, valor_venda: valorVenda });
+                      setEditingField(null);
+                    }}
+                  />
+                  <X
+                    className="w-4 h-4 text-red-500 cursor-pointer ml-2"
+                    onClick={() => {
+                      setValorVenda(scrap.valor_venda);
+                      setEditingField(null);
+                    }}
+                  />
+                  <RotateCcw
+                    className="w-4 h-4 text-blue-500 cursor-pointer ml-2"
+                    onClick={() =>
+                      setValorVenda(scrap.appraisal || scrap.valor_venda)
+                    }
+                  />
+                </div>
+              ) : (
+                <>
+                  <p className="text-2xl font-bold mr-2">
+                    R$ {valorVenda.toLocaleString()}
+                  </p>
+                  <Edit3
+                    className="w-4 h-4 text-gray-500 cursor-pointer"
+                    onClick={() => setEditingField("valorVenda")}
+                  />
+                </>
+              )}
+            </div>
+          </div>
+          <div className="p-4 bg-gray-100 rounded-lg">
+            <h4 className="font-semibold mb-2">Lucro</h4>
+            <div className="flex justify-between items-center">
+              <p className="text-2xl font-bold">
+                {lucro_percentual.toFixed(2)}%
+              </p>
+              <p className="text-2xl font-semibold text-green-600">
+                R$ {lucro.toLocaleString()}
+              </p>
+            </div>
+            <Progress
+              progress={lucro_percentual}
+              color="green"
+              size="sm"
+              className="mt-2"
+            />
+          </div>
+        </div>
+
+        {activeSection === "custoArrematacao" && (
+          <div className="mb-6">
+            <h3 className="text-xl font-semibold mb-4">
+              Custos de Arrematação (R${" "}
+              {total_custo_arrematacao.toLocaleString()})
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="w-2/4">
+                <Label htmlFor="comissaoLeiloeiro" className="mb-2 block">
+                  Comissão do Leiloeiro
+                </Label>
+                <div className="flex items-center">
+                  <TextInput
+                    id="comissaoLeiloeiro"
+                    type="number"
+                    className="w-1/2"
+                    value={
+                      scrap.custo_arrematacao_comissao_leiloeiro_percentual *
+                      100
+                    }
+                    onChange={(e) =>
+                      mutate({
+                        ...scrap,
+                        custo_arrematacao_comissao_leiloeiro_percentual:
+                          Number(e.currentTarget.value) / 100,
+                      })
+                    }
+                    addon="%"
+                    step={1}
+                  />
+                  <p className="ml-2 text-gray-600">
+                    R${" "}
+                    {(
+                      scrap.custo_arrematacao_comissao_leiloeiro_percentual *
+                      valorArrematacao
+                    ).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+              <div className="w-2/4">
+                <Label htmlFor="itbi" className="mb-2 block">
+                  ITBI
+                </Label>
+                <div className="flex items-center">
+                  <TextInput
+                    id="itbi"
+                    type="number"
+                    className="w-1/2"
+                    value={scrap.custo_arrematacao_itbi_percentual * 100}
+                    onChange={(e) =>
+                      mutate({
+                        ...scrap,
+                        custo_arrematacao_itbi_percentual:
+                          Number(e.currentTarget.value) / 100,
+                      })
+                    }
+                    addon="%"
+                    step={1}
+                  />
+                  <p className="ml-2 text-gray-600">
+                    R${" "}
+                    {(
+                      scrap.custo_arrematacao_itbi_percentual * valorArrematacao
+                    ).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+              <div className="w-2/4">
+                <Label htmlFor="registro" className="mb-2 block">
+                  Registro
+                </Label>
+                <div className="flex items-center">
+                  <TextInput
+                    id="registro"
+                    type="number"
+                    className="w-full"
+                    value={scrap.custo_arrematacao_registro}
+                    onChange={(e) =>
+                      mutate({
+                        ...scrap,
+                        custo_arrematacao_registro: Number(
+                          e.currentTarget.value,
+                        ),
+                      })
+                    }
+                    addon="R$"
+                    step={500}
+                  />
+                </div>
+              </div>
+              <div className="w-2/4">
+                <Label htmlFor="advogado" className="mb-2 block">
+                  Valor do Advogado
+                </Label>
+                <div className="flex items-center">
+                  <TextInput
+                    id="advogado"
+                    type="number"
+                    className="w-full"
+                    value={scrap.custo_arrematacao_advogado}
+                    onChange={(e) =>
+                      mutate({
+                        ...scrap,
+                        custo_arrematacao_advogado: Number(
+                          e.currentTarget.value,
+                        ),
+                      })
+                    }
+                    addon="R$"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeSection === "extraPosImissao" && (
+          <div className="mb-6">
+            <h3 className="text-xl font-semibold mb-4">
+              Custos Pós Imissão (R$ {total_custo_pos_imissao.toLocaleString()})
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="w-2/4">
+                <Label htmlFor="reforma" className="mb-2 block">
+                  Reforma
+                </Label>
+                <div className="flex items-center">
+                  <TextInput
+                    id="advogado"
+                    type="number"
+                    className="w-full"
+                    value={scrap.custo_pos_imissao_reforma}
+                    onChange={(e) =>
+                      mutate({
+                        ...scrap,
+                        custo_pos_imissao_reforma: Number(
+                          e.currentTarget.value,
+                        ),
+                      })
+                    }
+                    addon="R$"
+                    step={500}
+                  />
+                </div>
+              </div>
+              <div className="w-2/4">
+                <Label htmlFor="outros" className="mb-2 block">
+                  Outros
+                </Label>
+                <div className="flex items-center">
+                  <TextInput
+                    id="outros"
+                    type="number"
+                    className="w-full"
+                    value={scrap.custo_pos_imissao_outros}
+                    onChange={(e) =>
+                      mutate({
+                        ...scrap,
+                        custo_pos_imissao_outros: Number(e.currentTarget.value),
+                      })
+                    }
+                    addon="R$"
+                    step={500}
+                  />
+                </div>
+              </div>
+              <div className="w-2/4">
+                <Label htmlFor="iptu" className="mb-2 block">
+                  IPTU
+                </Label>
+                <div className="flex items-center">
+                  <TextInput
+                    id="iptu"
+                    type="number"
+                    className="w-full"
+                    value={scrap.custo_pos_imissao_divida_iptu}
+                    onChange={(e) =>
+                      mutate({
+                        ...scrap,
+                        custo_pos_imissao_divida_iptu: Number(
+                          e.currentTarget.value,
+                        ),
+                      })
+                    }
+                    addon="R$"
+                    step={500}
+                  />
+                </div>
+              </div>
+              <div className="w-2/4">
+                <Label htmlFor="condominio" className="mb-2 block">
+                  Condomínio
+                </Label>
+                <div className="flex items-center">
+                  <TextInput
+                    id="condominio"
+                    type="number"
+                    className="w-full"
+                    value={scrap.custo_pos_imissao_divida_condominio}
+                    onChange={(e) =>
+                      mutate({
+                        ...scrap,
+                        custo_pos_imissao_divida_condominio: Number(
+                          e.currentTarget.value,
+                        ),
+                      })
+                    }
+                    addon="R$"
+                    step={500}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeSection === "custoPosArrematacao" && (
+          <div className="mb-6">
+            <h3 className="text-xl font-semibold mb-4">
+              Custos Pós Arrematação (R${" "}
+              {total_custo_pos_arrematacao.toLocaleString()})
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="prazoVenda" className="mb-2 block">
+                  Prazo da Venda (em meses)
+                </Label>
+                <TextInput
+                  id="prazoVenda"
+                  type="number"
+                  value={scrap.custo_pos_arrematacao_prazo_de_venda_em_meses}
+                  onChange={(e) =>
+                    mutate({
+                      ...scrap,
+                      custo_pos_arrematacao_prazo_de_venda_em_meses: Number(
+                        e.currentTarget.value,
+                      ),
+                    })
+                  }
+                  step={1}
+                />
+              </div>
+              <div>
+                <Label htmlFor="iptuMensal" className="mb-2 block">
+                  IPTU Mensal
+                </Label>
+                <TextInput
+                  id="iptuMensal"
+                  type="number"
+                  value={scrap.custo_pos_arrematacao_valor_iptu_mensal}
+                  onChange={(e) =>
+                    mutate({
+                      ...scrap,
+                      custo_pos_arrematacao_valor_iptu_mensal: Number(
+                        e.currentTarget.value,
+                      ),
+                    })
+                  }
+                  step={500}
+                />
+              </div>
+              <div>
+                <Label htmlFor="condominionMensal" className="mb-2 block">
+                  Condomínio Mensal
+                </Label>
+                <TextInput
+                  id="condominionMensal"
+                  type="number"
+                  value={scrap.custo_pos_arrematacao_valor_condominio_mensal}
+                  onChange={(e) =>
+                    mutate({
+                      ...scrap,
+                      custo_pos_arrematacao_valor_condominio_mensal: Number(
+                        e.currentTarget.value,
+                      ),
+                    })
+                  }
+                  step={500}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeSection === "posVenda" && (
+          <div className="mb-6">
+            <h3 className="text-xl font-semibold mb-4">
+              Custos Pós Venda (R$ {total_custo_pos_venda.toLocaleString()})
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="w-2/4">
+                <Label htmlFor="comissaoCorretora" className="mb-2 block">
+                  Comissão da Corretora
+                </Label>
+                <div className="flex items-center">
+                  <TextInput
+                    id="comissaoCorretora"
+                    type="number"
+                    className="w-1/2"
+                    value={
+                      scrap.custo_pos_venda_comissao_corretora_percentual * 100
+                    }
+                    onChange={(e) =>
+                      mutate({
+                        ...scrap,
+                        custo_pos_venda_comissao_corretora_percentual:
+                          Number(e.currentTarget.value) / 100,
+                      })
+                    }
+                    addon="%"
+                    step={1}
+                  />
+                  <p className="ml-2 text-gray-600">
+                    R${" "}
+                    {(
+                      scrap.custo_pos_venda_comissao_corretora_percentual *
+                      valorVenda
+                    ).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+              <div className="w-2/4">
+                <Label htmlFor="imposto" className="mb-2 block">
+                  Imposto de Ganho de Capital
+                </Label>
+                <div className="flex items-center">
+                  <TextInput
+                    id="imposto"
+                    type="number"
+                    className="w-1/2"
+                    value={
+                      scrap.custo_pos_venda_imposto_ganho_capita_percentual *
+                      100
+                    }
+                    onChange={(e) =>
+                      mutate({
+                        ...scrap,
+                        custo_pos_venda_imposto_ganho_capita_percentual:
+                          Number(e.currentTarget.value) / 100,
+                      })
+                    }
+                    addon="%"
+                    step={1}
+                  />
+                  <p className="ml-2 text-gray-600">
+                    R${" "}
+                    {(
+                      scrap.custo_pos_venda_imposto_ganho_capita_percentual *
+                      total_custo_sem_imposto_venda
+                    ).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </Card>
+  );
+}
+
 export function LotModal({ scrapID, showModal, setShowModal }: Props) {
   const { data: scrap, isLoading } = useQuery({
     queryKey: ["scrapDetails", scrapID],
     queryFn: async () => await getScrapDetails(scrapID),
+  });
+  const queryClient = useQueryClient();
+  // update scrap with useMutation
+  const { mutate } = useMutation({
+    mutationFn: async (scrap: ScrapWithFiles) => await saveScrap(scrap),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["scrapDetails", scrapID] });
+    },
   });
 
   useEffect(() => {
@@ -182,6 +867,7 @@ export function LotModal({ scrapID, showModal, setShowModal }: Props) {
               </Carousel>
             </div>
             <DescriptionCard scrap={scrap} />
+            <PotentialProfitCard scrap={scrap} mutate={mutate} />
           </div>
         )}
       </Modal.Body>
