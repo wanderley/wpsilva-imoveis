@@ -97,6 +97,11 @@ function AnalysisCard({ scrap }: { scrap: ScrapWithFiles }) {
 }
 
 function DescriptionCard({ scrap }: { scrap: ScrapWithFiles }) {
+  const isPastDate = (date: Date | null) => {
+    if (!date) return false;
+    return date < new Date();
+  };
+
   return (
     <Card>
       <h2 className="text-2xl font-bold mb-4">Descrição do Lote</h2>
@@ -128,7 +133,11 @@ function DescriptionCard({ scrap }: { scrap: ScrapWithFiles }) {
             </div>
             <div>
               <dt className="font-semibold">1º Leilão:</dt>
-              <dd>
+              <dd
+                className={
+                  isPastDate(scrap.first_auction_date) ? "line-through" : ""
+                }
+              >
                 {scrap.first_auction_date
                   ? `${new Date(scrap.first_auction_date).toLocaleString()} - R$ ${scrap.first_auction_bid?.toLocaleString()}`
                   : "Não definido"}
@@ -136,7 +145,11 @@ function DescriptionCard({ scrap }: { scrap: ScrapWithFiles }) {
             </div>
             <div>
               <dt className="font-semibold">2º Leilão:</dt>
-              <dd>
+              <dd
+                className={
+                  isPastDate(scrap.second_auction_date) ? "line-through" : ""
+                }
+              >
                 {scrap.second_auction_date
                   ? `${new Date(scrap.second_auction_date).toLocaleString()} - R$ ${scrap.second_auction_bid?.toLocaleString()}`
                   : "Não definido"}
