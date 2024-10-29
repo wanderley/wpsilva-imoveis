@@ -3,7 +3,7 @@
 import { db } from "@/db/index";
 import { ScrapWithFiles, scrapsTable } from "@/db/schema";
 import { refreshScraps, updateScrap } from "@/scraper/actions";
-import { eq } from "drizzle-orm";
+import { and, asc, desc, eq, gte, lte, max, sql } from "drizzle-orm";
 import OpenAI from "openai";
 
 export async function getScraps(scraperID: string): Promise<ScrapWithFiles[]> {
@@ -33,7 +33,18 @@ export async function getPendingReviewLots(): Promise<ScrapWithFiles[]> {
     with: {
       files: true,
     },
-    where: eq(scrapsTable.fetch_status, "fetched"),
+    where: and(
+      eq(scrapsTable.fetch_status, "fetched"),
+      gte(
+        sql`GREATEST(${scrapsTable.first_auction_date}, ${scrapsTable.second_auction_date})`,
+        sql`CURRENT_DATE`,
+      ),
+    ),
+    orderBy: [
+      asc(
+        sql`GREATEST(${scrapsTable.first_auction_date}, ${scrapsTable.second_auction_date})`,
+      ),
+    ],
   });
 }
 
