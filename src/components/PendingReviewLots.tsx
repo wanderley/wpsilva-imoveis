@@ -30,14 +30,14 @@ export function PendingReviewLots() {
   // };
 
   // const imoveisFiltrados = filtrarImoveis(imoveisPendentes);
-  const { data: imoveisFiltrados } = useQuery({
+  const { data: pendingReviewLots } = useQuery({
     queryKey: ["pending-review-lots"],
     queryFn: async () => await getPendingReviewLots(),
     initialData: [],
   });
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = imoveisFiltrados.slice(
+  const currentItems = pendingReviewLots.slice(
     indexOfFirstItem,
     indexOfLastItem,
   );
@@ -47,13 +47,13 @@ export function PendingReviewLots() {
   return (
     <section className="mb-12">
       <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
-        <h2 className="text-2xl font-semibold">Imóveis com Revisão Pendente</h2>
-        {imoveisFiltrados.length > 0 && (
+        <h2 className="text-2xl font-semibold">Lotes com Revisão Pendente</h2>
+        {pendingReviewLots.length > 0 && (
           <Button
             color="dark"
             onClick={() => alert("Iniciando revisão em lote")}
           >
-            Iniciar Revisão em Lote
+            Iniciar Revisão
           </Button>
         )}
       </div>
@@ -102,7 +102,7 @@ export function PendingReviewLots() {
       <div className="flex overflow-x-auto sm:justify-center">
         <Pagination
           currentPage={currentPage}
-          totalPages={Math.ceil(imoveisFiltrados.length / itemsPerPage)}
+          totalPages={Math.ceil(pendingReviewLots.length / itemsPerPage)}
           onPageChange={onPageChange}
           showIcons={true}
           previousLabel="Anterior"
