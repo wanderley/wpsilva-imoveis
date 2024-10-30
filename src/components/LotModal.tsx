@@ -38,46 +38,49 @@ interface Props {
 }
 
 function AnalysisCard({ scrap }: { scrap: ScrapWithFiles }) {
-  const [isRequestingAnalysis, setIsRequestingAnalysis] = useState(false);
-  const { mutate: requestAnalysisMutation } = useRequestAnalysisMutation(
-    scrap.id,
-    {
-      onMutate: () => {
-        setIsRequestingAnalysis(true);
-      },
-      onSuccess: () => {
-        setIsRequestingAnalysis(false);
-      },
-    },
-  );
-
+  const { isPending, mutate: requestAnalysisMutation } =
+    useRequestAnalysisMutation(scrap.id);
   return (
     <Card>
-      <h2 className="text-2xl font-bold mb-4">Análise do Lote</h2>
-      {!scrap.analysis_result && (
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold">Análise do Lote</h2>
+        {scrap.analysis_result && (
+          <Button
+            color="gray"
+            size="sm"
+            onClick={() => requestAnalysisMutation()}
+            disabled={isPending}
+          >
+            <RotateCcw className="w-4 h-4" />
+          </Button>
+        )}
+      </div>
+      {(isPending || !scrap.analysis_result) && (
         <div className="flex flex-col items-center justify-center p-6">
           <BarChart className="w-16 h-16 text-gray-400 mb-4" />
           <h3 className="text-xl font-semibold mb-2">
-            {isRequestingAnalysis
-              ? "Solicitando análise..."
-              : "Análise não realizada"}
+            {isPending ? "Solicitando análise..." : "Análise não realizada"}
           </h3>
-          <p className="text-gray-600 text-center mb-4">
-            Solicite uma análise detalhada para obter informações cruciais sobre
-            este lote.
-          </p>
-          <Button
-            color="dark"
-            onClick={() => requestAnalysisMutation()}
-            className="flex items-center gap-2"
-            disabled={isRequestingAnalysis}
-          >
-            <BarChart className="w-5 h-5" />
-            Solicitar Análise
-          </Button>
+          {!isPending && (
+            <>
+              <p className="text-gray-600 text-center mb-4">
+                Solicite uma análise detalhada para obter informações cruciais
+                sobre este lote.
+              </p>
+              <Button
+                color="dark"
+                onClick={() => requestAnalysisMutation()}
+                className="flex items-center gap-2"
+                disabled={isPending}
+              >
+                <BarChart className="w-5 h-5" />
+                Solicitar Análise
+              </Button>
+            </>
+          )}
         </div>
       )}
-      {scrap.analysis_result && (
+      {!isPending && scrap.analysis_result && (
         <div>
           <div>
             <p className="text-sm text-gray-600">
