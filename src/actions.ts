@@ -146,7 +146,7 @@ Uma propriedade residencial com possíveis dívidas de IPTU e suspeitas de penho
       openai.beta.threads.runs
         .stream(thread.id, {
           assistant_id: process.env.OPENAI_ASSISTANT_ID!,
-          model: "gpt-4o",
+          model: "gpt-4o-mini",
         })
         .on("textCreated", () => console.log("assistant >"))
         .on("toolCallCreated", (event) =>
