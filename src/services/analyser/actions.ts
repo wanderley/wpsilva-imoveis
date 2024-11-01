@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { scrapsTable } from "@/db/schema";
+import { openaiFilesTable, scrapsTable } from "@/db/schema";
 import { getScrapDetails } from "@/models/scraps/actions";
 import { eq } from "drizzle-orm";
 import OpenAI from "openai";
@@ -20,16 +20,14 @@ export async function requestAnalysis(scrapId: number): Promise<void> {
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     });
-    // Download the edital file
-    const response = await fetch(scrap.edital_link);
-    const blob = await response.blob();
-    const buffer = Buffer.from(await blob.arrayBuffer());
-
-    // Upload the file to OpenAI
-    const file = await openai.files.create({
-      file: new File([buffer], "edital.pdf", { type: "application/pdf" }),
-      purpose: "assistants",
-    });
+    const file_ids: string[] = [];
+    file_ids.push(await getFileID(scrap.edital_link, "edital.pdf"));
+    if (scrap.matricula_link) {
+      file_ids.push(await getFileID(scrap.matricula_link, "matricula.pdf"));
+    }
+    if (scrap.laudo_link) {
+      file_ids.push(await getFileID(scrap.laudo_link, "laudo.pdf"));
+    }
 
     // Create a thread
     const thread = await openai.beta.threads.create({
@@ -79,7 +77,10 @@ Uma propriedade residencial com possíveis dívidas de IPTU e suspeitas de penho
 
 - Assegure-se de verificar todos os registros relevantes para garantir uma identificação precisa dos débitos e ônus.
 - Considerar possíveis alterações recentes e contextuais, até a data limite do treinamento (outubro de 2023).`,
-          attachments: [{ file_id: file.id, tools: [{ type: "file_search" }] }],
+          attachments: file_ids.map((file_id) => ({
+            file_id: file_id,
+            tools: [{ type: "file_search" }],
+          })),
         },
       ],
     });
@@ -117,4 +118,34 @@ Uma propriedade residencial com possíveis dívidas de IPTU e suspeitas de penho
     console.error("Error requesting analysis:", error);
     throw new Error("Failed to request analysis");
   }
+}
+
+async function getFileID(url: string, name: string): Promise<string> {
+  const existingFile = await db.query.openaiFilesTable.findFirst({
+    where: eq(openaiFilesTable.url, url),
+  });
+  if (existingFile) {
+    return existingFile.file_id;
+  }
+
+  // Download file
+  const response = await fetch(url);
+  const blob = await response.blob();
+  const buffer = Buffer.from(await blob.arrayBuffer());
+
+  // Upload the file to OpenAI
+  const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+  const file = await openai.files.create({
+    file: new File([buffer], name, { type: "application/pdf" }),
+    purpose: "assistants",
+  });
+
+  await db.insert(openaiFilesTable).values({
+    url,
+    file_id: file.id,
+  });
+
+  return file.id;
 }
