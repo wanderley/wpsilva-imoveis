@@ -1,6 +1,6 @@
-import { getInterestingLots } from "@/actions";
 import LotCard from "@/components/LotCard";
 import { ScrapWithFiles } from "@/db/schema";
+import { getInterestingLots } from "@/models/scraps/actions";
 import { useQuery } from "@tanstack/react-query";
 import { Pagination, Spinner } from "flowbite-react";
 import { useState } from "react";

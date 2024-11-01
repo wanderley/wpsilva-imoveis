@@ -2,9 +2,9 @@
 
 import { db } from "@/db";
 import { scrapFilesTable, scrapsTable } from "@/db/schema";
-import { getScraper } from "@/scraper";
-import { parseBrazilianDate } from "@/scraper/parsers";
-import { Lot, Scraper } from "@/scraper/scraper";
+import { getScraper } from "@/services/scraper";
+import { parseBrazilianDate } from "@/services/scraper/parsers";
+import { Lot, Scraper } from "@/services/scraper/scraper";
 import { and, eq, inArray } from "drizzle-orm";
 import puppeteer, { Page } from "puppeteer";
 

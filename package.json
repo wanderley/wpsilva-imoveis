@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "scrap": "tsx src/scraper/run.ts"
+    "scrap": "tsx src/services/scraper/run.ts"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.59.15",

@@ -1,6 +1,5 @@
 "use client";
 
-import { getScraps, refreshScraps, updateScrap } from "@/actions";
 import { SCRAPERS } from "@/app/scraper/constants";
 import { LotModal } from "@/components/LotModal";
 import { LotStatusBadge } from "@/components/LotStatusBadge";
@@ -9,7 +8,6 @@ import {
   useScraps,
   useUpdateScraperMutation,
 } from "@/hooks";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, Table } from "flowbite-react";
 import { useState } from "react";
 

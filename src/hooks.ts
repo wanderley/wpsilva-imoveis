@@ -1,15 +1,14 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
+import { ScrapWithFiles } from "@/db/schema";
 import {
   getPendingReviewLots,
   getScrapDetails,
   getScraps,
-  refreshScraps,
-  requestAnalysis,
   saveScrap,
-  updateScrap,
-} from "./actions";
-import { ScrapWithFiles } from "./db/schema";
+} from "@/models/scraps/actions";
+import { refreshScraps, updateScrap } from "@/services/scraper/actions";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
+import { requestAnalysis } from "./services/analyser/actions";
 
 const queryKeys = {
   scraps: (scrapID: string) => ["scraps", scrapID],

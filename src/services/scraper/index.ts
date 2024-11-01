@@ -1,5 +1,5 @@
-import { Scraper } from "@/scraper/scraper";
-import { Wspleiloes } from "@/scraper/scrapers/wspleiloes";
+import { Scraper } from "@/services/scraper/scraper";
+import { Wspleiloes } from "@/services/scraper/scrapers/wspleiloes";
 
 export const scrapers: Scraper[] = [Wspleiloes];
 
