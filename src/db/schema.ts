@@ -35,8 +35,13 @@ export const scrapsTable = mysqlTable("scraps", {
   fetch_status: mysqlEnum(["not-fetched", "fetched", "failed"]).default(
     "not-fetched",
   ),
+  potential_profit_status: mysqlEnum(["default-values", "overridden"]).default(
+    "default-values",
+  ),
   valor_arrematacao: float().default(0).notNull(),
   valor_venda: float().default(0).notNull(),
+  lucro: float(),
+  lucro_percentual: float(),
   custo_arrematacao_comissao_leiloeiro_percentual: float()
     .default(0.05)
     .notNull(),

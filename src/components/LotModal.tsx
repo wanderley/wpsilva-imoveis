@@ -7,6 +7,7 @@ import {
   useScrapDetails,
   useUpdateScrapMutation,
 } from "@/hooks";
+import { computePotentialProfit } from "@/models/scraps/helpers";
 import { UseMutateFunction } from "@tanstack/react-query";
 import {
   Button,
@@ -377,45 +378,31 @@ function PotentialProfitCard({
     scrap.valor_arrematacao,
   );
   const [valorVenda, setValorVenda] = useState<number>(scrap.valor_venda);
-
-  const total_custo_arrematacao =
-    scrap.custo_arrematacao_comissao_leiloeiro_percentual * valorArrematacao +
-    scrap.custo_arrematacao_registro +
-    scrap.custo_arrematacao_itbi_percentual * valorArrematacao +
-    scrap.custo_arrematacao_advogado;
-  const total_custo_pos_imissao =
-    scrap.custo_pos_imissao_reforma +
-    scrap.custo_pos_imissao_divida_iptu +
-    scrap.custo_pos_imissao_divida_condominio +
-    scrap.custo_pos_imissao_outros;
-  const total_custo_pos_arrematacao =
-    scrap.custo_pos_arrematacao_prazo_de_venda_em_meses *
-    (scrap.custo_pos_arrematacao_valor_iptu_mensal +
-      scrap.custo_pos_arrematacao_valor_condominio_mensal);
-  const total_custo_sem_imposto_venda =
-    total_custo_arrematacao +
-    total_custo_pos_imissao +
-    total_custo_pos_arrematacao;
-  const total_custo_pos_venda =
-    scrap.custo_pos_venda_comissao_corretora_percentual * valorVenda +
-    scrap.custo_pos_venda_imposto_ganho_capita_percentual *
-      total_custo_sem_imposto_venda;
-  const total_custo_sem_arrematacao =
-    total_custo_arrematacao +
-    total_custo_pos_imissao +
-    total_custo_pos_arrematacao +
-    total_custo_pos_venda;
-  const total_custo = total_custo_sem_arrematacao + valorArrematacao;
-  const lucro = valorVenda - total_custo;
-  const lucro_percentual = (lucro / valorVenda) * 100;
-  const total_custo_arrematacao_percentual =
-    (total_custo_arrematacao / total_custo_sem_arrematacao) * 100;
-  const total_custo_pos_imissao_percentual =
-    (total_custo_pos_imissao / total_custo_sem_arrematacao) * 100;
-  const total_custo_pos_arrematacao_percentual =
-    (total_custo_pos_arrematacao / total_custo_sem_arrematacao) * 100;
-  const total_custo_pos_venda_percentual =
-    (total_custo_pos_venda / total_custo_sem_arrematacao) * 100;
+  const {
+    total_custo_arrematacao_percentual,
+    total_custo_pos_imissao_percentual,
+    total_custo_pos_arrematacao_percentual,
+    total_custo_pos_venda_percentual,
+    lucro_percentual,
+    total_custo_arrematacao,
+    total_custo_pos_imissao,
+    total_custo_pos_arrematacao,
+    total_custo_pos_venda,
+    lucro,
+    total_custo_sem_imposto_venda,
+  } = computePotentialProfit({
+    ...scrap,
+    valor_arrematacao: valorArrematacao,
+    valor_venda: valorVenda,
+  });
+  const mutateWithPotentialProfit = (scrap: ScrapWithFiles) => {
+    mutate({
+      ...scrap,
+      lucro: lucro,
+      lucro_percentual: lucro_percentual,
+      potential_profit_status: "overridden",
+    });
+  };
   return (
     <Card>
       <h2 className="text-2xl font-bold mb-4">Potencial de Lucro</h2>
@@ -538,7 +525,7 @@ function PotentialProfitCard({
                     addon={"R$"}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === "Tab") {
-                        mutate({
+                        mutateWithPotentialProfit({
                           ...scrap,
                           valor_arrematacao: Number(valorArrematacao),
                         });
@@ -550,7 +537,7 @@ function PotentialProfitCard({
                   <Check
                     className="w-4 h-4 text-green-500 cursor-pointer ml-2"
                     onClick={() => {
-                      mutate({
+                      mutateWithPotentialProfit({
                         ...scrap,
                         valor_arrematacao: Number(valorArrematacao),
                       });
@@ -597,7 +584,10 @@ function PotentialProfitCard({
                     }}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === "Tab") {
-                        mutate({ ...scrap, valor_venda: valorVenda });
+                        mutateWithPotentialProfit({
+                          ...scrap,
+                          valor_venda: valorVenda,
+                        });
                         setEditingField(null);
                       }
                     }}
@@ -607,7 +597,10 @@ function PotentialProfitCard({
                   <Check
                     className="w-4 h-4 text-green-500 cursor-pointer ml-2"
                     onClick={() => {
-                      mutate({ ...scrap, valor_venda: valorVenda });
+                      mutateWithPotentialProfit({
+                        ...scrap,
+                        valor_venda: valorVenda,
+                      });
                       setEditingField(null);
                     }}
                   />
@@ -678,7 +671,7 @@ function PotentialProfitCard({
                       100
                     }
                     onChange={(e) =>
-                      mutate({
+                      mutateWithPotentialProfit({
                         ...scrap,
                         custo_arrematacao_comissao_leiloeiro_percentual:
                           Number(e.currentTarget.value) / 100,
@@ -707,7 +700,7 @@ function PotentialProfitCard({
                     className="w-1/2"
                     value={scrap.custo_arrematacao_itbi_percentual * 100}
                     onChange={(e) =>
-                      mutate({
+                      mutateWithPotentialProfit({
                         ...scrap,
                         custo_arrematacao_itbi_percentual:
                           Number(e.currentTarget.value) / 100,
@@ -735,7 +728,7 @@ function PotentialProfitCard({
                     className="w-full"
                     value={scrap.custo_arrematacao_registro}
                     onChange={(e) =>
-                      mutate({
+                      mutateWithPotentialProfit({
                         ...scrap,
                         custo_arrematacao_registro: Number(
                           e.currentTarget.value,
@@ -758,7 +751,7 @@ function PotentialProfitCard({
                     className="w-full"
                     value={scrap.custo_arrematacao_advogado}
                     onChange={(e) =>
-                      mutate({
+                      mutateWithPotentialProfit({
                         ...scrap,
                         custo_arrematacao_advogado: Number(
                           e.currentTarget.value,
@@ -790,7 +783,7 @@ function PotentialProfitCard({
                     className="w-full"
                     value={scrap.custo_pos_imissao_reforma}
                     onChange={(e) =>
-                      mutate({
+                      mutateWithPotentialProfit({
                         ...scrap,
                         custo_pos_imissao_reforma: Number(
                           e.currentTarget.value,
@@ -813,7 +806,7 @@ function PotentialProfitCard({
                     className="w-full"
                     value={scrap.custo_pos_imissao_outros}
                     onChange={(e) =>
-                      mutate({
+                      mutateWithPotentialProfit({
                         ...scrap,
                         custo_pos_imissao_outros: Number(e.currentTarget.value),
                       })
@@ -834,7 +827,7 @@ function PotentialProfitCard({
                     className="w-full"
                     value={scrap.custo_pos_imissao_divida_iptu}
                     onChange={(e) =>
-                      mutate({
+                      mutateWithPotentialProfit({
                         ...scrap,
                         custo_pos_imissao_divida_iptu: Number(
                           e.currentTarget.value,
@@ -857,7 +850,7 @@ function PotentialProfitCard({
                     className="w-full"
                     value={scrap.custo_pos_imissao_divida_condominio}
                     onChange={(e) =>
-                      mutate({
+                      mutateWithPotentialProfit({
                         ...scrap,
                         custo_pos_imissao_divida_condominio: Number(
                           e.currentTarget.value,
@@ -889,7 +882,7 @@ function PotentialProfitCard({
                   type="number"
                   value={scrap.custo_pos_arrematacao_prazo_de_venda_em_meses}
                   onChange={(e) =>
-                    mutate({
+                    mutateWithPotentialProfit({
                       ...scrap,
                       custo_pos_arrematacao_prazo_de_venda_em_meses: Number(
                         e.currentTarget.value,
@@ -908,7 +901,7 @@ function PotentialProfitCard({
                   type="number"
                   value={scrap.custo_pos_arrematacao_valor_iptu_mensal}
                   onChange={(e) =>
-                    mutate({
+                    mutateWithPotentialProfit({
                       ...scrap,
                       custo_pos_arrematacao_valor_iptu_mensal: Number(
                         e.currentTarget.value,
@@ -927,7 +920,7 @@ function PotentialProfitCard({
                   type="number"
                   value={scrap.custo_pos_arrematacao_valor_condominio_mensal}
                   onChange={(e) =>
-                    mutate({
+                    mutateWithPotentialProfit({
                       ...scrap,
                       custo_pos_arrematacao_valor_condominio_mensal: Number(
                         e.currentTarget.value,
@@ -960,7 +953,7 @@ function PotentialProfitCard({
                       scrap.custo_pos_venda_comissao_corretora_percentual * 100
                     }
                     onChange={(e) =>
-                      mutate({
+                      mutateWithPotentialProfit({
                         ...scrap,
                         custo_pos_venda_comissao_corretora_percentual:
                           Number(e.currentTarget.value) / 100,
@@ -992,7 +985,7 @@ function PotentialProfitCard({
                       100
                     }
                     onChange={(e) =>
-                      mutate({
+                      mutateWithPotentialProfit({
                         ...scrap,
                         custo_pos_venda_imposto_ganho_capita_percentual:
                           Number(e.currentTarget.value) / 100,

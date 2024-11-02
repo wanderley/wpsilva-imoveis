@@ -8,7 +8,7 @@ import {
 import { refreshScraps, updateScrap } from "@/services/scraper/actions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { requestAnalysis } from "./services/analyser/actions";
+import { updateAnalysis } from "./services/analyser/actions";
 
 const queryKeys = {
   scraps: (scrapID: string) => ["scraps", scrapID],
@@ -110,7 +110,7 @@ export function useRequestAnalysisMutation(
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async () => await requestAnalysis(scrapID),
+    mutationFn: async () => await updateAnalysis(scrapID),
     onMutate: () => {
       callbacks?.onMutate?.();
     },

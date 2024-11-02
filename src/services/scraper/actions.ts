@@ -2,11 +2,15 @@
 
 import { db } from "@/db";
 import { scrapFilesTable, scrapsTable } from "@/db/schema";
+import { getScrapDetails } from "@/models/scraps/actions";
+import { computePotentialProfit } from "@/models/scraps/helpers";
 import { getScraper } from "@/services/scraper";
 import { parseBrazilianDate } from "@/services/scraper/parsers";
 import { Lot, Scraper } from "@/services/scraper/scraper";
 import { and, eq, inArray } from "drizzle-orm";
 import puppeteer, { Page } from "puppeteer";
+
+import { updateAnalysis } from "../analyser/actions";
 
 export async function refreshScraps(scraperID: string): Promise<void> {
   const scraper = getScraper(scraperID);
@@ -156,22 +160,18 @@ export async function updateScrap(
         .execute();
 
       // Get the scrap ID
-      const scrapResult = await db
-        .select({ id: scrapsTable.id })
-        .from(scrapsTable)
-        .where(
-          and(eq(scrapsTable.scraper_id, scraperID), eq(scrapsTable.url, url)),
-        )
-        .limit(1)
-        .execute();
+      const scrap = await db.query.scrapsTable.findFirst({
+        where: and(
+          eq(scrapsTable.scraper_id, scraperID),
+          eq(scrapsTable.url, url),
+        ),
+      });
 
-      if (scrapResult.length > 0) {
-        const scrapId = scrapResult[0].id;
-
+      if (scrap) {
         // Remove all existing files for this scrap
         await db
           .delete(scrapFilesTable)
-          .where(eq(scrapFilesTable.scrap_id, scrapId))
+          .where(eq(scrapFilesTable.scrap_id, scrap.id))
           .execute();
 
         // Insert new images
@@ -179,12 +179,16 @@ export async function updateScrap(
           await db
             .insert(scrapFilesTable)
             .values({
-              scrap_id: scrapId,
+              scrap_id: scrap.id,
               file_type: "jpg",
               url: imageUrl,
             })
             .execute();
         }
+        if (!scrap.analysis_result_json) {
+          await updateAnalysis(scrap.id);
+        }
+        await updatePotentialProfit(scrap.id);
       }
     }
   } catch (error) {
@@ -202,4 +206,25 @@ export async function updateScrap(
   } finally {
     await browser.close();
   }
+}
+
+async function updatePotentialProfit(scrapId: number): Promise<void> {
+  const scrap = await getScrapDetails(scrapId);
+  if (!scrap) {
+    return;
+  }
+  const { lucro, lucro_percentual } = computePotentialProfit({
+    ...scrap,
+    valor_arrematacao: scrap.valor_arrematacao,
+    valor_venda: scrap.valor_venda,
+  });
+
+  await db
+    .update(scrapsTable)
+    .set({
+      lucro,
+      lucro_percentual,
+    })
+    .where(eq(scrapsTable.id, scrapId))
+    .execute();
 }

@@ -8,7 +8,7 @@ import { eq } from "drizzle-orm";
 import OpenAI from "openai";
 import { zodResponseFormat } from "openai/helpers/zod.mjs";
 
-export async function requestAnalysis(scrapId: number): Promise<void> {
+export async function updateAnalysis(scrapId: number): Promise<void> {
   const scrap = await getScrapDetails(scrapId);
   if (!scrap) {
     throw new Error("Scrap not found");
@@ -248,6 +248,8 @@ export async function requestAnalysis(scrapId: number): Promise<void> {
         analysis_result_text: text as string,
       })
       .where(eq(scrapsTable.id, scrapId));
+
+    await updateCosts(scrapId, json);
   } catch (error) {
     console.error("Error requesting analysis:", error);
     throw new Error("Failed to request analysis");
@@ -282,4 +284,46 @@ async function getFileID(url: string, name: string): Promise<string> {
   });
 
   return file.id;
+}
+
+async function updateCosts(
+  scrapId: number,
+  json: AnalysisResult,
+): Promise<void> {
+  const scrap = await getScrapDetails(scrapId);
+  if (!scrap || scrap.potential_profit_status === "overridden") {
+    return;
+  }
+  const values = {
+    custo_pos_imissao_divida_condominio:
+      scrap.custo_pos_imissao_divida_condominio,
+    custo_pos_arrematacao_valor_condominio_mensal:
+      scrap.custo_pos_arrematacao_valor_condominio_mensal,
+    custo_pos_imissao_divida_iptu: scrap.custo_pos_imissao_divida_iptu,
+    custo_pos_imissao_reforma: scrap.custo_pos_imissao_reforma,
+  };
+
+  if (json.analysis_result.tipo_imovel === "Apartamento") {
+    values.custo_pos_arrematacao_valor_condominio_mensal =
+      json.analysis_result.area_construida_m2 * 10;
+  }
+  switch (json.analysis_result.tipo_reforma) {
+    case "Não precisa de reforma":
+      values.custo_pos_imissao_reforma =
+        10 * json.analysis_result.area_construida_m2;
+      break;
+    case "Reforma simples":
+      values.custo_pos_imissao_reforma =
+        50 * json.analysis_result.area_construida_m2;
+      break;
+    case "Reforma pesada":
+      values.custo_pos_imissao_reforma =
+        100 * json.analysis_result.area_construida_m2;
+      break;
+  }
+
+  await db
+    .update(scrapsTable)
+    .set({ ...values })
+    .where(eq(scrapsTable.id, scrapId));
 }
