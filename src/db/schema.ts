@@ -3,6 +3,7 @@ import {
   datetime,
   float,
   int,
+  json,
   mysqlEnum,
   mysqlTable,
   text,
@@ -10,6 +11,8 @@ import {
   uniqueIndex,
   varchar,
 } from "drizzle-orm/mysql-core";
+
+import { AnalysisResult } from "./json";
 
 export const scrapsTable = mysqlTable("scraps", {
   id: int().primaryKey().autoincrement(),
@@ -52,8 +55,8 @@ export const scrapsTable = mysqlTable("scraps", {
     .default(0.15)
     .notNull(),
   analysis_status: text("analysis_status").default("none"),
-  analysis_thread_id: text("analysis_thread_id"),
-  analysis_result: text("analysis_result"),
+  analysis_result_text: text(),
+  analysis_result_json: json("analysis_result_json").$type<AnalysisResult>(),
   is_interesting: int(),
   created_at: timestamp("created_at")
     .notNull()

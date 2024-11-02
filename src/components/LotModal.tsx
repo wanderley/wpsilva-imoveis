@@ -16,6 +16,7 @@ import {
   Modal,
   Progress,
   TextInput,
+  Tooltip,
 } from "flowbite-react";
 import { useEffect, useState } from "react";
 import {
@@ -44,7 +45,7 @@ function AnalysisCard({ scrap }: { scrap: ScrapWithFiles }) {
     <Card>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">Análise do Lote</h2>
-        {scrap.analysis_result && (
+        {scrap.analysis_result_json && (
           <Button
             color="gray"
             size="sm"
@@ -55,7 +56,7 @@ function AnalysisCard({ scrap }: { scrap: ScrapWithFiles }) {
           </Button>
         )}
       </div>
-      {(isPending || !scrap.analysis_result) && (
+      {(isPending || !scrap.analysis_result_json) && (
         <div className="flex flex-col items-center justify-center p-6">
           <BarChart className="w-16 h-16 text-gray-400 mb-4" />
           <h3 className="text-xl font-semibold mb-2">
@@ -80,19 +81,113 @@ function AnalysisCard({ scrap }: { scrap: ScrapWithFiles }) {
           )}
         </div>
       )}
-      {!isPending && scrap.analysis_result && (
-        <div>
-          <div>
-            <p className="text-sm text-gray-600">
-              {scrap.analysis_result.split("\n").map((line, index) => (
-                <span key={index}>
-                  {line}
-                  <br />
-                </span>
-              ))}
-            </p>
+      {!isPending && scrap.analysis_result_json && (
+        <>
+          <div className="flex flex-col lg:flex-row gap-6">
+            <div className="mb-8">
+              <h3 className="text-xl font-bold mb-4">Dados do Imóvel</h3>
+              <p className="text-sm text-gray-600">
+                <strong>Tipo de Imóvel:</strong>{" "}
+                {scrap.analysis_result_json.analysis_result.tipo_imovel}
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>Tamanho do Imóvel:</strong>{" "}
+                {scrap.analysis_result_json.analysis_result.tamanho_imovel_m2}{" "}
+                m²
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>Área construída:</strong>{" "}
+                {scrap.analysis_result_json.analysis_result.area_construida_m2}{" "}
+                m²
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>Endereço:</strong>{" "}
+                {scrap.analysis_result_json.analysis_result.endereco.rua},{" "}
+                {scrap.analysis_result_json.analysis_result.endereco.numero},{" "}
+                {scrap.analysis_result_json.analysis_result.endereco.bairro},{" "}
+                {scrap.analysis_result_json.analysis_result.endereco.cidade},{" "}
+                {scrap.analysis_result_json.analysis_result.endereco.estado},{" "}
+                {scrap.analysis_result_json.analysis_result.endereco.cep}
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>Vaga de Garagem:</strong>{" "}
+                {scrap.analysis_result_json.analysis_result.vaga_garagem}
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>Modalidade de Propriedade:</strong>{" "}
+                {
+                  scrap.analysis_result_json.analysis_result
+                    .modalidade_propriedade
+                }
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>Condição Geral:</strong>{" "}
+                {scrap.analysis_result_json.analysis_result.condicao_geral}
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>Tipo de Reforma:</strong>{" "}
+                {scrap.analysis_result_json.analysis_result.tipo_reforma}
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>Imóvel Ocupado:</strong>{" "}
+                {scrap.analysis_result_json.analysis_result.imovel_ocupado}
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-xl font-bold mb-4">
+                Informações do Processo
+              </h3>
+              <p className="text-sm text-gray-600">
+                <strong>Divida de IPTU:</strong> R${" "}
+                {scrap.analysis_result_json.analysis_result.divida_iptu.toLocaleString()}
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>Divida de Condomínio:</strong> R${" "}
+                {scrap.analysis_result_json.analysis_result.divida_condominio.toLocaleString()}
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>Ocupação Usucapião:</strong>{" "}
+                {scrap.analysis_result_json.analysis_result.ocupacao_usucapiao}
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>Penhoras:</strong>{" "}
+                <ul>
+                  {scrap.analysis_result_json.analysis_result.penhoras.map(
+                    (penhora) => (
+                      <li
+                        key={penhora.descricao_penhora}
+                        className="list-disc list-inside"
+                      >
+                        <div className="inline-block">
+                          <Tooltip
+                            id={penhora.descricao_penhora}
+                            content={
+                              <div>
+                                <em>{penhora.trecho_documento}</em> -{" "}
+                                {penhora.documento_mencionado}
+                              </div>
+                            }
+                            className="inline-block ml-2 cursor-help"
+                          >
+                            {penhora.descricao_penhora}
+                          </Tooltip>
+                        </div>
+                      </li>
+                    ),
+                  )}
+                </ul>
+              </p>
+            </div>
           </div>
-        </div>
+          <p className="text-sm text-gray-600">
+            <strong>Texto da Análise:</strong>
+            <br />
+            <pre className="whitespace-pre-wrap">
+              {scrap.analysis_result_text}
+            </pre>
+          </p>
+        </>
       )}
     </Card>
   );
