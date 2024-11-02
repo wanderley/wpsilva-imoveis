@@ -40,7 +40,7 @@ export async function updateAnalysis(scrapId: number): Promise<void> {
 
 ### Perguntas
 
-- Qual é o tipo de imóvel? (Classifique como "apartamento", "casa", "terreno", "vaga de garagem", "direitos sobre o apartamento", etc.)
+- Qual é o tipo de imóvel? (Classifique como "apartamento", "casa", "terreno", "vaga de garagem", "direitos fiduciários - apartamento", "imóvel comercial", "outro", etc.)
 - Qual é a área total do imóvel em metros quadrados?
 - Qual é a área construída do imóvel em metros quadrados?
 - Qual é o endereço completo do imóvel? (Inclua rua, número, bairro, cidade, estado e CEP)
@@ -76,7 +76,7 @@ export async function updateAnalysis(scrapId: number): Promise<void> {
   "properties": {
     "tipo_imovel": {
       "type": "string",
-      "enum": ["Apartamento", "Casa", "Terreno", "Vaga de garagem", "Direitos sobre o apartamento", "Imóvel comercial", "Outro"],
+      "enum": ["Apartamento", "Casa", "Terreno", "Vaga de garagem", "Imóvel comercial", "Direitos fiduciários - Apartamento", "Outro"],
       "description": "Tipo do imóvel, como apartamento, casa, terreno, vaga de garagem, etc."
     },
     "tamanho_imovel_m2": {

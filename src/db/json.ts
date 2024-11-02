@@ -8,7 +8,7 @@ export const AnalysisResult = z.object({
         "Casa",
         "Terreno",
         "Vaga de garagem",
-        "Direitos sobre o apartamento",
+        "Direitos fiduciários - Apartamento",
         "Imóvel comercial",
         "Outro",
       ])
