@@ -637,13 +637,17 @@ function PotentialProfitCard({
               <p className="text-2xl font-bold">
                 {lucro_percentual.toFixed(2)}%
               </p>
-              <p className="text-2xl font-semibold text-green-600">
+              <p
+                className={`text-2xl font-semibold ${
+                  lucro_percentual > 0 ? "text-green-600" : "text-red-600"
+                }`}
+              >
                 R$ {lucro.toLocaleString()}
               </p>
             </div>
             <Progress
               progress={lucro_percentual}
-              color="green"
+              color={lucro_percentual > 0 ? "green" : "red"}
               size="sm"
               className="mt-2"
             />
