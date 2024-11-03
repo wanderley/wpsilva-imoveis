@@ -6,6 +6,7 @@ import {
   useRequestAnalysisMutation,
   useScrapDetails,
   useUpdateScrapMutation,
+  useUpdateScraperMutation,
 } from "@/hooks";
 import { computePotentialProfit } from "@/models/scraps/helpers";
 import { UseMutateFunction } from "@tanstack/react-query";
@@ -28,6 +29,7 @@ import {
   ExternalLink,
   FileText,
   RotateCcw,
+  RotateCw,
   ThumbsDown,
   ThumbsUp,
   X,
@@ -226,6 +228,9 @@ function DescriptionCard({
     if (!date) return false;
     return date < new Date();
   };
+  const { isPending, mutate: refreshScrapsMutation } = useUpdateScraperMutation(
+    scrap.scraper_id,
+  );
 
   return (
     <Card>
@@ -288,7 +293,22 @@ function DescriptionCard({
             </div>
             <div>
               <dt className="font-semibold">Última Atualização:</dt>
-              <dd>{new Date(scrap.updated_at).toLocaleString()}</dd>
+              <dd className="flex items-center gap-2">
+                {new Date(scrap.updated_at).toLocaleString()}{" "}
+                <RotateCw
+                  className={`w-4 h-4 cursor-pointer ${
+                    isPending ? "animate-spin" : ""
+                  }`}
+                  onClick={() =>
+                    !isPending &&
+                    refreshScrapsMutation({
+                      scrapID: scrap.scraper_id,
+                      url: scrap.url,
+                      id: scrap.id,
+                    })
+                  }
+                />
+              </dd>
             </div>
           </dl>
           <div className="mt-6">
