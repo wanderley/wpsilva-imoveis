@@ -85,6 +85,17 @@ export const AnalysisResult = z.object({
     imovel_ocupado: z
       .enum(["Sim", "Não"])
       .describe("Indica se o imóvel está ocupado no momento"),
+    usufrutuarios: z
+      .enum(["Sim", "Não"])
+      .describe("Indica se existem usufrutuários registrados para o imóvel"),
+    risco_arrematacao: z.object({
+      risco: z
+        .enum(["Baixo", "Médio", "Alto"])
+        .describe("Risco de arrematação do imóvel"),
+      justificativa: z
+        .string()
+        .describe("Justificativa para o risco de arrematação do imóvel"),
+    }),
   }),
 });
 

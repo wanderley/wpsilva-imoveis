@@ -46,18 +46,20 @@ export async function updateAnalysis(scrapId: number): Promise<void> {
 - Qual é o endereço completo do imóvel? (Inclua rua, número, bairro, cidade, estado e CEP)
 - O imóvel possui vaga de garagem? (Para apartamentos, verifique se o edital menciona explicitamente. Para casas, considere "sim" por padrão)
 - Qual é a modalidade da propriedade do imóvel? (Classifique como "Propriedade plena", "Nua-propriedade", etc.)
-- Quais dívidas serão pagas com o produto da venda judicial?
 - Qual é o trecho do documento que menciona a dívida de IPTU e seu pagamento?
-- Como a dívida de IPTU será paga? (Classifique como "arrematante", "proprietário" ou "produto da venda judicial")
+- Quais dívidas serão pagas com o produto da venda judicial?
+- Por quem será paga a dívida de IPTU? (Classifique como "arrematante", "proprietário" ou "produto da venda judicial") Leve em consideração a resposta da pergunta anterior.
 - Qual valor da dívida de IPTU que será paga pelo arrematante?  (Responda com 0 se a dívida não for paga pelo arrematante)
 - Qual é o trecho do documento que menciona a dívida de condomínio e seu pagamento?
-- Como a dívida de condomínio será paga? (Classifique como "arrematante", "proprietário" ou "produto da venda judicial")
+- Por quem será paga a dívida de condomínio? (Classifique como "arrematante", "proprietário" ou "produto da venda judicial")
 - Qual valor da dívida de condomínio que será paga pelo arrematante?  (Responda com 0 se a dívida não for paga pelo arrematante)
 - Existem penhoras registradas para este imóvel? (Liste as penhoras e, para cada uma, indique o impacto na aquisição do imóvel) Inclua somente se tiver absoluta certeza das penhoras que podem atrapalhar a arrematação.
 - O edital ou a matrícula indicam se o ocupante do imóvel é um invasor reivindicando usucapião?
 - Qual é a condição geral do imóvel? (Classifique como "ruim", "boa" ou "ótima" com base na descrição do laudo)
 - Que tipo de reforma é necessária no imóvel? (Classifique como "não precisa de reforma", "reforma simples" ou "reforma pesada" com base na descrição do laudo.  Se o laudo não for explícito sobre a reforma, basei-se pela condição geral do imóvel)
 - O imóvel está ocupado no momento?
+- Existe usufrutuários registrados para o imóvel? (Classifique como "sim" ou "não")
+- Com base em todas as respostas anteriores, qual é o risco de arrematação? (Classifique como "baixo", "médio" ou "alto")
 
 ### Instruções Adicionais
 
@@ -181,6 +183,26 @@ export async function updateAnalysis(scrapId: number): Promise<void> {
       "type": "string",
       "enum": ["Sim", "Não"],
       "description": "Indica se o imóvel está ocupado no momento"
+    },
+    "usufrutuarios": {
+      "type": "string",
+      "enum": ["Sim", "Não"],
+      "description": "Indica se existem usufrutuários registrados para o imóvel"
+    },
+    "risco_arrematacao": {
+      "type": "object",
+      "properties": {
+        "risco": {
+          "type": "string",
+          "enum": ["Baixo", "Médio", "Alto"],
+          "description": "Risco de arrematação do imóvel"
+        },
+        "justificativa": {
+          "type": "string",
+          "description": "Justificativa para o risco de arrematação do imóvel"
+        }
+      },
+      "required": ["risco", "justificativa"]
     }
   },
   "required": [
@@ -197,7 +219,9 @@ export async function updateAnalysis(scrapId: number): Promise<void> {
     "ocupacao_usucapiao",
     "condicao_geral",
     "tipo_reforma",
-    "imovel_ocupado"
+    "imovel_ocupado",
+    "usufrutuarios",
+    "risco_arrematacao"
   ]
 }
 </json-schema>`,

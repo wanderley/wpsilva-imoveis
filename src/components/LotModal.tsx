@@ -85,7 +85,7 @@ function AnalysisCard({ scrap }: { scrap: ScrapWithFiles }) {
       {!isPending && scrap.analysis_result_json && (
         <>
           <div className="flex flex-col lg:flex-row gap-6">
-            <div className="mb-8">
+            <div className="w-1/2 mb-8">
               <h3 className="text-xl font-bold mb-4">Dados do Imóvel</h3>
               <p className="text-sm text-gray-600">
                 <strong>Tipo de Imóvel:</strong>{" "}
@@ -135,7 +135,7 @@ function AnalysisCard({ scrap }: { scrap: ScrapWithFiles }) {
               </p>
             </div>
 
-            <div>
+            <div className="w-1/2 mb-8">
               <h3 className="text-xl font-bold mb-4">
                 Informações do Processo
               </h3>
@@ -150,6 +150,10 @@ function AnalysisCard({ scrap }: { scrap: ScrapWithFiles }) {
               <p className="text-sm text-gray-600">
                 <strong>Ocupação Usucapião:</strong>{" "}
                 {scrap.analysis_result_json.analysis_result.ocupacao_usucapiao}
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>Usufrutuários:</strong>{" "}
+                {scrap.analysis_result_json.analysis_result.usufrutuarios}
               </p>
               <p className="text-sm text-gray-600">
                 <strong>Penhoras:</strong>{" "}
@@ -179,6 +183,23 @@ function AnalysisCard({ scrap }: { scrap: ScrapWithFiles }) {
                   )}
                 </ul>
               </p>
+              {scrap.analysis_result_json.analysis_result.risco_arrematacao && (
+                <p className="text-sm text-gray-600">
+                  <strong>Risco de Arrematação:</strong>{" "}
+                  {
+                    scrap.analysis_result_json.analysis_result.risco_arrematacao
+                      .risco
+                  }{" "}
+                  <em>
+                    (
+                    {
+                      scrap.analysis_result_json.analysis_result
+                        .risco_arrematacao.justificativa
+                    }
+                    )
+                  </em>
+                </p>
+              )}
             </div>
           </div>
           <p className="text-sm text-gray-600">
