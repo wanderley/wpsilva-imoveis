@@ -77,7 +77,7 @@ export const AnalysisResult = z.object({
       .enum(["Sim", "Não", "Não especificado"])
       .describe("Indica se o ocupante é um invasor reivindicando usucapião"),
     condicao_geral: z
-      .enum(["Ruim", "Boa", "Ótima"])
+      .enum(["Não sei", "Ruim", "Boa", "Ótima"])
       .describe("Condição geral do imóvel"),
     tipo_reforma: z
       .enum(["Não precisa de reforma", "Reforma simples", "Reforma pesada"])

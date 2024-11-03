@@ -55,11 +55,17 @@ export async function updateAnalysis(scrapId: number): Promise<void> {
 - Qual valor da dívida de condomínio que será paga pelo arrematante?  (Responda com 0 se a dívida não for paga pelo arrematante)
 - Existem penhoras registradas para este imóvel? (Liste as penhoras e, para cada uma, indique o impacto na aquisição do imóvel) Inclua somente se tiver absoluta certeza das penhoras que podem atrapalhar a arrematação.
 - O edital ou a matrícula indicam se o ocupante do imóvel é um invasor reivindicando usucapião?
-- Qual é a condição geral do imóvel? (Classifique como "ruim", "boa" ou "ótima" com base na descrição do laudo)
+- Qual é a condição geral do imóvel? (Classifique como "ruim", "boa", "ótima" ou "não sei" se não houver informação suficiente para determinar)
 - Que tipo de reforma é necessária no imóvel? (Classifique como "não precisa de reforma", "reforma simples" ou "reforma pesada" com base na descrição do laudo.  Se o laudo não for explícito sobre a reforma, basei-se pela condição geral do imóvel)
-- O imóvel está ocupado no momento?
+- O imóvel está ocupado no momento? (Classifique como "sim", "não" ou "não sei" se não houver informação suficiente para determinar)
 - Existe usufrutuários registrados para o imóvel? (Classifique como "sim" ou "não")
 - Com base em todas as respostas anteriores, qual é o risco de arrematação? (Classifique como "baixo", "médio" ou "alto")
+
+### Condições e consequências
+- Se o edital informa que o imóvel está vinculado à Nua-Propriedade, então essa arrematação não é recomendada, pois é necessário aguardar o falecimento do ocupante para obter a posse do imóvel.
+- Se o edital menciona que o leilão se refere aos direitos fiduciários sobre o imóvel, então a arrematação só é vantajosa se o valor cobrir todas as dívidas associadas ao imóvel. Geralmente, esse tipo de arrematação não é interessante.
+- Se o laudo não especifica a condição do imóvel, então não é possível avaliar a condição do imóvel; portanto, presume-se a necessidade de uma reforma completa.
+- Se o imóvel está sob processo de usucapião, então essa arrematação não é recomendada devido ao alto custo do processo de obtenção da posse.
 
 ### Instruções Adicionais
 
@@ -171,7 +177,7 @@ export async function updateAnalysis(scrapId: number): Promise<void> {
     },
     "condicao_geral": {
       "type": "string",
-      "enum": ["Ruim", "Boa", "Ótima"],
+      "enum": ["Não sei", "Ruim", "Boa", "Ótima"],
       "description": "Condição geral do imóvel"
     },
     "tipo_reforma": {
