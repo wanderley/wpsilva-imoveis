@@ -5,7 +5,6 @@ import { scrapFilesTable, scrapsTable } from "@/db/schema";
 import { getScrapDetails } from "@/models/scraps/actions";
 import { computePotentialProfit } from "@/models/scraps/helpers";
 import { getScraper } from "@/services/scraper";
-import { parseBrazilianDate } from "@/services/scraper/parsers";
 import { Lot, Scraper } from "@/services/scraper/scraper";
 import { and, eq, inArray } from "drizzle-orm";
 import puppeteer, { Page } from "puppeteer";
@@ -108,6 +107,7 @@ export async function updateScrap(
 
   try {
     await page.goto(url);
+    await page.waitForNetworkIdle();
     let scrapData;
     try {
       scrapData = await scrapLink(scraper, page);
@@ -142,9 +142,9 @@ export async function updateScrap(
           case_link: scrapData.caseLink,
           bid: scrapData.bid,
           appraisal: scrapData.appraisal,
-          first_auction_date: parseBrazilianDate(scrapData.firstAuctionDate),
+          first_auction_date: scrapData.firstAuctionDate,
           first_auction_bid: scrapData.firstAuctionBid,
-          second_auction_date: parseBrazilianDate(scrapData.secondAuctionDate),
+          second_auction_date: scrapData.secondAuctionDate,
           second_auction_bid: scrapData.secondAuctionBid,
           laudo_link: scrapData.laudo_link,
           matricula_link: scrapData.matricula_link,

@@ -9,10 +9,13 @@ import { refreshScraps, updateScrap } from "./actions";
 config({ path: ".env" });
 config({ path: ".env.local" });
 
-async function updateAllScraps() {
+async function updateAllScraps(scraperID?: string) {
   console.log("Starting to update all scraps...");
 
   for (const scraper of scrapers) {
+    if (scraperID && scraper.url !== scraperID) {
+      continue;
+    }
     try {
       console.log(`Refreshing scraps for scraper: ${scraper.url}`);
       await refreshScraps(scraper.url);
@@ -52,7 +55,7 @@ async function updateAllScraps() {
   console.log("Finished updating all scraps.");
 }
 
-updateAllScraps()
+updateAllScraps(process.argv[2])
   .catch((error) => {
     console.error("Error running updateAllScraps:", error);
     process.exit(1);

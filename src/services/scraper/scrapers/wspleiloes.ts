@@ -1,4 +1,4 @@
-import { realToNumber } from "@/services/scraper/parsers";
+import { parseBrazilianDate, realToNumber } from "@/services/scraper/parsers";
 import { Scraper } from "@/services/scraper/scraper";
 
 export const Wspleiloes: Scraper = {
@@ -70,7 +70,6 @@ export const Wspleiloes: Scraper = {
         .trim()
         .replace(/( Cidade: | - CEP: )/g, " - "),
     )) || "",
-
   description: async (page) =>
     await page.evaluate(() =>
       Array.from(document.querySelectorAll("b"))
@@ -117,10 +116,13 @@ export const Wspleiloes: Scraper = {
       ),
     ),
   firstAuctionDate: async (page) =>
-    await page.evaluate(() =>
-      Array.from(document.querySelectorAll("h6"))
-        .find((elem) => elem.textContent?.includes("Data 1º Leilão:"))
-        ?.textContent?.replace("Data 1º Leilão: ", ""),
+    parseBrazilianDate(
+      await page.evaluate(() =>
+        Array.from(document.querySelectorAll("h6"))
+          .find((elem) => elem.textContent?.includes("Data 1º Leilão:"))
+          ?.textContent?.replace("Data 1º Leilão: ", ""),
+      ),
+      "dd/MM/yyyy HH:mm",
     ),
   firstAuctionBid: async (page) =>
     realToNumber(
@@ -132,10 +134,13 @@ export const Wspleiloes: Scraper = {
       ),
     ),
   secondAuctionDate: async (page) =>
-    await page.evaluate(() =>
-      Array.from(document.querySelectorAll("h6"))
-        .find((elem) => elem.textContent?.includes("Data 2º Leilão:"))
-        ?.textContent?.replace("Data 2º Leilão: ", ""),
+    parseBrazilianDate(
+      await page.evaluate(() =>
+        Array.from(document.querySelectorAll("h6"))
+          .find((elem) => elem.textContent?.includes("Data 2º Leilão:"))
+          ?.textContent?.replace("Data 2º Leilão: ", ""),
+      ),
+      "dd/MM/yyyy HH:mm",
     ),
   secondAuctionBid: async (page) =>
     realToNumber(
