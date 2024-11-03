@@ -90,6 +90,22 @@ async function scrapLink(scraper: Scraper, page: Page): Promise<Lot | null> {
     matricula_link: await tryFetchField(scraper.matricula_link),
     edital_link: await tryFetchField(scraper.edital_link),
   };
+  if (lot.bid === undefined) {
+    if (
+      lot.firstAuctionBid !== undefined &&
+      lot.firstAuctionDate !== undefined &&
+      new Date(lot.firstAuctionDate) >= new Date()
+    ) {
+      lot.bid = lot.firstAuctionBid;
+    } else if (
+      lot.secondAuctionBid !== undefined &&
+      lot.secondAuctionDate !== undefined &&
+      new Date(lot.secondAuctionDate) >= new Date()
+    ) {
+      lot.bid = lot.secondAuctionBid;
+    }
+  }
+  console.log(lot);
   return lot;
 }
 

@@ -23,9 +23,11 @@ function build(url: string, pages: string[]): Scraper {
       for (const pageUrl of pages) {
         await page.goto(pageUrl);
         await page.reload();
-        await page.waitForSelector(".dg-leiloes-item");
-        await scrollToBottom(page);
-
+        const countResults = await getTextFromSelector("#CountTotal")(page);
+        if (countResults !== "0") {
+          await page.waitForSelector(".dg-leiloes-item");
+          await scrollToBottom(page);
+        }
         links.push(
           ...(
             await page.evaluate(() =>
@@ -123,5 +125,39 @@ export const VivaLeiloes: Scraper = {
     ".dg-lote-anexos li a",
     IncludesFinder("Edital"),
     ReturnAttribute("href"),
+  ),
+};
+
+export const GfLeiloes: Scraper = {
+  ...build("www.gfleiloes.com.br", [
+    "https://www.gfleiloes.com.br/busca/#Engine=Start&Pagina=1&RangeValores=0&OrientacaoBusca=0&Busca=&Mapa=&ID_Categoria=56&ID_Estado=35&ID_Cidade=3550308&Bairro=-1&ID_Regiao=0&ValorMinSelecionado=0&ValorMaxSelecionado=0&Ordem=0&QtdPorPagina=100&ID_Leiloes_Status=&SubStatus=&PaginaIndex=1&BuscaProcesso=&NomesPartes=&CodLeilao=&TiposLeiloes=[]&CFGs=[]",
+    "https://www.gfleiloes.com.br/busca/#Engine=Start&Pagina=1&RangeValores=0&OrientacaoBusca=0&Busca=&Mapa=&ID_Categoria=57&ID_Estado=35&ID_Cidade=3550308&Bairro=-1&ID_Regiao=0&ValorMinSelecionado=0&ValorMaxSelecionado=0&Ordem=0&QtdPorPagina=100&ID_Leiloes_Status=&SubStatus=&PaginaIndex=1&BuscaProcesso=&NomesPartes=&CodLeilao=&TiposLeiloes=[]&CFGs=[]",
+  ]),
+  name: pipe(getTextFromSelector(".dg-lote-titulo"), removeUnnecessarySpaces),
+  bid: async (page) => {
+    const bid = await pipe(
+      getTextFromSelector(".BoxLanceValor"),
+      getNumberFromReais,
+    )(page);
+    if (bid === undefined || bid === 0) {
+      return undefined;
+    }
+    return bid;
+  },
+  caseNumber: pipe(
+    getFromSelector(
+      ".dg-lote-descricao-info > li",
+      IncludesFinder("Número do Processo: "),
+      ReturnText(),
+    ),
+    matchCaseNumber,
+  ),
+  caseLink: pipe(
+    getFromSelector(
+      ".dg-lote-descricao-info > li > a",
+      AttributeIncludesFinder("href", "processo.codigo"),
+      ReturnAttribute("href"),
+    ),
+    removeUnnecessarySpaces,
   ),
 };
