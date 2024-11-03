@@ -28,6 +28,7 @@ async function updateAllScraps(scraperID?: string) {
             eq(scrapsTable.scraper_id, scraper.url),
             or(
               eq(scrapsTable.fetch_status, "not-fetched"),
+              eq(scrapsTable.fetch_status, "failed"),
               gte(scrapsTable.first_auction_date, new Date()),
               gte(scrapsTable.second_auction_date, new Date()),
             ),
