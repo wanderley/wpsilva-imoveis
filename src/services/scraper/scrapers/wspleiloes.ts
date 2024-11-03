@@ -1,4 +1,7 @@
-import { parseBrazilianDate, realToNumber } from "@/services/scraper/parsers";
+import {
+  getNumberFromReais,
+  parseBrazilianDate,
+} from "@/services/scraper/parsers";
 import { Scraper } from "@/services/scraper/scraper";
 
 export const Wspleiloes: Scraper = {
@@ -97,7 +100,7 @@ export const Wspleiloes: Scraper = {
           ?.getAttribute("href") || undefined,
     ),
   bid: async (page) =>
-    realToNumber(
+    getNumberFromReais(
       (await page.evaluate(
         () => document.querySelector("#lance_inicial")?.textContent,
       )) ||
@@ -107,7 +110,7 @@ export const Wspleiloes: Scraper = {
         )),
     ),
   appraisal: async (page) =>
-    realToNumber(
+    getNumberFromReais(
       await page.evaluate(
         () =>
           Array.from(document.querySelectorAll("h6"))
@@ -125,7 +128,7 @@ export const Wspleiloes: Scraper = {
       "dd/MM/yyyy HH:mm",
     ),
   firstAuctionBid: async (page) =>
-    realToNumber(
+    getNumberFromReais(
       await page.evaluate(
         () =>
           Array.from(document.querySelectorAll("h6"))
@@ -143,7 +146,7 @@ export const Wspleiloes: Scraper = {
       "dd/MM/yyyy HH:mm",
     ),
   secondAuctionBid: async (page) =>
-    realToNumber(
+    getNumberFromReais(
       await page.evaluate(
         () =>
           Array.from(document.querySelectorAll("h6"))

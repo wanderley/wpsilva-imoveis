@@ -1,7 +1,185 @@
 import { parse } from "date-fns";
 import { fromZonedTime } from "date-fns-tz";
+import { Page } from "puppeteer";
 
-export function realToNumber(
+type Extractor<T> = (page: Page) => Promise<T | undefined>;
+export function pipe<T1, T2>(
+  extractor: Extractor<T1>,
+  fn1: (value: T1) => T2,
+): Extractor<T2>;
+export function pipe<T1, T2, T3>(
+  extractor: Extractor<T1>,
+  fn1: (value: T1) => T2,
+  fn2: (value: T2) => T3,
+): Extractor<T3>;
+export function pipe<T1, T2, T3, T4>(
+  extractor: Extractor<T1>,
+  fn1: (value: T1) => T2,
+  fn2: (value: T2) => T3,
+  fn3: (value: T3) => T4,
+): Extractor<T4>;
+export function pipe<T1, T2, T3, T4>(
+  extractor: Extractor<T1>,
+  fn1: (value: T1) => T2,
+  fn2?: (value: T2) => T3,
+  fn3?: (value: T3) => T4,
+): Extractor<T2 | T3 | T4> {
+  return async (page: Page) => {
+    const res = await extractor(page);
+    if (res === undefined) {
+      return undefined;
+    }
+    const firstResult = fn1(res);
+    if (!fn2) {
+      return firstResult;
+    }
+    const secondResult = fn2(firstResult);
+    if (!fn3) {
+      return secondResult;
+    }
+    return fn3(secondResult);
+  };
+}
+
+export function getTextFromSelector(selector: string): Extractor<string> {
+  return async (page: Page) =>
+    (await page.evaluate(
+      (selector) => document.querySelector(selector)?.textContent,
+      selector,
+    )) ?? undefined;
+}
+
+type IncludesFinder = { type: "finder"; name: "includes"; text: string };
+type AttributeIncludesFinder = {
+  type: "finder";
+  name: "attribute";
+  attribute: string;
+  text: string;
+};
+type Finder = IncludesFinder | AttributeIncludesFinder;
+
+export function IncludesFinder(text: string): IncludesFinder {
+  return { type: "finder", name: "includes", text };
+}
+
+export function AttributeIncludesFinder(
+  attribute: string,
+  text: string,
+): AttributeIncludesFinder {
+  return { type: "finder", name: "attribute", attribute, text };
+}
+
+type TextContentGetter = { type: "getter"; name: "textContent" };
+type AttributeGetter = { type: "getter"; name: "attribute"; attribute: string };
+type Getter = TextContentGetter | AttributeGetter;
+
+export function ReturnText(): TextContentGetter {
+  return { type: "getter", name: "textContent" };
+}
+
+export function ReturnAttribute(attribute: string): AttributeGetter {
+  return { type: "getter", name: "attribute", attribute };
+}
+
+type NoFilters = { type: "filter"; name: "none" };
+type IncludesFilter = { type: "filter"; name: "includes"; text: string };
+type AttributeIncludesFilter = {
+  type: "filter";
+  name: "attribute";
+  attribute: string;
+  text: string;
+};
+type Filter = NoFilters | IncludesFilter | AttributeIncludesFilter;
+
+export function NoFilters(): NoFilters {
+  return { type: "filter", name: "none" };
+}
+
+export function IncludesFilter(text: string): IncludesFilter {
+  return { type: "filter", name: "includes", text };
+}
+
+export function AttributeIncludesFilter(
+  attribute: string,
+  text: string,
+): AttributeIncludesFilter {
+  return { type: "filter", name: "attribute", attribute, text };
+}
+
+export function getFromSelector(
+  selector: string,
+  find: Finder,
+  get: Getter,
+): (page: Page) => Promise<string | undefined> {
+  return async (page) =>
+    await page.evaluate(
+      (selector, find, get) => {
+        const elem = Array.from(document.querySelectorAll(selector)).find(
+          (elem) => {
+            switch (find.name) {
+              case "includes":
+                return elem.textContent?.includes(find.text);
+              case "attribute":
+                return elem.getAttribute(find.attribute)?.includes(find.text);
+            }
+          },
+        );
+        if (elem === undefined) {
+          return undefined;
+        }
+        switch (get.name) {
+          case "textContent":
+            return elem.textContent ?? undefined;
+          case "attribute":
+            return elem.getAttribute(get.attribute) ?? undefined;
+        }
+      },
+      selector,
+      find,
+      get,
+    );
+}
+
+export function getFromSelectorAll(
+  selector: string,
+  filter: Filter,
+  get: Getter,
+): (page: Page) => Promise<string[]> {
+  return async (page) =>
+    await page.evaluate(
+      (selector, filter, get) => {
+        const elems = Array.from(document.querySelectorAll(selector)).filter(
+          (elem) => {
+            switch (filter.name) {
+              case "none":
+                return true;
+              case "includes":
+                return elem.textContent?.includes(filter.text);
+              case "attribute":
+                return elem
+                  .getAttribute(filter.attribute)
+                  ?.includes(filter.text);
+            }
+          },
+        );
+        return elems
+          .map((elem) => {
+            switch (get.name) {
+              case "textContent":
+                return elem.textContent ?? undefined;
+              case "attribute":
+                return elem.getAttribute(get.attribute) ?? undefined;
+            }
+          })
+          .filter((value): value is string => value !== undefined);
+      },
+      selector,
+      filter,
+      get,
+    );
+}
+
+export function getNumberFromReais(
   real: string | null | undefined,
 ): number | undefined {
   if (real == null) {
@@ -33,3 +211,15 @@ export const parseBrazilianDate = (
     });
   }
 };
+
+export function getBrazilianDate(formatDate: string) {
+  return (value: string | undefined) =>
+    value === undefined ? undefined : parseBrazilianDate(value, formatDate);
+}
+
+export function removeUnnecessarySpaces(text: string): string {
+  return text.replace(/\s+/g, " ").trim();
+}
+export function matchCaseNumber(text: string): string {
+  return text?.match(/Processo:\s*(\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4})/)![1];
+}

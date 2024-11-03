@@ -1,6 +1,19 @@
+import {
+  AttributeIncludesFinder,
+  IncludesFinder,
+  NoFilters,
+  ReturnAttribute,
+  ReturnText,
+  getBrazilianDate,
+  getFromSelector,
+  getFromSelectorAll,
+  getNumberFromReais,
+  getTextFromSelector,
+  matchCaseNumber,
+  pipe,
+  removeUnnecessarySpaces,
+} from "@/services/scraper/parsers";
 import { Scraper, scrollToBottom } from "@/services/scraper/scraper";
-
-import { parseBrazilianDate, realToNumber } from "../parsers";
 
 export const Agsleiloes: Scraper = {
   url: "www.agsleiloes.com.br",
@@ -15,10 +28,6 @@ export const Agsleiloes: Scraper = {
       await page.reload();
       await page.waitForSelector(".dg-leiloes-item");
       await scrollToBottom(page);
-      await page.screenshot({
-        path: "/tmp/screenshot.png",
-        fullPage: true,
-      });
 
       links.push(
         ...(
@@ -36,102 +45,67 @@ export const Agsleiloes: Scraper = {
     }
     return links;
   },
-  name: async (page) =>
-    (await page.evaluate(
-      () => document.querySelector(".dg-lote-titulo > strong")?.textContent,
-    )) ?? undefined,
-  address: async (page) =>
-    (await page.evaluate(
-      () => document.querySelector(".dg-lote-local-endereco")?.textContent,
-    )) ?? undefined,
-  description: async (page) =>
-    (await page.evaluate(
-      () => document.querySelector(".dg-lote-descricao-txt")?.textContent,
-    )) ?? undefined,
-  caseNumber: async (page) =>
-    await page.evaluate(
-      () =>
-        Array.from(document.querySelectorAll(".dg-lote-descricao-info > div"))
-          .find((div) => div.textContent?.includes("Número do Processo: "))
-          ?.textContent?.match(
-            /Processo:\s*(\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4})/,
-          )![1],
+  name: pipe(
+    getTextFromSelector(".dg-lote-titulo > strong"),
+    removeUnnecessarySpaces,
+  ),
+  address: pipe(
+    getTextFromSelector(".dg-lote-local-endereco"),
+    removeUnnecessarySpaces,
+  ),
+  description: getTextFromSelector(".dg-lote-descricao-txt"),
+  caseNumber: pipe(
+    getFromSelector(
+      ".dg-lote-descricao-info > div",
+      IncludesFinder("Número do Processo: "),
+      ReturnText(),
     ),
-  caseLink: async (page) =>
-    await page.evaluate(
-      () =>
-        Array.from(
-          document.querySelectorAll(".dg-lote-descricao-info > div > a"),
-        )
-          .find((a) => a.getAttribute("href")?.includes("processo.codigo"))
-          ?.getAttribute("href") ?? undefined,
+    matchCaseNumber,
+  ),
+  caseLink: pipe(
+    getFromSelector(
+      ".dg-lote-descricao-info > div > a",
+      AttributeIncludesFinder("href", "processo.codigo"),
+      ReturnAttribute("href"),
     ),
-  bid: async (page) =>
-    realToNumber(
-      await page.evaluate(
-        () => document.querySelector(".BoxLanceValor")?.textContent,
-      ),
-    ),
-  appraisal: async (page) =>
-    realToNumber(
-      await page.evaluate(
-        () => document.querySelector(".ValorAvaliacao")?.textContent,
-      ),
-    ),
-  firstAuctionDate: async (page) =>
-    parseBrazilianDate(
-      await page.evaluate(
-        () => document.querySelector(".Praca1DataHoraAbertura")?.textContent,
-      ),
-      "dd/MM/yyyy - HH:mm",
-    ),
-  firstAuctionBid: async (page) =>
-    realToNumber(
-      await page.evaluate(
-        () =>
-          document.querySelector(".ValorMinimoLancePrimeiraPraca")?.textContent,
-      ),
-    ),
-  secondAuctionDate: async (page) =>
-    parseBrazilianDate(
-      await page.evaluate(
-        () => document.querySelector(".Praca2DataHoraAbertura")?.textContent,
-      ),
-      "dd/MM/yyyy - HH:mm",
-    ),
-  secondAuctionBid: async (page) =>
-    realToNumber(
-      await page.evaluate(
-        () =>
-          document.querySelector(".ValorMinimoLanceSegundaPraca")?.textContent,
-      ),
-    ),
-  images: async (page) =>
-    await page.evaluate(
-      () =>
-        Array.from(document.querySelectorAll(".slick-track > a > img"))
-          .map((a) => a.getAttribute("src"))
-          .filter((href): href is string => href !== null) ?? [],
-    ),
-  laudo_link: async (page) =>
-    await page.evaluate(
-      () =>
-        Array.from(document.querySelectorAll(".dg-lote-anexos li a"))
-          .find((a) => a.textContent?.includes("Laudo de Avaliação"))
-          ?.getAttribute("href") ?? undefined,
-    ),
-  matricula_link: async (page) =>
-    await page.evaluate(
-      () =>
-        Array.from(document.querySelectorAll(".dg-lote-anexos li a"))
-          .find((a) => a.textContent?.includes("Matrícula"))
-          ?.getAttribute("href") ?? undefined,
-    ),
-  edital_link: async (page) =>
-    await page.evaluate(
-      () =>
-        Array.from(document.querySelectorAll(".dg-lote-anexos li a"))
-          .find((a) => a.textContent?.includes("Edital do Leilão"))
-          ?.getAttribute("href") ?? undefined,
-    ),
+    removeUnnecessarySpaces,
+  ),
+  bid: pipe(getTextFromSelector(".BoxLanceValor"), getNumberFromReais),
+  appraisal: pipe(getTextFromSelector(".ValorAvaliacao"), getNumberFromReais),
+  firstAuctionDate: pipe(
+    getTextFromSelector(".Praca1DataHoraAbertura"),
+    getBrazilianDate("dd/MM/yyyy - HH:mm"),
+  ),
+  firstAuctionBid: pipe(
+    getTextFromSelector(".ValorMinimoLancePrimeiraPraca"),
+    getNumberFromReais,
+  ),
+  secondAuctionDate: pipe(
+    getTextFromSelector(".Praca2DataHoraAbertura"),
+    getBrazilianDate("dd/MM/yyyy - HH:mm"),
+  ),
+  secondAuctionBid: pipe(
+    getTextFromSelector(".ValorMinimoLanceSegundaPraca"),
+    getNumberFromReais,
+  ),
+  images: getFromSelectorAll(
+    ".slick-track > a > img",
+    NoFilters(),
+    ReturnAttribute("src"),
+  ),
+  laudo_link: getFromSelector(
+    ".dg-lote-anexos li a",
+    IncludesFinder("Laudo de Avaliação"),
+    ReturnAttribute("href"),
+  ),
+  matricula_link: getFromSelector(
+    ".dg-lote-anexos li a",
+    IncludesFinder("Matrícula"),
+    ReturnAttribute("href"),
+  ),
+  edital_link: getFromSelector(
+    ".dg-lote-anexos li a",
+    IncludesFinder("Edital do Leilão"),
+    ReturnAttribute("href"),
+  ),
 };
