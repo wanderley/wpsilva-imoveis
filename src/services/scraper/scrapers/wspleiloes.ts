@@ -16,7 +16,7 @@ export const Wspleiloes: Scraper = {
         lance_inicial_ini: "",
         lance_inicial_fim: "",
         address_uf: "SP",
-        address_cidade_ibge: "3550308", // Cidade: Sao Paulo
+        address_cidade_ibge: "",
         address_logradouro: "",
         comitente_id: "",
         search: "",
