@@ -5,24 +5,24 @@ import { Page } from "puppeteer";
 type Extractor<T> = (page: Page) => Promise<T | undefined>;
 export function pipe<T1, T2>(
   extractor: Extractor<T1>,
-  fn1: (value: T1) => T2,
+  fn1: (value: T1) => T2 | undefined,
 ): Extractor<T2>;
 export function pipe<T1, T2, T3>(
   extractor: Extractor<T1>,
-  fn1: (value: T1) => T2,
-  fn2: (value: T2) => T3,
+  fn1: (value: T1) => T2 | undefined,
+  fn2: (value: T2) => T3 | undefined,
 ): Extractor<T3>;
 export function pipe<T1, T2, T3, T4>(
   extractor: Extractor<T1>,
-  fn1: (value: T1) => T2,
-  fn2: (value: T2) => T3,
-  fn3: (value: T3) => T4,
+  fn1: (value: T1) => T2 | undefined,
+  fn2: (value: T2) => T3 | undefined,
+  fn3: (value: T3) => T4 | undefined,
 ): Extractor<T4>;
 export function pipe<T1, T2, T3, T4>(
   extractor: Extractor<T1>,
-  fn1: (value: T1) => T2,
-  fn2?: (value: T2) => T3,
-  fn3?: (value: T3) => T4,
+  fn1: (value: T1) => T2 | undefined,
+  fn2?: (value: T2) => T3 | undefined,
+  fn3?: (value: T3) => T4 | undefined,
 ): Extractor<T2 | T3 | T4> {
   return async (page: Page) => {
     const res = await extractor(page);
@@ -33,7 +33,13 @@ export function pipe<T1, T2, T3, T4>(
     if (!fn2) {
       return firstResult;
     }
+    if (firstResult === undefined) {
+      return undefined;
+    }
     const secondResult = fn2(firstResult);
+    if (secondResult === undefined) {
+      return undefined;
+    }
     if (!fn3) {
       return secondResult;
     }
@@ -220,6 +226,11 @@ export function getBrazilianDate(formatDate: string) {
 export function removeUnnecessarySpaces(text: string): string {
   return text.replace(/\s+/g, " ").trim();
 }
-export function matchCaseNumber(text: string): string {
-  return text?.match(/Processo:\s*(\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4})/)![1];
+export function matchCaseNumber(prefix: string): (text: string) => string {
+  return (text: string) =>
+    text.match(
+      new RegExp(
+        `${prefix}\\s*(\\d{7}-\\\d{2}\\\.\\d{4}\\\.\\d\\\.\\d{2}\\\.\\d{4})`,
+      ),
+    )![1];
 }

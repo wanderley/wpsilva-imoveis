@@ -59,7 +59,7 @@ function build(url: string, pages: string[]): Scraper {
         IncludesFinder("Número do Processo: "),
         ReturnText(),
       ),
-      matchCaseNumber,
+      matchCaseNumber("Processo:"),
     ),
     caseLink: pipe(
       getFromSelector(
@@ -150,7 +150,7 @@ export const GfLeiloes: Scraper = {
       IncludesFinder("Número do Processo: "),
       ReturnText(),
     ),
-    matchCaseNumber,
+    matchCaseNumber("Processo:"),
   ),
   caseLink: pipe(
     getFromSelector(
