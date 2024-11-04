@@ -9,7 +9,8 @@ export default function LotCard({ imovel }: { imovel: ScrapWithFiles }) {
   const discount = imovel.appraisal
     ? ((imovel.appraisal - (imovel.bid || 0)) / imovel.appraisal) * 100
     : 0;
-  const discountColor = discount > 40 ? "success" : "warning";
+  const discountColor =
+    discount > 40 ? "success" : discount <= 0 ? "red" : "warning";
   const nextAuctionDate =
     imovel.first_auction_date && imovel.first_auction_date >= new Date()
       ? new Date(imovel.first_auction_date)
@@ -55,9 +56,26 @@ export default function LotCard({ imovel }: { imovel: ScrapWithFiles }) {
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Avaliação: R$ {imovel.appraisal?.toLocaleString() || "N/A"}
               </p>
-              <Badge color={discountColor} className="text-xs">
-                {discount.toFixed(0)}% desc.
-              </Badge>
+              <div className="flex gap-1">
+                <Badge color={discountColor} className="text-xs">
+                  {discount.toFixed(0)}% desc.
+                </Badge>
+                <Badge
+                  color={
+                    imovel.lucro_percentual !== null &&
+                    imovel.lucro_percentual > 0
+                      ? "success"
+                      : "red"
+                  }
+                  className="text-xs"
+                >
+                  {Math.abs(imovel.lucro_percentual ?? 0).toFixed(0)}%{" "}
+                  {imovel.lucro_percentual !== null &&
+                  imovel.lucro_percentual > 0
+                    ? "lucro"
+                    : "prejuízo"}
+                </Badge>
+              </div>
             </div>
           </div>
           <div className="flex justify-end items-center mt-2">
