@@ -19,10 +19,7 @@ export default function LotCard({ lot }: { lot: ScrapWithFiles }) {
         : null;
   return (
     <>
-      <Card
-        className="cursor-pointer hover:bg-gray-50"
-        onClick={() => setShowModal(true)}
-      >
+      <Card className="cursor-pointer hover:bg-gray-50">
         <div className="flex flex-col h-full">
           <div className="h-40 mb-2">
             <Carousel slide={false} indicators={false}>
@@ -39,50 +36,52 @@ export default function LotCard({ lot }: { lot: ScrapWithFiles }) {
                 ))}
             </Carousel>
           </div>
-          <div className="flex-grow">
-            <h5
-              className="text-sm font-semibold tracking-tight text-gray-900 dark:text-white mb-1 line-clamp-1"
-              title={lot.name || "N/A"}
-            >
-              {lot.name || "N/A"}
-            </h5>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-1 line-clamp-1">
-              Endereço: {lot.address || "Endereço não disponível"}
-            </p>
-            <p className="text-lg font-bold text-gray-700 dark:text-gray-300">
-              Lance Atual: R$ {lot.bid?.toLocaleString() || "N/A"}
-            </p>
-            <div className="flex justify-between items-center mt-1">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Avaliação: R$ {lot.appraisal?.toLocaleString() || "N/A"}
+          <div onClick={() => setShowModal(true)}>
+            <div className="flex-grow">
+              <h5
+                className="text-sm font-semibold tracking-tight text-gray-900 dark:text-white mb-1 line-clamp-1"
+                title={lot.name || "N/A"}
+              >
+                {lot.name || "N/A"}
+              </h5>
+              <p className="text-xs text-gray-600 dark:text-gray-400 mb-1 line-clamp-1">
+                Endereço: {lot.address || "Endereço não disponível"}
               </p>
-              <div className="flex gap-1">
-                <Badge color={discountColor} className="text-xs">
-                  {discount.toFixed(0)}% desc.
-                </Badge>
-                <Badge
-                  color={
-                    lot.lucro_percentual !== null && lot.lucro_percentual > 0
-                      ? "success"
-                      : "red"
-                  }
-                  className="text-xs"
-                >
-                  {Math.abs(lot.lucro_percentual ?? 0).toFixed(0)}%{" "}
-                  {lot.lucro_percentual !== null && lot.lucro_percentual > 0
-                    ? "lucro"
-                    : "prejuízo"}
-                </Badge>
+              <p className="text-lg font-bold text-gray-700 dark:text-gray-300">
+                Lance Atual: R$ {lot.bid?.toLocaleString() || "N/A"}
+              </p>
+              <div className="flex justify-between items-center mt-1">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Avaliação: R$ {lot.appraisal?.toLocaleString() || "N/A"}
+                </p>
+                <div className="flex gap-1">
+                  <Badge color={discountColor} className="text-xs">
+                    {discount.toFixed(0)}% desc.
+                  </Badge>
+                  <Badge
+                    color={
+                      lot.lucro_percentual !== null && lot.lucro_percentual > 0
+                        ? "success"
+                        : "red"
+                    }
+                    className="text-xs"
+                  >
+                    {Math.abs(lot.lucro_percentual ?? 0).toFixed(0)}%{" "}
+                    {lot.lucro_percentual !== null && lot.lucro_percentual > 0
+                      ? "lucro"
+                      : "prejuízo"}
+                  </Badge>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="flex justify-end items-center mt-2">
-            <p className="text-xs text-gray-600 dark:text-gray-400 flex items-center">
-              <HiClock className="mr-1" size={12} />
-              {nextAuctionDate
-                ? nextAuctionDate.toLocaleDateString()
-                : "Data não definida"}
-            </p>
+            <div className="flex justify-end items-center mt-2">
+              <p className="text-xs text-gray-600 dark:text-gray-400 flex items-center">
+                <HiClock className="mr-1" size={12} />
+                {nextAuctionDate
+                  ? nextAuctionDate.toLocaleDateString()
+                  : "Data não definida"}
+              </p>
+            </div>
           </div>
         </div>
       </Card>
