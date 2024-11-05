@@ -86,9 +86,9 @@ async function scrapLink(scraper: Scraper, page: Page): Promise<Lot | null> {
     secondAuctionDate: await tryFetchField(scraper.secondAuctionDate),
     secondAuctionBid: await tryFetchField(scraper.secondAuctionBid),
     images: (await tryFetchField(scraper.images)) || [],
-    laudo_link: await tryFetchField(scraper.laudo_link),
-    matricula_link: await tryFetchField(scraper.matricula_link),
-    edital_link: await tryFetchField(scraper.edital_link),
+    laudo_link: await tryFetchField(scraper.laudoLink),
+    matricula_link: await tryFetchField(scraper.matriculaLink),
+    edital_link: await tryFetchField(scraper.editalLink),
   };
   if (lot.bid === undefined) {
     if (
@@ -162,9 +162,9 @@ export async function updateScrap(
           first_auction_bid: scrapData.firstAuctionBid,
           second_auction_date: scrapData.secondAuctionDate,
           second_auction_bid: scrapData.secondAuctionBid,
-          laudo_link: scrapData.laudo_link,
-          matricula_link: scrapData.matricula_link,
-          edital_link: scrapData.edital_link,
+          laudo_link: scrapData.laudoLink,
+          matricula_link: scrapData.matriculaLink,
+          edital_link: scrapData.editalLink,
           valor_arrematacao:
             existingScrap?.valor_arrematacao || scrapData.bid || undefined,
           valor_venda:

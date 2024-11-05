@@ -13,9 +13,9 @@ export type Lot = {
   secondAuctionDate?: Date | null;
   secondAuctionBid?: number | null;
   images: Array<string>;
-  laudo_link?: string | null;
-  matricula_link?: string | null;
-  edital_link?: string | null;
+  laudoLink?: string | null;
+  matriculaLink?: string | null;
+  editalLink?: string | null;
 };
 
 export type Scraper = {
@@ -33,9 +33,9 @@ export type Scraper = {
   secondAuctionDate: (page: Page) => Promise<Date | undefined>;
   secondAuctionBid: (page: Page) => Promise<number | undefined>;
   images: (page: Page) => Promise<Array<string>>;
-  laudo_link: (page: Page) => Promise<string | undefined>;
-  matricula_link: (page: Page) => Promise<string | undefined>;
-  edital_link: (page: Page) => Promise<string | undefined>;
+  laudoLink: (page: Page) => Promise<string | undefined>;
+  matriculaLink: (page: Page) => Promise<string | undefined>;
+  editalLink: (page: Page) => Promise<string | undefined>;
 };
 
 export async function notFound<T>(_page: Page): Promise<T | undefined> {

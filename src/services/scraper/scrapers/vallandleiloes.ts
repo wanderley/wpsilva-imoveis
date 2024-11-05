@@ -91,17 +91,17 @@ export const VallandLeiloes: Scraper = {
     NoFilters(),
     ReturnAttribute("src"),
   ),
-  laudo_link: getFromSelector(
+  laudoLink: getFromSelector(
     ".arquivos a",
     IncludesFinder("Avaliação"),
     ReturnAttribute("href"),
   ),
-  matricula_link: getFromSelector(
+  matriculaLink: getFromSelector(
     ".arquivos a",
     IncludesFinder("Matrícula"),
     ReturnAttribute("href"),
   ),
-  edital_link: getFromSelector(
+  editalLink: getFromSelector(
     ".arquivos a",
     IncludesFinder("Edital do Leilão"),
     ReturnAttribute("href"),

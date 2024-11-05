@@ -160,19 +160,19 @@ export const Wspleiloes: Scraper = {
         .map((a) => a.getAttribute("href"))
         .filter((href): href is string => href !== null),
     )) || [],
-  laudo_link: async (page) =>
+  laudoLink: async (page) =>
     (await page.evaluate(() =>
       Array.from(document.querySelectorAll("a"))
         .find((elem) => elem.textContent?.includes("LAUDO"))
         ?.getAttribute("href"),
     )) ?? undefined,
-  matricula_link: async (page) =>
+  matriculaLink: async (page) =>
     (await page.evaluate(() =>
       Array.from(document.querySelectorAll("a"))
         .find((elem) => elem.textContent?.includes("MATRÍCULA"))
         ?.getAttribute("href"),
     )) ?? undefined,
-  edital_link: async (page) =>
+  editalLink: async (page) =>
     (await page.evaluate(() =>
       Array.from(document.querySelectorAll("a"))
         .find((elem) => elem.textContent?.includes("EDITAL"))

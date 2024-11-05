@@ -92,17 +92,17 @@ function build(url: string, pages: string[]): Scraper {
       NoFilters(),
       ReturnAttribute("src"),
     ),
-    laudo_link: getFromSelector(
+    laudoLink: getFromSelector(
       ".dg-lote-anexos li a",
       IncludesFinder("Laudo de Avaliação"),
       ReturnAttribute("href"),
     ),
-    matricula_link: getFromSelector(
+    matriculaLink: getFromSelector(
       ".dg-lote-anexos li a",
       IncludesFinder("Matrícula"),
       ReturnAttribute("href"),
     ),
-    edital_link: getFromSelector(
+    editalLink: getFromSelector(
       ".dg-lote-anexos li a",
       IncludesFinder("Edital do Leilão"),
       ReturnAttribute("href"),
@@ -121,7 +121,7 @@ export const VivaLeiloes: Scraper = {
     "https://www.vivaleiloes.com.br/busca/#Engine=Start&Pagina=1&OrientacaoBusca=0&Busca=&Mapa=&ID_Categoria=57&ID_Estado=35&ID_Cidade=&Bairro=&ID_Regiao=0&ValorMinSelecionado=0&ValorMaxSelecionado=0&Ordem=0&QtdPorPagina=200&ID_Leiloes_Status=1,3&SubStatus=&PaginaIndex=1&BuscaProcesso=&NomesPartes=&CodLeilao=&TiposLeiloes=[%22Judicial%22]&CFGs=[]",
   ]),
   name: pipe(getTextFromSelector(".dg-titulo"), removeUnnecessarySpaces),
-  edital_link: getFromSelector(
+  editalLink: getFromSelector(
     ".dg-lote-anexos li a",
     IncludesFinder("Edital"),
     ReturnAttribute("href"),
