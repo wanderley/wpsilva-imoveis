@@ -20,30 +20,7 @@ function EmptyState() {
 
 export function PendingReviewLots() {
   const [currentPage, setCurrentPage] = useState(1);
-  // const [valorMinimo, setValorMinimo] = useState<string>("");
-  // const [valorMaximo, setValorMaximo] = useState<string>("");
-  // const [descontoMinimo, setDescontoMinimo] = useState<string>("");
   const itemsPerPage = 3;
-
-  // const filtrarImoveis = (imoveis: Imovel[]) => {
-  //   return imoveis.filter((imovel) => {
-  //     const valorMinFilter = valorMinimo
-  //       ? imovel.bid && imovel.bid >= parseInt(valorMinimo)
-  //       : true;
-  //     const valorMaxFilter = valorMaximo
-  //       ? imovel.bid && imovel.bid <= parseInt(valorMaximo)
-  //       : true;
-  //     const descontoFilter = descontoMinimo
-  //       ? imovel.avaliacao &&
-  //         imovel.bid &&
-  //         ((imovel.avaliacao - imovel.bid) / imovel.avaliacao) * 100 >=
-  //           parseInt(descontoMinimo)
-  //       : true;
-  //     return valorMinFilter && valorMaxFilter && descontoFilter;
-  //   });
-  // };
-
-  // const imoveisFiltrados = filtrarImoveis(imoveisPendentes);
   const { data: pendingReviewLots } = usePendingReviewLots();
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
