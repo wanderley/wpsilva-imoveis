@@ -53,8 +53,8 @@ function LotsGrid({
   return (
     <>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-4">
-        {currentItems.map((imovel: ScrapWithFiles) => (
-          <LotCard key={imovel.id} imovel={imovel} />
+        {currentItems.map((lot: ScrapWithFiles) => (
+          <LotCard key={lot.id} lot={lot} />
         ))}
       </div>
       <div className="flex overflow-x-auto sm:justify-center">

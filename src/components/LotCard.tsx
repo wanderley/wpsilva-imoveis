@@ -4,18 +4,18 @@ import { Badge, Card, Carousel } from "flowbite-react";
 import { useState } from "react";
 import { HiClock } from "react-icons/hi";
 
-export default function LotCard({ imovel }: { imovel: ScrapWithFiles }) {
+export default function LotCard({ lot }: { lot: ScrapWithFiles }) {
   const [showModal, setShowModal] = useState(false);
-  const discount = imovel.appraisal
-    ? ((imovel.appraisal - (imovel.bid || 0)) / imovel.appraisal) * 100
+  const discount = lot.appraisal
+    ? ((lot.appraisal - (lot.bid || 0)) / lot.appraisal) * 100
     : 0;
   const discountColor =
     discount > 40 ? "success" : discount <= 0 ? "red" : "warning";
   const nextAuctionDate =
-    imovel.first_auction_date && imovel.first_auction_date >= new Date()
-      ? new Date(imovel.first_auction_date)
-      : imovel.second_auction_date && imovel.second_auction_date >= new Date()
-        ? new Date(imovel.second_auction_date)
+    lot.first_auction_date && lot.first_auction_date >= new Date()
+      ? new Date(lot.first_auction_date)
+      : lot.second_auction_date && lot.second_auction_date >= new Date()
+        ? new Date(lot.second_auction_date)
         : null;
   return (
     <>
@@ -26,7 +26,7 @@ export default function LotCard({ imovel }: { imovel: ScrapWithFiles }) {
         <div className="flex flex-col h-full">
           <div className="h-40 mb-2">
             <Carousel slide={false} indicators={false}>
-              {imovel.files
+              {lot.files
                 .filter((file) => file.file_type === "jpg")
                 .map((image, index) => (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -42,19 +42,19 @@ export default function LotCard({ imovel }: { imovel: ScrapWithFiles }) {
           <div className="flex-grow">
             <h5
               className="text-sm font-semibold tracking-tight text-gray-900 dark:text-white mb-1 line-clamp-1"
-              title={imovel.name || "N/A"}
+              title={lot.name || "N/A"}
             >
-              {imovel.name || "N/A"}
+              {lot.name || "N/A"}
             </h5>
             <p className="text-xs text-gray-600 dark:text-gray-400 mb-1 line-clamp-1">
-              Endereço: {imovel.address || "Endereço não disponível"}
+              Endereço: {lot.address || "Endereço não disponível"}
             </p>
             <p className="text-lg font-bold text-gray-700 dark:text-gray-300">
-              Lance Atual: R$ {imovel.bid?.toLocaleString() || "N/A"}
+              Lance Atual: R$ {lot.bid?.toLocaleString() || "N/A"}
             </p>
             <div className="flex justify-between items-center mt-1">
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Avaliação: R$ {imovel.appraisal?.toLocaleString() || "N/A"}
+                Avaliação: R$ {lot.appraisal?.toLocaleString() || "N/A"}
               </p>
               <div className="flex gap-1">
                 <Badge color={discountColor} className="text-xs">
@@ -62,16 +62,14 @@ export default function LotCard({ imovel }: { imovel: ScrapWithFiles }) {
                 </Badge>
                 <Badge
                   color={
-                    imovel.lucro_percentual !== null &&
-                    imovel.lucro_percentual > 0
+                    lot.lucro_percentual !== null && lot.lucro_percentual > 0
                       ? "success"
                       : "red"
                   }
                   className="text-xs"
                 >
-                  {Math.abs(imovel.lucro_percentual ?? 0).toFixed(0)}%{" "}
-                  {imovel.lucro_percentual !== null &&
-                  imovel.lucro_percentual > 0
+                  {Math.abs(lot.lucro_percentual ?? 0).toFixed(0)}%{" "}
+                  {lot.lucro_percentual !== null && lot.lucro_percentual > 0
                     ? "lucro"
                     : "prejuízo"}
                 </Badge>
@@ -90,7 +88,7 @@ export default function LotCard({ imovel }: { imovel: ScrapWithFiles }) {
       </Card>
 
       <LotModal
-        scrapID={imovel.id}
+        scrapID={lot.id}
         showModal={showModal}
         setShowModal={setShowModal}
       />
