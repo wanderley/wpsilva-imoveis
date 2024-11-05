@@ -45,10 +45,10 @@ export async function notFound<T>(_page: Page): Promise<T | undefined> {
 export async function scrollToBottom(page: Page) {
   await page.evaluate(async () => {
     await new Promise((resolve) => {
-      var totalHeight = 0;
-      var distance = 100;
-      var timer = setInterval(() => {
-        var scrollHeight = document.body.scrollHeight;
+      let totalHeight = 0;
+      const distance = 100;
+      const timer = setInterval(() => {
+        const scrollHeight = document.body.scrollHeight;
         window.scrollBy(0, distance);
         totalHeight += distance;
 
