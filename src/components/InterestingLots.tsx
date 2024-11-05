@@ -1,10 +1,12 @@
-import LotCard from "@/components/LotCard";
 import { ScrapWithFiles } from "@/db/schema";
 import { getInterestingLots } from "@/models/scraps/actions";
 import { useQuery } from "@tanstack/react-query";
-import { Pagination, Spinner } from "flowbite-react";
+import { Button, Spinner } from "flowbite-react";
+import Link from "next/link";
 import { useState } from "react";
 import { FaFolderOpen } from "react-icons/fa";
+
+import { LotsGrid } from "./LotsGrid";
 
 function EmptyState() {
   return (
@@ -32,45 +34,6 @@ function LoadingState() {
   );
 }
 
-function LotsGrid({
-  lots,
-  currentPage,
-  itemsPerPage,
-  onPageChange,
-}: {
-  lots: ScrapWithFiles[];
-  currentPage: number;
-  itemsPerPage: number;
-  onPageChange: (page: number) => void;
-}) {
-  if (lots.length === 0) {
-    return <EmptyState />;
-  }
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = lots.slice(indexOfFirstItem, indexOfLastItem);
-
-  return (
-    <>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-4">
-        {currentItems.map((lot: ScrapWithFiles) => (
-          <LotCard key={lot.id} lot={lot} />
-        ))}
-      </div>
-      <div className="flex overflow-x-auto sm:justify-center">
-        <Pagination
-          currentPage={currentPage}
-          totalPages={Math.ceil(lots.length / itemsPerPage)}
-          onPageChange={onPageChange}
-          showIcons={true}
-          previousLabel="Anterior"
-          nextLabel="Próxima"
-        />
-      </div>
-    </>
-  );
-}
-
 export function InterestingLots() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
@@ -78,24 +41,34 @@ export function InterestingLots() {
   const { data, isLoading } = useQuery<ScrapWithFiles[]>({
     queryKey: ["interesting-lots"],
     queryFn: async () => await getInterestingLots(),
-    initialData: [],
   });
+  let body = <></>;
+  if (isLoading) {
+    body = <LoadingState />;
+  } else if (data?.length === 0) {
+    body = <EmptyState />;
+  } else {
+    body = (
+      <LotsGrid
+        lots={data || []}
+        currentPage={currentPage}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+      />
+    );
+  }
 
   return (
     <section className="mb-12">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-semibold">Lotes Interessantes</h2>
+        {data?.length && (
+          <Link href="/lots?phase=interesting">
+            <Button color="dark">Ver Todos</Button>
+          </Link>
+        )}
       </div>
-      {isLoading ? (
-        <LoadingState />
-      ) : (
-        <LotsGrid
-          lots={data || []}
-          currentPage={currentPage}
-          itemsPerPage={itemsPerPage}
-          onPageChange={setCurrentPage}
-        />
-      )}
+      {body}
     </section>
   );
 }

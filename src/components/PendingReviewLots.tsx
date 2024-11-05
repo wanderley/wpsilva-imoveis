@@ -1,6 +1,7 @@
 import LotCard from "@/components/LotCard";
 import { usePendingReviewLots } from "@/hooks";
 import { Button, Pagination } from "flowbite-react";
+import Link from "next/link";
 import { useState } from "react";
 import { FaClipboardCheck } from "react-icons/fa";
 
@@ -35,13 +36,10 @@ export function PendingReviewLots() {
     <section className="mb-12">
       <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
         <h2 className="text-2xl font-semibold">Lotes com Revisão Pendente</h2>
-        {pendingReviewLots.length > 0 && (
-          <Button
-            color="dark"
-            onClick={() => alert("Iniciando revisão em lote")}
-          >
-            Iniciar Revisão
-          </Button>
+        {pendingReviewLots?.length && (
+          <Link href="/lots?phase=pendingReview">
+            <Button color="dark">Ver Todos</Button>
+          </Link>
         )}
       </div>
       {pendingReviewLots.length === 0 ? (

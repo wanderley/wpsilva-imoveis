@@ -1,9 +1,11 @@
 import { ScrapWithFiles } from "@/db/schema";
 import {
+  SearchLotsFilters,
   getPendingReviewLots,
   getScrapDetails,
   getScraps,
   saveScrap,
+  searchLots,
 } from "@/models/scraps/actions";
 import { refreshScraps, updateScrap } from "@/services/scraper/actions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -20,6 +22,13 @@ export function useScraps(scrapID: string) {
   return useQuery({
     queryKey: queryKeys.scraps(scrapID),
     queryFn: async () => await getScraps(scrapID),
+  });
+}
+
+export function useSearchLots(filters: SearchLotsFilters) {
+  return useQuery<ScrapWithFiles[]>({
+    queryKey: ["lots", filters],
+    queryFn: async () => await searchLots(filters),
   });
 }
 
