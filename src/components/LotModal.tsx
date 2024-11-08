@@ -18,7 +18,6 @@ import {
   Modal,
   Progress,
   TextInput,
-  Tooltip,
 } from "flowbite-react";
 import { useEffect, useState } from "react";
 import {
@@ -159,32 +158,22 @@ function AnalysisCard({ scrap }: { scrap: ScrapWithFiles }) {
               </p>
               <p className="text-sm text-gray-600">
                 <strong>Penhoras:</strong>{" "}
-                <ul>
-                  {scrap.analysis_result_json.analysis_result.penhoras.map(
-                    (penhora) => (
-                      <li
-                        key={penhora.descricao_penhora}
-                        className="list-disc list-inside"
-                      >
-                        <div className="inline-block">
-                          <Tooltip
-                            id={penhora.descricao_penhora}
-                            content={
-                              <div>
-                                <em>{penhora.trecho_documento}</em> -{" "}
-                                {penhora.documento_mencionado}
-                              </div>
-                            }
-                            className="inline-block ml-2 cursor-help"
-                          >
-                            {penhora.descricao_penhora}
-                          </Tooltip>
-                        </div>
-                      </li>
-                    ),
-                  )}
-                </ul>
               </p>
+              <ul className="text-sm text-gray-600">
+                {scrap.analysis_result_json.analysis_result.penhoras.map(
+                  (penhora) => (
+                    <li
+                      key={penhora.descricao_penhora}
+                      className="list-disc list-inside"
+                    >
+                      {penhora.descricao_penhora} (
+                      {penhora.documento_mencionado})
+                      {/* TODO: Exibir trecho do documento */}
+                      {/* <em>{penhora.trecho_documento}</em> */}
+                    </li>
+                  ),
+                )}
+              </ul>
               {scrap.analysis_result_json.analysis_result.risco_arrematacao && (
                 <p className="text-sm text-gray-600">
                   <strong>Risco de Arrematação:</strong>{" "}
@@ -207,10 +196,10 @@ function AnalysisCard({ scrap }: { scrap: ScrapWithFiles }) {
           <p className="text-sm text-gray-600">
             <strong>Texto da Análise:</strong>
             <br />
-            <pre className="whitespace-pre-wrap">
-              {scrap.analysis_result_text}
-            </pre>
           </p>
+          <pre className="whitespace-pre-wrap">
+            {scrap.analysis_result_text}
+          </pre>
         </>
       )}
     </Card>
