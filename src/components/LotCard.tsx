@@ -85,12 +85,13 @@ export default function LotCard({ lot }: { lot: ScrapWithFiles }) {
           </div>
         </div>
       </Card>
-
-      <LotModal
-        scrapID={lot.id}
-        showModal={showModal}
-        setShowModal={setShowModal}
-      />
+      {showModal && (
+        <LotModal
+          scrapID={lot.id}
+          showModal={true}
+          setShowModal={setShowModal}
+        />
+      )}
     </>
   );
 }
