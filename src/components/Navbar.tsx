@@ -1,6 +1,7 @@
 "use client";
 
 import { Navbar as FNavbar } from "flowbite-react";
+import { signOut } from "next-auth/react";
 import Link from "next/link";
 
 export function Navbar() {
@@ -16,6 +17,7 @@ export function Navbar() {
         <FNavbar.Link href="/scraper" as={Link} className="hover:text-gray-300">
           Scrapers
         </FNavbar.Link>
+        <button onClick={async () => await signOut()}>Sair</button>
       </FNavbar.Collapse>
     </FNavbar>
   );

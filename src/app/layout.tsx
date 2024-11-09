@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/Navbar";
 import { QueryClientProvider } from "@/components/QueryClientProvider";
+import { SessionProvider } from "@/components/SessionProvider";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 
@@ -31,10 +32,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Navbar />
-        <QueryClientProvider>
-          <div className="p-4">{children}</div>
-        </QueryClientProvider>
+        <SessionProvider>
+          <Navbar />
+          <QueryClientProvider>
+            <div className="p-4">{children}</div>
+          </QueryClientProvider>
+        </SessionProvider>
       </body>
     </html>
   );

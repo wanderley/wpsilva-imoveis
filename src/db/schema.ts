@@ -1,3 +1,4 @@
+import { AnalysisResult } from "@/db/json";
 import { relations, sql } from "drizzle-orm";
 import {
   datetime,
@@ -6,13 +7,46 @@ import {
   json,
   mysqlEnum,
   mysqlTable,
+  primaryKey,
   text,
   timestamp,
   uniqueIndex,
   varchar,
 } from "drizzle-orm/mysql-core";
 
-import { AnalysisResult } from "./json";
+export const users = mysqlTable("user", {
+  id: varchar("id", { length: 255 })
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  name: varchar("name", { length: 255 }),
+  email: varchar("email", { length: 255 }).unique(),
+});
+
+export const verificationTokens = mysqlTable(
+  "verification_token",
+  {
+    identifier: varchar("identifier", { length: 255 })
+      .notNull()
+      .references(() => users.email, { onDelete: "cascade" }),
+    token: varchar("token", { length: 255 }).notNull(),
+    expires: timestamp("expires", { mode: "date" }).notNull(),
+  },
+  (verificationToken) => ({
+    compositePk: primaryKey({
+      columns: [verificationToken.identifier, verificationToken.token],
+    }),
+  }),
+);
+
+export const verificationTokensRelations = relations(
+  verificationTokens,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [verificationTokens.identifier],
+      references: [users.email],
+    }),
+  }),
+);
 
 export const scrapsTable = mysqlTable("scraps", {
   id: int().primaryKey().autoincrement(),

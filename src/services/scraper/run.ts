@@ -1,13 +1,9 @@
 import { db } from "@/db";
 import { scrapsTable } from "@/db/schema";
-import { config } from "dotenv";
 import { and, eq, gte, or } from "drizzle-orm";
 
 import { scrapers } from ".";
 import { refreshScraps, updateScrap } from "./actions";
-
-config({ path: ".env" });
-config({ path: ".env.local" });
 
 async function updateAllScraps(scraperID?: string) {
   console.log("Starting to update all scraps...");
