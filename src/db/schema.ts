@@ -1,4 +1,4 @@
-import { AnalysisResult } from "@/db/json";
+import { Schema } from "@/services/analyser/schema";
 import { relations, sql } from "drizzle-orm";
 import {
   datetime,
@@ -14,7 +14,7 @@ import {
   varchar,
 } from "drizzle-orm/mysql-core";
 
-export const users = mysqlTable("user", {
+export const users = mysqlTable("users", {
   id: varchar("id", { length: 255 })
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
@@ -23,7 +23,7 @@ export const users = mysqlTable("user", {
 });
 
 export const verificationTokens = mysqlTable(
-  "verification_token",
+  "verification_tokens",
   {
     identifier: varchar("identifier", { length: 255 })
       .notNull()
@@ -94,8 +94,9 @@ export const scrapsTable = mysqlTable("scraps", {
     .default(0.15)
     .notNull(),
   analysis_status: text("analysis_status").default("none"),
-  analysis_result_text: text(),
-  analysis_result_json: json("analysis_result_json").$type<AnalysisResult>(),
+  analysis_prompt: text("analysis_prompt"),
+  analysis_result_text: text("analysis_result_text"),
+  analysis_result_json: json("analysis_result_json").$type<Schema>(),
   is_interesting: int(),
   created_at: timestamp("created_at")
     .notNull()

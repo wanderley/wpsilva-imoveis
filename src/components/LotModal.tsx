@@ -1,6 +1,14 @@
 "use client";
 
 import { LotStatusBadge } from "@/components/LotStatusBadge";
+import { Badge } from "@/components/ui/badge";
+import { Button as UIButton } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Separator } from "@/components/ui/separator";
 import { ScrapWithFiles } from "@/db/schema";
 import {
   useRequestAnalysisMutation,
@@ -9,6 +17,7 @@ import {
   useUpdateScraperMutation,
 } from "@/hooks";
 import { computePotentialProfit } from "@/models/scraps/helpers";
+import { Schema } from "@/services/analyser/schema";
 import { UseMutateFunction } from "@tanstack/react-query";
 import {
   Button,
@@ -19,20 +28,35 @@ import {
   Progress,
   TextInput,
 } from "flowbite-react";
+import {
+  AlertTriangle,
+  Banknote,
+  BarChart,
+  Bath,
+  Bed,
+  Building,
+  Car,
+  Home,
+  Info,
+  Layers,
+  RefreshCw,
+  Scale,
+  Sofa,
+  StickyNote,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import {
-  BarChart,
   Check,
   CheckSquare,
   Edit3,
   ExternalLink,
   FileText,
-  RotateCcw,
-  RotateCw,
   ThumbsDown,
   ThumbsUp,
   X,
 } from "react-feather";
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 
 interface Props {
   scrapID: number;
@@ -40,169 +64,593 @@ interface Props {
   setShowModal: (show: boolean) => void;
 }
 
-function AnalysisCard({ scrap }: { scrap: ScrapWithFiles }) {
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(value);
+};
+
+const getConditionBadgeVariant = (
+  condition: Schema["appraisal"]["general_condition"],
+) => {
+  switch (condition) {
+    case "Ruim":
+      return "destructive";
+    case "Boa":
+      return "warning";
+    case "Ótima":
+      return "success";
+    case "Indeterminado":
+      return "secondary";
+  }
+};
+
+const getRiskBadgeVariant = (risk: Schema["risks"]["risk"]) => {
+  switch (risk) {
+    case "Alto":
+      return "destructive";
+    case "Médio":
+      return "warning";
+    case "Baixo":
+      return "success";
+  }
+};
+
+const getReformTypeBadgeVariant = (
+  type: Schema["appraisal"]["type_of_reform"],
+) => {
+  switch (type) {
+    case "Não precisa de reforma":
+      return "success";
+    case "Reforma simples":
+      return "warning";
+    case "Reforma pesada":
+      return "destructive";
+    case "Indeterminado":
+      return "secondary";
+  }
+};
+
+function Analysis({ scrap }: { scrap: ScrapWithFiles }) {
+  const { isPending, mutate: requestAnalysisMutation } =
+    useRequestAnalysisMutation(scrap.id);
+
+  if (!scrap.analysis_result_json) {
+    return null;
+  }
+
+  return (
+    <div className="lg:w-2/3 grid grid-cols-1 gap-8">
+      <section className="space-y-4">
+        <Tabs defaultValue="analysis" className="w-full">
+          <TabsList className="w-full">
+            <TabsTrigger value="analysis" className="flex-1">
+              Resumo
+            </TabsTrigger>
+            <TabsTrigger value="auction" className="flex-1">
+              Descrição do Leiloeiro
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="analysis">
+            <p className="text-muted-foreground">
+              {scrap.analysis_result_json.description}
+            </p>
+          </TabsContent>
+          <TabsContent value="auction">
+            <p className="text-muted-foreground">
+              {scrap.description || "Não disponível"}
+            </p>
+          </TabsContent>
+        </Tabs>
+      </section>
+
+      <Separator />
+
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold flex items-center">
+          <AlertTriangle className="w-5 h-5 mr-2" /> Avaliação e Riscos
+          <button
+            onClick={() => !isPending && requestAnalysisMutation()}
+            className="p-2 rounded-full hover:bg-muted/50 transition-colors"
+            aria-label="Atualizar dados"
+          >
+            <RefreshCw
+              className={`w-4 h-4 cursor-pointer ${
+                isPending ? "animate-spin" : ""
+              }`}
+            />
+          </button>
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2 p-4 bg-muted rounded-lg">
+          <div>
+            <p className="font-medium">Avaliação de Riscos</p>
+            <Badge
+              className="text-base"
+              variant={getRiskBadgeVariant(
+                scrap.analysis_result_json.risks.risk,
+              )}
+            >
+              Risco {scrap.analysis_result_json.risks.risk}
+            </Badge>
+            <p className="mt-2 text-sm">
+              {scrap.analysis_result_json.risks.justification}
+            </p>
+          </div>
+          <div>
+            <p className="font-medium">Status de Ocupação</p>
+            <Badge
+              className="text-base"
+              variant={
+                scrap.analysis_result_json.occupancy_status === "Ocupado"
+                  ? "destructive"
+                  : "success"
+              }
+            >
+              {scrap.analysis_result_json.occupancy_status}
+            </Badge>
+          </div>
+          <div>
+            <p className="font-medium">Condição Geral</p>
+            <Badge
+              className="text-base"
+              variant={getConditionBadgeVariant(
+                scrap.analysis_result_json.appraisal.general_condition,
+              )}
+            >
+              {scrap.analysis_result_json.appraisal.general_condition}
+            </Badge>
+          </div>
+          <div>
+            <p className="font-medium">Tipo de Reforma</p>
+            <Badge
+              className="text-base"
+              variant={getReformTypeBadgeVariant(
+                scrap.analysis_result_json.appraisal.type_of_reform,
+              )}
+            >
+              {scrap.analysis_result_json.appraisal.type_of_reform}
+            </Badge>
+          </div>
+        </div>
+      </section>
+
+      <Separator />
+
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold flex items-center">
+          <Home className="w-5 h-5 mr-2" /> Informações Gerais
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <h3 className="font-semibold">Endereço</h3>
+            <p>{scrap.analysis_result_json.address}</p>
+          </div>
+          <div>
+            <h3 className="font-semibold">Áreas</h3>
+            <div className="grid grid-cols-3 gap-4">
+              {scrap.analysis_result_json.area.private !== undefined && (
+                <div>
+                  <p className="text-sm text-muted-foreground">Privativa</p>
+                  <p className="font-medium">
+                    {scrap.analysis_result_json.area.private} m²
+                  </p>
+                </div>
+              )}
+              {scrap.analysis_result_json.area.common !== undefined && (
+                <div>
+                  <p className="text-sm text-muted-foreground">Comum</p>
+                  <p className="font-medium">
+                    {scrap.analysis_result_json.area.common} m²
+                  </p>
+                </div>
+              )}
+              <div>
+                <p className="text-sm text-muted-foreground">Total</p>
+                <p className="font-medium">
+                  {scrap.analysis_result_json.area.total} m²
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <Separator />
+
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold flex items-center">
+          <Info className="w-5 h-5 mr-2" /> Detalhes do Imóvel
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {scrap.analysis_result_json.house_details.floors != null && (
+            <div>
+              <p className="text-sm text-muted-foreground flex items-center">
+                <Layers className="w-4 h-4 mr-1" /> Andares
+              </p>
+              <p className="font-medium">
+                {scrap.analysis_result_json.house_details.floors}
+              </p>
+            </div>
+          )}
+          {scrap.analysis_result_json.house_details.rooms.bedrooms != null && (
+            <div>
+              <p className="text-sm text-muted-foreground flex items-center">
+                <Bed className="w-4 h-4 mr-1" /> Quartos
+              </p>
+              <p className="font-medium">
+                {scrap.analysis_result_json.house_details.rooms.bedrooms}
+              </p>
+            </div>
+          )}
+          {scrap.analysis_result_json.house_details.rooms.bathrooms != null && (
+            <div>
+              <p className="text-sm text-muted-foreground flex items-center">
+                <Bath className="w-4 h-4 mr-1" /> Banheiros
+              </p>
+              <p className="font-medium">
+                {scrap.analysis_result_json.house_details.rooms.bathrooms}
+              </p>
+            </div>
+          )}
+          {scrap.analysis_result_json.house_details.rooms.living_rooms !=
+            null && (
+            <div>
+              <p className="text-sm text-muted-foreground flex items-center">
+                <Sofa className="w-4 h-4 mr-1" /> Salas
+              </p>
+              <p className="font-medium">
+                {scrap.analysis_result_json.house_details.rooms.living_rooms}
+              </p>
+            </div>
+          )}
+          {scrap.analysis_result_json.house_details.rooms.garages != null && (
+            <div>
+              <p className="text-sm text-muted-foreground flex items-center">
+                <Car className="w-4 h-4 mr-1" /> Vagas
+              </p>
+              <p className="font-medium">
+                {scrap.analysis_result_json.house_details.rooms.garages}
+              </p>
+            </div>
+          )}
+          {scrap.analysis_result_json.condominium_details && (
+            <div>
+              <p className="text-sm text-muted-foreground flex items-center">
+                <Building className="w-4 h-4 mr-1" /> Condomínio
+              </p>
+              <p className="font-medium">
+                {scrap.analysis_result_json.condominium_details.classification}
+              </p>
+            </div>
+          )}
+        </div>
+        <div>
+          <h3 className="font-semibold">Extras</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+            {scrap.analysis_result_json.house_details.extras.map(
+              (extra, index) => (
+                <div key={index} className="flex items-center">
+                  <span className="w-1.5 h-1.5 bg-muted-foreground/50 rounded-full mr-2"></span>
+                  <span>{extra}</span>
+                </div>
+              ),
+            )}
+          </div>
+        </div>
+        {scrap.analysis_result_json.condominium_details &&
+          (scrap.analysis_result_json.condominium_details.amenities ?? [])
+            .length > 0 && (
+            <div>
+              <h3 className="font-semibold mt-4">Detalhes do Condomínio</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                {scrap.analysis_result_json.condominium_details.amenities.map(
+                  (amenity, index) => (
+                    <div key={index} className="flex items-center">
+                      <span className="w-1.5 h-1.5 bg-muted-foreground/50 rounded-full mr-2"></span>
+                      <span className="text-sm">{amenity}</span>
+                    </div>
+                  ),
+                )}
+              </div>
+            </div>
+          )}
+      </section>
+
+      <Separator />
+
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold flex items-center">
+          <Scale className="w-5 h-5 mr-2" /> Informações Legais
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+          <div className="gap-1">
+            <p>
+              <span className="font-semibold">Tipo de Propriedade:</span>{" "}
+              {scrap.analysis_result_json.legal.property_ownership_type}
+            </p>
+            {scrap.analysis_result_json.legal.registration_number && (
+              <p>
+                <span className="font-semibold">Matrícula:</span>{" "}
+                {scrap.analysis_result_json.legal.registration_number}
+              </p>
+            )}
+            {scrap.analysis_result_json.legal.registry_office && (
+              <p>
+                <span className="font-semibold">Cartório:</span>{" "}
+                {scrap.analysis_result_json.legal.registry_office}
+              </p>
+            )}
+            {scrap.analysis_result_json.legal.tax_id && (
+              <p>
+                <span className="font-semibold">Inscrição Fiscal:</span>{" "}
+                {scrap.analysis_result_json.legal.tax_id}
+              </p>
+            )}
+          </div>
+          <div className="gap-1">
+            <p>
+              <span className="font-semibold">Leiloeiro:</span>{" "}
+              {scrap.analysis_result_json.auction.auctioneer_name}
+            </p>
+            <p>
+              <span className="font-semibold">Registro:</span>{" "}
+              {scrap.analysis_result_json.auction.auctioneer_registration}
+            </p>
+            <p>
+              <span className="font-semibold">Website:</span>{" "}
+              <a
+                href={scrap.analysis_result_json.auction.auctionner_website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                {scrap.analysis_result_json.auction.auctionner_website}
+              </a>
+            </p>
+          </div>
+        </div>
+        {scrap.analysis_result_json.legal.liens.length > 0 && (
+          <div>
+            <h3 className="font-semibold">Ônus</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+              {scrap.analysis_result_json.legal.liens.map((lien, index) => (
+                <Popover key={index}>
+                  <PopoverTrigger asChild>
+                    <div className="p-4 border rounded-lg cursor-pointer hover:bg-muted/50">
+                      <p className="font-medium">{lien.type}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {lien.details}
+                      </p>
+                    </div>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-80">
+                    <p className="text-sm">{lien.excerpt_document}</p>
+                    <p className="text-sm text-right">
+                      {lien.document_mentioned}
+                    </p>
+                  </PopoverContent>
+                </Popover>
+              ))}
+            </div>
+          </div>
+        )}
+      </section>
+
+      <Separator />
+
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold flex items-center">
+          <Banknote className="w-5 h-5 mr-2" /> Informações Financeiras
+        </h2>
+
+        <div>
+          <h3 className="font-semibold">Débitos</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+            {scrap.analysis_result_json.financial.specific_debts.IPTU && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <div className="p-4 border rounded-lg w-full cursor-pointer hover:bg-muted/50">
+                    <p className="font-medium">IPTU</p>
+                    <p className="text-xl font-bold">
+                      {formatCurrency(
+                        scrap.analysis_result_json.financial.specific_debts.IPTU
+                          .value,
+                      )}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Responsável:{" "}
+                      {
+                        scrap.analysis_result_json.financial.specific_debts.IPTU
+                          .responsible
+                      }
+                    </p>
+                  </div>
+                </PopoverTrigger>
+                <PopoverContent className="w-80">
+                  <p className="text-sm">
+                    {
+                      scrap.analysis_result_json.financial.specific_debts.IPTU
+                        .excerpt_document
+                    }
+                  </p>
+                  <p className="text-sm text-right">
+                    {
+                      scrap.analysis_result_json.financial.specific_debts.IPTU
+                        .document_mentioned
+                    }
+                  </p>
+                </PopoverContent>
+              </Popover>
+            )}
+            {scrap.analysis_result_json.financial.specific_debts
+              .active_debt && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <div className="p-4 border rounded-lg w-full cursor-pointer hover:bg-muted/50">
+                    <p className="font-medium">Dívida Ativa</p>
+                    <p className="text-xl font-bold">
+                      {formatCurrency(
+                        scrap.analysis_result_json.financial.specific_debts
+                          .active_debt.value,
+                      )}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Responsável:{" "}
+                      {
+                        scrap.analysis_result_json.financial.specific_debts
+                          .active_debt.responsible
+                      }
+                    </p>
+                  </div>
+                </PopoverTrigger>
+                <PopoverContent className="w-80">
+                  <p className="text-sm">
+                    {
+                      scrap.analysis_result_json.financial.specific_debts
+                        .active_debt.excerpt_document
+                    }
+                  </p>
+                  <p className="text-sm text-right">
+                    {
+                      scrap.analysis_result_json.financial.specific_debts
+                        .active_debt.document_mentioned
+                    }
+                  </p>
+                </PopoverContent>
+              </Popover>
+            )}
+            {scrap.analysis_result_json.financial.specific_debts
+              .condominium && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <div className="p-4 border rounded-lg w-full cursor-pointer hover:bg-muted/50">
+                    <p className="font-medium">Condomínio</p>
+                    <p className="text-xl font-bold">
+                      {formatCurrency(
+                        scrap.analysis_result_json.financial.specific_debts
+                          .condominium.value,
+                      )}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Responsável:{" "}
+                      {
+                        scrap.analysis_result_json.financial.specific_debts
+                          .condominium.responsible
+                      }
+                    </p>
+                  </div>
+                </PopoverTrigger>
+                <PopoverContent className="w-80">
+                  <p className="text-sm">
+                    {
+                      scrap.analysis_result_json.financial.specific_debts
+                        .condominium.excerpt_document
+                    }
+                  </p>
+                  <p className="text-sm text-right">
+                    {
+                      scrap.analysis_result_json.financial.specific_debts
+                        .condominium.document_mentioned
+                    }
+                  </p>
+                </PopoverContent>
+              </Popover>
+            )}
+            {scrap.analysis_result_json.financial.other_debts.length > 0 && (
+              <div className="col-span-full">
+                <h3 className="font-semibold mt-4 mb-2">Outros Débitos</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {scrap.analysis_result_json.financial.other_debts.map(
+                    (debt, index) => (
+                      <Popover key={index}>
+                        <PopoverTrigger asChild>
+                          <div className="p-4 border rounded-lg w-full cursor-pointer hover:bg-muted/50">
+                            <p className="font-medium">
+                              Outro Débito {index + 1}
+                            </p>
+                            <p className="text-xl font-bold">
+                              {formatCurrency(debt.value)}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              Responsável: {debt.responsible}
+                            </p>
+                          </div>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-80">
+                          <p className="text-sm">{debt.excerpt_document}</p>
+                          <p className="text-sm text-right">
+                            {debt.document_mentioned}
+                          </p>
+                        </PopoverContent>
+                      </Popover>
+                    ),
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {scrap.analysis_result_json.notes &&
+        scrap.analysis_result_json.notes.length > 0 && (
+          <>
+            <Separator />
+            <section className="space-y-4">
+              <h2 className="text-xl font-semibold flex items-center">
+                <StickyNote className="w-5 h-5 mr-2" /> Observações
+              </h2>
+              <ul className="list-disc list-inside space-y-2">
+                {scrap.analysis_result_json.notes.map((note, index) => (
+                  <li key={index} className="text-sm">
+                    {note}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          </>
+        )}
+    </div>
+  );
+}
+
+function OriginalDescription({ scrap }: { scrap: ScrapWithFiles }) {
   const { isPending, mutate: requestAnalysisMutation } =
     useRequestAnalysisMutation(scrap.id);
   return (
-    <Card>
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Análise do Lote</h2>
-        {scrap.analysis_result_json && (
-          <Button
-            color="gray"
-            size="sm"
+    <div className="lg:w-2/3">
+      <div className="mb-4">
+        <dt className="font-semibold">Endereço:</dt>
+        <dd>{scrap.address || "N/A"}</dd>
+      </div>
+      <div className="flex flex-col items-center mb-6">
+        <p className="font-normal text-gray-700 dark:text-gray-400">
+          <strong>Descrição:</strong> {scrap.description || "Não disponível"}
+        </p>
+      </div>
+      {!scrap.analysis_result_json && (
+        <div className="mt-4">
+          <UIButton
             onClick={() => requestAnalysisMutation()}
+            className="w-full"
             disabled={isPending}
           >
-            <RotateCcw className="w-4 h-4" />
-          </Button>
-        )}
-      </div>
-      {(isPending || !scrap.analysis_result_json) && (
-        <div className="flex flex-col items-center justify-center p-6">
-          <BarChart className="w-16 h-16 text-gray-400 mb-4" />
-          <h3 className="text-xl font-semibold mb-2">
-            {isPending ? "Solicitando análise..." : "Análise não realizada"}
-          </h3>
-          {!isPending && (
-            <>
-              <p className="text-gray-600 text-center mb-4">
-                Solicite uma análise detalhada para obter informações cruciais
-                sobre este lote.
-              </p>
-              <Button
-                color="dark"
-                onClick={() => requestAnalysisMutation()}
-                className="flex items-center gap-2"
-                disabled={isPending}
-              >
-                <BarChart className="w-5 h-5" />
+            {isPending ? (
+              <>
+                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                Analisando...
+              </>
+            ) : (
+              <>
+                <BarChart className="w-4 h-4 mr-2" />
                 Solicitar Análise
-              </Button>
-            </>
-          )}
+              </>
+            )}
+          </UIButton>
         </div>
       )}
-      {!isPending && scrap.analysis_result_json && (
-        <>
-          <div className="flex flex-col lg:flex-row gap-6">
-            <div className="w-1/2 mb-8">
-              <h3 className="text-xl font-bold mb-4">Dados do Imóvel</h3>
-              <p className="text-sm text-gray-600">
-                <strong>Tipo de Imóvel:</strong>{" "}
-                {scrap.analysis_result_json.analysis_result.tipo_imovel}
-              </p>
-              <p className="text-sm text-gray-600">
-                <strong>Tamanho do Imóvel:</strong>{" "}
-                {scrap.analysis_result_json.analysis_result.tamanho_imovel_m2}{" "}
-                m²
-              </p>
-              <p className="text-sm text-gray-600">
-                <strong>Área construída:</strong>{" "}
-                {scrap.analysis_result_json.analysis_result.area_construida_m2}{" "}
-                m²
-              </p>
-              <p className="text-sm text-gray-600">
-                <strong>Endereço:</strong>{" "}
-                {scrap.analysis_result_json.analysis_result.endereco.rua},{" "}
-                {scrap.analysis_result_json.analysis_result.endereco.numero},{" "}
-                {scrap.analysis_result_json.analysis_result.endereco.bairro},{" "}
-                {scrap.analysis_result_json.analysis_result.endereco.cidade},{" "}
-                {scrap.analysis_result_json.analysis_result.endereco.estado},{" "}
-                {scrap.analysis_result_json.analysis_result.endereco.cep}
-              </p>
-              <p className="text-sm text-gray-600">
-                <strong>Vaga de Garagem:</strong>{" "}
-                {scrap.analysis_result_json.analysis_result.vaga_garagem}
-              </p>
-              <p className="text-sm text-gray-600">
-                <strong>Modalidade de Propriedade:</strong>{" "}
-                {
-                  scrap.analysis_result_json.analysis_result
-                    .modalidade_propriedade
-                }
-              </p>
-              <p className="text-sm text-gray-600">
-                <strong>Condição Geral:</strong>{" "}
-                {scrap.analysis_result_json.analysis_result.condicao_geral}
-              </p>
-              <p className="text-sm text-gray-600">
-                <strong>Tipo de Reforma:</strong>{" "}
-                {scrap.analysis_result_json.analysis_result.tipo_reforma}
-              </p>
-              <p className="text-sm text-gray-600">
-                <strong>Imóvel Ocupado:</strong>{" "}
-                {scrap.analysis_result_json.analysis_result.imovel_ocupado}
-              </p>
-            </div>
-
-            <div className="w-1/2 mb-8">
-              <h3 className="text-xl font-bold mb-4">
-                Informações do Processo
-              </h3>
-              <p className="text-sm text-gray-600">
-                <strong>Divida de IPTU:</strong> R${" "}
-                {scrap.analysis_result_json.analysis_result.divida_iptu.toLocaleString()}
-              </p>
-              <p className="text-sm text-gray-600">
-                <strong>Divida de Condomínio:</strong> R${" "}
-                {scrap.analysis_result_json.analysis_result.divida_condominio.toLocaleString()}
-              </p>
-              <p className="text-sm text-gray-600">
-                <strong>Ocupação Usucapião:</strong>{" "}
-                {scrap.analysis_result_json.analysis_result.ocupacao_usucapiao}
-              </p>
-              <p className="text-sm text-gray-600">
-                <strong>Usufrutuários:</strong>{" "}
-                {scrap.analysis_result_json.analysis_result.usufrutuarios}
-              </p>
-              <p className="text-sm text-gray-600">
-                <strong>Penhoras:</strong>{" "}
-              </p>
-              <ul className="text-sm text-gray-600">
-                {scrap.analysis_result_json.analysis_result.penhoras.map(
-                  (penhora) => (
-                    <li
-                      key={penhora.descricao_penhora}
-                      className="list-disc list-inside"
-                    >
-                      {penhora.descricao_penhora} (
-                      {penhora.documento_mencionado})
-                      {/* TODO: Exibir trecho do documento */}
-                      {/* <em>{penhora.trecho_documento}</em> */}
-                    </li>
-                  ),
-                )}
-              </ul>
-              {scrap.analysis_result_json.analysis_result.risco_arrematacao && (
-                <p className="text-sm text-gray-600">
-                  <strong>Risco de Arrematação:</strong>{" "}
-                  {
-                    scrap.analysis_result_json.analysis_result.risco_arrematacao
-                      .risco
-                  }{" "}
-                  <em>
-                    (
-                    {
-                      scrap.analysis_result_json.analysis_result
-                        .risco_arrematacao.justificativa
-                    }
-                    )
-                  </em>
-                </p>
-              )}
-            </div>
-          </div>
-          <p className="text-sm text-gray-600">
-            <strong>Texto da Análise:</strong>
-            <br />
-          </p>
-          <pre className="whitespace-pre-wrap">
-            {scrap.analysis_result_text}
-          </pre>
-        </>
-      )}
-    </Card>
+    </div>
   );
 }
 
@@ -225,20 +673,14 @@ function DescriptionCard({
     <Card>
       <h2 className="text-2xl font-bold mb-4">Descrição do Lote</h2>
       <div className="flex flex-col lg:flex-row gap-6">
-        <div className="lg:w-2/3">
-          <div className="mb-4">
-            <dt className="font-semibold">Endereço:</dt>
-            <dd>{scrap.address || "N/A"}</dd>
-          </div>
-          <div className="flex flex-col items-center mb-6">
-            <p className="font-normal text-gray-700 dark:text-gray-400">
-              <strong>Descrição:</strong>{" "}
-              {scrap.description || "Não disponível"}
-            </p>
-          </div>
-        </div>
+        {scrap.analysis_result_json == null ? (
+          <OriginalDescription scrap={scrap} />
+        ) : (
+          <Analysis scrap={scrap} />
+        )}
+
         <div className="w-px bg-gray-200 dark:bg-gray-700 self-stretch hidden lg:block"></div>
-        <div className="lg:w-1/3">
+        <div className="lg:w-1/3 lg:sticky lg:top-4 lg:h-fit">
           <dl className="space-y-2">
             <div>
               <dt className="font-semibold">Avaliação:</dt>
@@ -284,7 +726,7 @@ function DescriptionCard({
               <dt className="font-semibold">Última Atualização:</dt>
               <dd className="flex items-center gap-2">
                 {new Date(scrap.updated_at).toLocaleString()}{" "}
-                <RotateCw
+                <RefreshCw
                   className={`w-4 h-4 cursor-pointer ${
                     isPending ? "animate-spin" : ""
                   }`}
@@ -581,7 +1023,7 @@ function PotentialProfitCard({
                       setEditingField(null);
                     }}
                   />
-                  <RotateCcw
+                  <RefreshCw
                     className="w-4 h-4 text-blue-500 cursor-pointer ml-2"
                     onClick={() =>
                       setValorArrematacao(scrap.bid || scrap.valor_arrematacao)
@@ -641,7 +1083,7 @@ function PotentialProfitCard({
                       setEditingField(null);
                     }}
                   />
-                  <RotateCcw
+                  <RefreshCw
                     className="w-4 h-4 text-blue-500 cursor-pointer ml-2"
                     onClick={() =>
                       setValorVenda(scrap.appraisal || scrap.valor_venda)
@@ -1093,7 +1535,6 @@ export function LotModal({ scrapID, showModal, setShowModal }: Props) {
             </div>
             <DescriptionCard scrap={scrap} mutate={mutate} />
             <PotentialProfitCard scrap={scrap} mutate={mutate} />
-            <AnalysisCard scrap={scrap} />
           </div>
         )}
       </Modal.Body>
