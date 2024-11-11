@@ -186,6 +186,7 @@ export default function Page() {
     body = (
       <LotsGrid
         lots={data || []}
+        openLotMode={"page"}
         currentPage={currentPage}
         itemsPerPage={itemsPerPage}
         onPageChange={setCurrentPage}

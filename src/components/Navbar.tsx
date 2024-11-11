@@ -6,7 +6,7 @@ import Link from "next/link";
 
 export function Navbar() {
   return (
-    <FNavbar fluid rounded className="bg-gray-200">
+    <FNavbar fluid rounded className="bg-gray-200 sticky top-0 z-50">
       <FNavbar.Brand as={Link} href="/">
         <span className="self-center whitespace-nowrap text-xl font-semibold">
           W&P Silva Imóveis

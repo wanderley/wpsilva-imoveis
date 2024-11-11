@@ -48,7 +48,7 @@ export function PendingReviewLots() {
         <>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-4">
             {currentItems.map((lot) => (
-              <LotCard key={lot.id} lot={lot} />
+              <LotCard key={lot.id} lot={lot} mode={"page"} />
             ))}
           </div>
           <div className="flex overflow-x-auto sm:justify-center">

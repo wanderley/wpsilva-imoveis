@@ -22,8 +22,8 @@ import { UseMutateFunction } from "@tanstack/react-query";
 import {
   Button,
   Card,
+  Carousel,
   Label,
-  Modal,
   Progress,
   TextInput,
 } from "flowbite-react";
@@ -43,7 +43,7 @@ import {
   Sofa,
   StickyNote,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Check,
   CheckSquare,
@@ -55,14 +55,7 @@ import {
   X,
 } from "react-feather";
 
-import { Lot } from "./Lot";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-
-interface Props {
-  scrapID: number;
-  showModal: boolean;
-  setShowModal: (show: boolean) => void;
-}
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("pt-BR", {
@@ -1487,32 +1480,38 @@ function PotentialProfitCard({
   );
 }
 
-export function LotModal({ scrapID, showModal, setShowModal }: Props) {
+export function Lot({ scrapID }: { scrapID: number }) {
   const { data: scrap, isLoading } = useScrapDetails(scrapID);
   const { mutate } = useUpdateScrapMutation();
 
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setShowModal(false);
-      }
-    };
-
-    if (showModal) {
-      document.addEventListener("keydown", handleKeyDown);
-    }
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [showModal, setShowModal]);
-
   return (
-    <Modal show={showModal} onClose={() => setShowModal(false)} size="7xl">
-      {scrap && <Modal.Header>{scrap.name}</Modal.Header>}
-      <Modal.Body>
-        <Lot scrapID={scrapID} />
-      </Modal.Body>
-    </Modal>
+    <>
+      {isLoading && <p>Carregando...</p>}
+      {scrap && (
+        <div className="space-y-4">
+          <div className="h-56 sm:h-64 xl:h-80 2xl:h-96 mb-4 bg-gray-950 rounded-lg overflow-hidden">
+            <Carousel className="h-full">
+              {scrap.files
+                .filter((file) => file.file_type === "jpg")
+                .map((image) => (
+                  <div
+                    key={image.id}
+                    className="flex items-center justify-center h-full"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={image.url}
+                      alt={`Imagem ${image.id}`}
+                      className="max-w-full max-h-full object-contain"
+                    />
+                  </div>
+                ))}
+            </Carousel>
+          </div>
+          <DescriptionCard scrap={scrap} mutate={mutate} />
+          <PotentialProfitCard scrap={scrap} mutate={mutate} />
+        </div>
+      )}
+    </>
   );
 }

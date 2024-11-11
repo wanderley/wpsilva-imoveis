@@ -1,11 +1,11 @@
 import { LotModal } from "@/components/LotModal";
 import { ScrapWithFiles } from "@/db/schema";
 import { Badge, Card, Carousel } from "flowbite-react";
+import Link from "next/link";
 import { useState } from "react";
 import { HiClock } from "react-icons/hi";
 
-export default function LotCard({ lot }: { lot: ScrapWithFiles }) {
-  const [showModal, setShowModal] = useState(false);
+function BottomContent({ lot }: { lot: ScrapWithFiles }) {
   const discount = lot.appraisal
     ? ((lot.appraisal - (lot.bid || 0)) / lot.appraisal) * 100
     : 0;
@@ -17,6 +17,92 @@ export default function LotCard({ lot }: { lot: ScrapWithFiles }) {
       : lot.second_auction_date && lot.second_auction_date >= new Date()
         ? new Date(lot.second_auction_date)
         : null;
+  return (
+    <>
+      {" "}
+      <div className="flex-grow">
+        <h5
+          className="text-sm font-semibold tracking-tight text-gray-900 dark:text-white mb-1 line-clamp-1"
+          title={lot.name || "N/A"}
+        >
+          {lot.name || "N/A"}
+        </h5>
+        <p className="text-xs text-gray-600 dark:text-gray-400 mb-1 line-clamp-1">
+          Endereço: {lot.address || "Endereço não disponível"}
+        </p>
+        <p className="text-lg font-bold text-gray-700 dark:text-gray-300">
+          Lance Atual: R$ {lot.bid?.toLocaleString() || "N/A"}
+        </p>
+        <div className="flex justify-between items-center mt-1">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Avaliação: R$ {lot.appraisal?.toLocaleString() || "N/A"}
+          </p>
+          <div className="flex gap-1">
+            <Badge color={discountColor} className="text-xs">
+              {discount.toFixed(0)}% desc.
+            </Badge>
+            <Badge
+              color={
+                lot.lucro_percentual !== null && lot.lucro_percentual > 0
+                  ? "success"
+                  : "red"
+              }
+              className="text-xs"
+            >
+              {Math.abs(lot.lucro_percentual ?? 0).toFixed(0)}%{" "}
+              {lot.lucro_percentual !== null && lot.lucro_percentual > 0
+                ? "lucro"
+                : "prejuízo"}
+            </Badge>
+          </div>
+        </div>
+      </div>
+      <div className="flex justify-end items-center mt-2">
+        <p className="text-xs text-gray-600 dark:text-gray-400 flex items-center">
+          <HiClock className="mr-1" size={12} />
+          {nextAuctionDate
+            ? nextAuctionDate.toLocaleDateString()
+            : "Data não definida"}
+        </p>
+      </div>
+    </>
+  );
+}
+
+function CardLink({
+  lot,
+  mode,
+  children,
+}: {
+  lot: ScrapWithFiles;
+  mode: "page" | "modal";
+  children: React.ReactNode;
+}) {
+  const [showModal, setShowModal] = useState(false);
+  if (mode == "page") {
+    return <Link href={`/lot/${lot.id}`}>{children}</Link>;
+  }
+  return (
+    <>
+      <div onClick={() => setShowModal(true)}>{children}</div>
+      {showModal && (
+        <LotModal
+          scrapID={lot.id}
+          showModal={true}
+          setShowModal={setShowModal}
+        />
+      )}
+    </>
+  );
+}
+
+export default function LotCard({
+  lot,
+  mode,
+}: {
+  lot: ScrapWithFiles;
+  mode: "page" | "modal";
+}) {
   return (
     <>
       <Card className="cursor-pointer hover:bg-gray-50">
@@ -36,62 +122,11 @@ export default function LotCard({ lot }: { lot: ScrapWithFiles }) {
                 ))}
             </Carousel>
           </div>
-          <div onClick={() => setShowModal(true)}>
-            <div className="flex-grow">
-              <h5
-                className="text-sm font-semibold tracking-tight text-gray-900 dark:text-white mb-1 line-clamp-1"
-                title={lot.name || "N/A"}
-              >
-                {lot.name || "N/A"}
-              </h5>
-              <p className="text-xs text-gray-600 dark:text-gray-400 mb-1 line-clamp-1">
-                Endereço: {lot.address || "Endereço não disponível"}
-              </p>
-              <p className="text-lg font-bold text-gray-700 dark:text-gray-300">
-                Lance Atual: R$ {lot.bid?.toLocaleString() || "N/A"}
-              </p>
-              <div className="flex justify-between items-center mt-1">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Avaliação: R$ {lot.appraisal?.toLocaleString() || "N/A"}
-                </p>
-                <div className="flex gap-1">
-                  <Badge color={discountColor} className="text-xs">
-                    {discount.toFixed(0)}% desc.
-                  </Badge>
-                  <Badge
-                    color={
-                      lot.lucro_percentual !== null && lot.lucro_percentual > 0
-                        ? "success"
-                        : "red"
-                    }
-                    className="text-xs"
-                  >
-                    {Math.abs(lot.lucro_percentual ?? 0).toFixed(0)}%{" "}
-                    {lot.lucro_percentual !== null && lot.lucro_percentual > 0
-                      ? "lucro"
-                      : "prejuízo"}
-                  </Badge>
-                </div>
-              </div>
-            </div>
-            <div className="flex justify-end items-center mt-2">
-              <p className="text-xs text-gray-600 dark:text-gray-400 flex items-center">
-                <HiClock className="mr-1" size={12} />
-                {nextAuctionDate
-                  ? nextAuctionDate.toLocaleDateString()
-                  : "Data não definida"}
-              </p>
-            </div>
-          </div>
+          <CardLink lot={lot} mode={mode}>
+            <BottomContent lot={lot} />
+          </CardLink>
         </div>
       </Card>
-      {showModal && (
-        <LotModal
-          scrapID={lot.id}
-          showModal={true}
-          setShowModal={setShowModal}
-        />
-      )}
     </>
   );
 }

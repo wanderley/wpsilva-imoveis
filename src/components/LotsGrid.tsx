@@ -5,11 +5,13 @@ import LotCard from "./LotCard";
 
 export function LotsGrid({
   lots,
+  openLotMode,
   currentPage,
   itemsPerPage,
   onPageChange,
 }: {
   lots: ScrapWithFiles[];
+  openLotMode: "page" | "modal";
   currentPage: number;
   itemsPerPage: number;
   onPageChange: (page: number) => void;
@@ -22,7 +24,7 @@ export function LotsGrid({
     <>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-4">
         {currentItems.map((lot: ScrapWithFiles) => (
-          <LotCard key={lot.id} lot={lot} />
+          <LotCard key={lot.id} lot={lot} mode={openLotMode} />
         ))}
       </div>
       <div className="flex overflow-x-auto sm:justify-center">
