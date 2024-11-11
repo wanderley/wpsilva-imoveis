@@ -105,7 +105,6 @@ async function scrapLink(scraper: Scraper, page: Page): Promise<Lot | null> {
       lot.bid = lot.secondAuctionBid;
     }
   }
-  console.log(lot);
   return lot;
 }
 
@@ -117,6 +116,7 @@ export async function updateScrap(
   if (!scraper) {
     throw new Error(`Scraper ${scraperID} not found`);
   }
+  const scrapID = await getScrapID(scraperID, url);
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
   await page.setViewport({ width: 1080, height: 1024 });
@@ -133,19 +133,12 @@ export async function updateScrap(
     if (!scrapData) {
       await db
         .update(scrapsTable)
-        .set({
-          fetch_status: "failed",
-        })
-        .where(
-          and(eq(scrapsTable.scraper_id, scraperID), eq(scrapsTable.url, url)),
-        )
+        .set({ fetch_status: "failed" })
+        .where(eq(scrapsTable.id, scrapID))
         .execute();
     } else if (scrapData) {
       const existingScrap = await db.query.scrapsTable.findFirst({
-        where: and(
-          eq(scrapsTable.scraper_id, scraperID),
-          eq(scrapsTable.url, url),
-        ),
+        where: eq(scrapsTable.id, scrapID),
       });
       await db
         .update(scrapsTable)
@@ -175,44 +168,25 @@ export async function updateScrap(
         )
         .execute();
 
-      // Get the scrap ID
-      const scrap = await db.query.scrapsTable.findFirst({
-        where: and(
-          eq(scrapsTable.scraper_id, scraperID),
-          eq(scrapsTable.url, url),
-        ),
-      });
+      // Remove all existing files for this scrap
+      await db
+        .delete(scrapFilesTable)
+        .where(eq(scrapFilesTable.scrap_id, scrapID))
+        .execute();
 
-      if (scrap) {
-        // Remove all existing files for this scrap
+      // Insert new images
+      for (const imageUrl of scrapData.images) {
         await db
-          .delete(scrapFilesTable)
-          .where(eq(scrapFilesTable.scrap_id, scrap.id))
+          .insert(scrapFilesTable)
+          .values({
+            scrap_id: scrapID,
+            file_type: "jpg",
+            url: imageUrl,
+          })
           .execute();
-
-        // Insert new images
-        for (const imageUrl of scrapData.images) {
-          await db
-            .insert(scrapFilesTable)
-            .values({
-              scrap_id: scrap.id,
-              file_type: "jpg",
-              url: imageUrl,
-            })
-            .execute();
-        }
-        const { analysesCount } = (
-          await db
-            .select({ analysesCount: count() })
-            .from(scrapAnalysesTable)
-            .where(eq(scrapAnalysesTable.scrap_id, scrap.id))
-            .execute()
-        )[0];
-        if (analysesCount === 0) {
-          await updateAnalysis(scrap.id, "gpt-4o-mini");
-        }
-        await updatePotentialProfit(scrap.id);
       }
+      await maybeUpdateAnalysis(scrapID);
+      await updatePotentialProfit(scrapID);
     }
   } catch (error) {
     console.error("Error updating scrap:", error);
@@ -228,6 +202,30 @@ export async function updateScrap(
     throw error;
   } finally {
     await browser.close();
+  }
+}
+
+async function getScrapID(scraperID: string, url: string): Promise<number> {
+  const scrap = await db.query.scrapsTable.findFirst({
+    where: and(eq(scrapsTable.scraper_id, scraperID), eq(scrapsTable.url, url)),
+  });
+  if (!scrap) {
+    throw new Error(`Scrap ${url} not found`);
+  }
+  return scrap.id;
+}
+
+async function maybeUpdateAnalysis(scrapID: number): Promise<void> {
+  const { analysesCount } = (
+    await db
+      .select({ analysesCount: count() })
+      .from(scrapAnalysesTable)
+      .where(eq(scrapAnalysesTable.scrap_id, scrapID))
+      .execute()
+  )[0];
+  // If no analysis exists, create one
+  if (analysesCount === 0) {
+    await updateAnalysis(scrapID, "gpt-4o-mini");
   }
 }
 
