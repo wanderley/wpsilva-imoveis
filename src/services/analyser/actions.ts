@@ -1,7 +1,12 @@
 "use server";
 
 import { db } from "@/db";
-import { ScrapWithFiles, openaiFilesTable, scrapsTable } from "@/db/schema";
+import {
+  ScrapWithFiles,
+  openaiFilesTable,
+  scrapAnalysesTable,
+  scrapsTable,
+} from "@/db/schema";
 import { getScrapDetails } from "@/models/scraps/actions";
 import {
   Schema,
@@ -47,7 +52,7 @@ export async function updateAnalysis(
       ],
     });
 
-    const text = await new Promise((resolve, reject) => {
+    const response_raw: string = await new Promise((resolve, reject) => {
       openai.beta.threads.runs
         .stream(thread.id, {
           assistant_id: process.env.OPENAI_ASSISTANT_ID!,
@@ -72,25 +77,23 @@ export async function updateAnalysis(
 
     const parsedText = await openai.beta.chat.completions.parse({
       model,
-      messages: [{ role: "user", content: text as string }],
+      messages: [{ role: "user", content: response_raw as string }],
       response_format: zodResponseFormat(schema, "analysis_result"),
     });
 
-    const json = parsedText.choices[0].message.parsed;
-    if (!json) {
+    const response = parsedText.choices[0].message.parsed;
+    if (!response) {
       throw new Error("Failed to parse analysis result");
     }
-    await db
-      .update(scrapsTable)
-      .set({
-        analysis_status: "done",
-        analysis_prompt: prompt,
-        analysis_result_json: json,
-        analysis_result_text: text as string,
-      })
-      .where(eq(scrapsTable.id, scrapId));
+    await db.insert(scrapAnalysesTable).values({
+      scrap_id: scrapId,
+      model,
+      prompt,
+      response,
+      response_raw,
+    });
 
-    await updateCosts(scrapId, json);
+    await updateCosts(scrapId, response);
   } catch (error) {
     console.error("Error requesting analysis:", error);
     throw new Error("Failed to request analysis");

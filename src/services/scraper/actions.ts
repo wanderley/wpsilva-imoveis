@@ -1,12 +1,12 @@
 "use server";
 
 import { db } from "@/db";
-import { scrapFilesTable, scrapsTable } from "@/db/schema";
+import { scrapAnalysesTable, scrapFilesTable, scrapsTable } from "@/db/schema";
 import { getScrapDetails } from "@/models/scraps/actions";
 import { computePotentialProfit } from "@/models/scraps/helpers";
 import { getScraper } from "@/services/scraper";
 import { Lot, Scraper } from "@/services/scraper/scraper";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, count, eq, inArray } from "drizzle-orm";
 import puppeteer, { Page } from "puppeteer";
 
 import { updateAnalysis } from "../analyser/actions";
@@ -201,7 +201,14 @@ export async function updateScrap(
             })
             .execute();
         }
-        if (!scrap.analysis_result_json) {
+        const { analysesCount } = (
+          await db
+            .select({ analysesCount: count() })
+            .from(scrapAnalysesTable)
+            .where(eq(scrapAnalysesTable.scrap_id, scrap.id))
+            .execute()
+        )[0];
+        if (analysesCount === 0) {
           await updateAnalysis(scrap.id, "gpt-4o-mini");
         }
         await updatePotentialProfit(scrap.id);

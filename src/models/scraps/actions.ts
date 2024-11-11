@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db/index";
-import { ScrapWithFiles, scrapsTable } from "@/db/schema";
+import { ScrapWithFiles, scrapAnalysesTable, scrapsTable } from "@/db/schema";
 import {
   SQLWrapper,
   and,
@@ -18,6 +18,9 @@ export async function getScraps(scraperID: string): Promise<ScrapWithFiles[]> {
   return await db.query.scrapsTable.findMany({
     with: {
       files: true,
+      analyses: {
+        orderBy: [desc(scrapAnalysesTable.created_at)],
+      },
     },
     where: eq(scrapsTable.scraper_id, scraperID),
   });
@@ -29,6 +32,9 @@ export async function getScrapDetails(
   return await db.query.scrapsTable.findFirst({
     with: {
       files: true,
+      analyses: {
+        orderBy: [desc(scrapAnalysesTable.created_at)],
+      },
     },
     where: eq(scrapsTable.id, scrapId),
   });
@@ -52,6 +58,9 @@ export async function getLots(extraWhere?: SQLWrapper) {
     },
     with: {
       files: true,
+      analyses: {
+        orderBy: [desc(scrapAnalysesTable.created_at)],
+      },
     },
     where: and(
       eq(scrapsTable.fetch_status, "fetched"),
@@ -119,6 +128,9 @@ export async function searchLots(
     },
     with: {
       files: true,
+      analyses: {
+        orderBy: [desc(scrapAnalysesTable.created_at)],
+      },
     },
     where: and(eq(scrapsTable.fetch_status, "fetched"), ...conditions),
     orderBy: [asc(nextAuctionDate), desc(discount)],

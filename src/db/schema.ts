@@ -14,12 +14,22 @@ import {
   varchar,
 } from "drizzle-orm/mysql-core";
 
+const createdAt = timestamp("created_at")
+  .notNull()
+  .default(sql`now()`);
+const updatedAt = timestamp("updated_at")
+  .notNull()
+  .default(sql`now()`)
+  .onUpdateNow();
+
 export const users = mysqlTable("users", {
   id: varchar("id", { length: 255 })
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
   name: varchar("name", { length: 255 }),
   email: varchar("email", { length: 255 }).unique(),
+  created_at: createdAt,
+  updated_at: updatedAt,
 });
 
 export const verificationTokens = mysqlTable(
@@ -93,22 +103,14 @@ export const scrapsTable = mysqlTable("scraps", {
   custo_pos_venda_imposto_ganho_capita_percentual: float()
     .default(0.15)
     .notNull(),
-  analysis_status: text("analysis_status").default("none"),
-  analysis_prompt: text("analysis_prompt"),
-  analysis_result_text: text("analysis_result_text"),
-  analysis_result_json: json("analysis_result_json").$type<Schema>(),
   is_interesting: int(),
-  created_at: timestamp("created_at")
-    .notNull()
-    .default(sql`now()`),
-  updated_at: timestamp("updated_at")
-    .notNull()
-    .default(sql`now()`)
-    .onUpdateNow(),
+  created_at: createdAt,
+  updated_at: updatedAt,
 });
 
 export const scrapRelations = relations(scrapsTable, ({ many }) => ({
   files: many(scrapFilesTable),
+  analyses: many(scrapAnalysesTable),
 }));
 
 export const scrapFilesTable = mysqlTable("scrap_files", {
@@ -116,13 +118,8 @@ export const scrapFilesTable = mysqlTable("scrap_files", {
   scrap_id: int().references(() => scrapsTable.id, { onDelete: "cascade" }),
   file_type: mysqlEnum(["jpg", "pdf"]).notNull(),
   url: varchar({ length: 767 }).notNull(),
-  created_at: timestamp("created_at")
-    .notNull()
-    .default(sql`now()`),
-  updated_at: timestamp("updated_at")
-    .notNull()
-    .default(sql`now()`)
-    .onUpdateNow(),
+  created_at: createdAt,
+  updated_at: updatedAt,
 });
 
 export const scrapFilesRelations = relations(scrapFilesTable, ({ one }) => ({
@@ -131,6 +128,26 @@ export const scrapFilesRelations = relations(scrapFilesTable, ({ one }) => ({
     references: [scrapsTable.id],
   }),
 }));
+
+export const scrapAnalysesTable = mysqlTable("scrap_analyses", {
+  id: int().primaryKey().autoincrement(),
+  scrap_id: int().references(() => scrapsTable.id, { onDelete: "cascade" }),
+  model: mysqlEnum(["gpt-4o", "gpt-4o-mini"]).notNull(),
+  prompt: text("prompt").notNull(),
+  response: json("response").$type<Schema>().notNull(),
+  response_raw: text("response_raw").notNull(),
+  created_at: createdAt,
+});
+
+export const scrapAnalysesRelations = relations(
+  scrapAnalysesTable,
+  ({ one }) => ({
+    scrap: one(scrapsTable, {
+      fields: [scrapAnalysesTable.scrap_id],
+      references: [scrapsTable.id],
+    }),
+  }),
+);
 
 export const openaiFilesTable = mysqlTable(
   "openai_files",
@@ -149,4 +166,5 @@ export const openaiFilesTable = mysqlTable(
 
 export type ScrapWithFiles = typeof scrapsTable.$inferSelect & {
   files: (typeof scrapFilesTable.$inferSelect)[];
+  analyses: (typeof scrapAnalysesTable.$inferSelect)[];
 };

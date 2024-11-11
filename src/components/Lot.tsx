@@ -109,7 +109,8 @@ function Analysis({ scrap }: { scrap: ScrapWithFiles }) {
   const { isPending, mutate: requestAnalysisMutation } =
     useRequestAnalysisMutation(scrap.id);
 
-  if (!scrap.analysis_result_json) {
+  const analysis = scrap.analyses.length > 0 ? scrap.analyses[0] : null;
+  if (!analysis) {
     return null;
   }
 
@@ -127,7 +128,7 @@ function Analysis({ scrap }: { scrap: ScrapWithFiles }) {
           </TabsList>
           <TabsContent value="analysis">
             <p className="text-muted-foreground">
-              {scrap.analysis_result_json.description}
+              {analysis.response.description}
             </p>
           </TabsContent>
           <TabsContent value="auction">
@@ -160,14 +161,12 @@ function Analysis({ scrap }: { scrap: ScrapWithFiles }) {
             <p className="font-medium">Avaliação de Riscos</p>
             <Badge
               className="text-base"
-              variant={getRiskBadgeVariant(
-                scrap.analysis_result_json.risks.risk,
-              )}
+              variant={getRiskBadgeVariant(analysis.response.risks.risk)}
             >
-              Risco {scrap.analysis_result_json.risks.risk}
+              Risco {analysis.response.risks.risk}
             </Badge>
             <p className="mt-2 text-sm">
-              {scrap.analysis_result_json.risks.justification}
+              {analysis.response.risks.justification}
             </p>
           </div>
           <div>
@@ -175,12 +174,12 @@ function Analysis({ scrap }: { scrap: ScrapWithFiles }) {
             <Badge
               className="text-base"
               variant={
-                scrap.analysis_result_json.occupancy_status === "Ocupado"
+                analysis.response.occupancy_status === "Ocupado"
                   ? "destructive"
                   : "success"
               }
             >
-              {scrap.analysis_result_json.occupancy_status}
+              {analysis.response.occupancy_status}
             </Badge>
           </div>
           <div>
@@ -188,10 +187,10 @@ function Analysis({ scrap }: { scrap: ScrapWithFiles }) {
             <Badge
               className="text-base"
               variant={getConditionBadgeVariant(
-                scrap.analysis_result_json.appraisal.general_condition,
+                analysis.response.appraisal.general_condition,
               )}
             >
-              {scrap.analysis_result_json.appraisal.general_condition}
+              {analysis.response.appraisal.general_condition}
             </Badge>
           </div>
           <div>
@@ -199,10 +198,10 @@ function Analysis({ scrap }: { scrap: ScrapWithFiles }) {
             <Badge
               className="text-base"
               variant={getReformTypeBadgeVariant(
-                scrap.analysis_result_json.appraisal.type_of_reform,
+                analysis.response.appraisal.type_of_reform,
               )}
             >
-              {scrap.analysis_result_json.appraisal.type_of_reform}
+              {analysis.response.appraisal.type_of_reform}
             </Badge>
           </div>
         </div>
@@ -217,32 +216,30 @@ function Analysis({ scrap }: { scrap: ScrapWithFiles }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <h3 className="font-semibold">Endereço</h3>
-            <p>{scrap.analysis_result_json.address}</p>
+            <p>{analysis.response.address}</p>
           </div>
           <div>
             <h3 className="font-semibold">Áreas</h3>
             <div className="grid grid-cols-3 gap-4">
-              {scrap.analysis_result_json.area.private !== undefined && (
+              {analysis.response.area.private !== undefined && (
                 <div>
                   <p className="text-sm text-muted-foreground">Privativa</p>
                   <p className="font-medium">
-                    {scrap.analysis_result_json.area.private} m²
+                    {analysis.response.area.private} m²
                   </p>
                 </div>
               )}
-              {scrap.analysis_result_json.area.common !== undefined && (
+              {analysis.response.area.common !== undefined && (
                 <div>
                   <p className="text-sm text-muted-foreground">Comum</p>
                   <p className="font-medium">
-                    {scrap.analysis_result_json.area.common} m²
+                    {analysis.response.area.common} m²
                   </p>
                 </div>
               )}
               <div>
                 <p className="text-sm text-muted-foreground">Total</p>
-                <p className="font-medium">
-                  {scrap.analysis_result_json.area.total} m²
-                </p>
+                <p className="font-medium">{analysis.response.area.total} m²</p>
               </div>
             </div>
           </div>
@@ -256,64 +253,63 @@ function Analysis({ scrap }: { scrap: ScrapWithFiles }) {
           <Info className="w-5 h-5 mr-2" /> Detalhes do Imóvel
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {scrap.analysis_result_json.house_details.floors != null && (
+          {analysis.response.house_details.floors != null && (
             <div>
               <p className="text-sm text-muted-foreground flex items-center">
                 <Layers className="w-4 h-4 mr-1" /> Andares
               </p>
               <p className="font-medium">
-                {scrap.analysis_result_json.house_details.floors}
+                {analysis.response.house_details.floors}
               </p>
             </div>
           )}
-          {scrap.analysis_result_json.house_details.rooms.bedrooms != null && (
+          {analysis.response.house_details.rooms.bedrooms != null && (
             <div>
               <p className="text-sm text-muted-foreground flex items-center">
                 <Bed className="w-4 h-4 mr-1" /> Quartos
               </p>
               <p className="font-medium">
-                {scrap.analysis_result_json.house_details.rooms.bedrooms}
+                {analysis.response.house_details.rooms.bedrooms}
               </p>
             </div>
           )}
-          {scrap.analysis_result_json.house_details.rooms.bathrooms != null && (
+          {analysis.response.house_details.rooms.bathrooms != null && (
             <div>
               <p className="text-sm text-muted-foreground flex items-center">
                 <Bath className="w-4 h-4 mr-1" /> Banheiros
               </p>
               <p className="font-medium">
-                {scrap.analysis_result_json.house_details.rooms.bathrooms}
+                {analysis.response.house_details.rooms.bathrooms}
               </p>
             </div>
           )}
-          {scrap.analysis_result_json.house_details.rooms.living_rooms !=
-            null && (
+          {analysis.response.house_details.rooms.living_rooms != null && (
             <div>
               <p className="text-sm text-muted-foreground flex items-center">
                 <Sofa className="w-4 h-4 mr-1" /> Salas
               </p>
               <p className="font-medium">
-                {scrap.analysis_result_json.house_details.rooms.living_rooms}
+                {analysis.response.house_details.rooms.living_rooms}
               </p>
             </div>
           )}
-          {scrap.analysis_result_json.house_details.rooms.garages != null && (
+          {analysis.response.house_details.rooms.garages != null && (
             <div>
               <p className="text-sm text-muted-foreground flex items-center">
                 <Car className="w-4 h-4 mr-1" /> Vagas
               </p>
               <p className="font-medium">
-                {scrap.analysis_result_json.house_details.rooms.garages}
+                {analysis.response.house_details.rooms.garages}
               </p>
             </div>
           )}
-          {scrap.analysis_result_json.condominium_details && (
+          {analysis.response.condominium_details && (
             <div>
               <p className="text-sm text-muted-foreground flex items-center">
                 <Building className="w-4 h-4 mr-1" /> Condomínio
               </p>
               <p className="font-medium">
-                {scrap.analysis_result_json.condominium_details.classification}
+                {analysis.response.condominium_details.classification}
               </p>
             </div>
           )}
@@ -321,23 +317,21 @@ function Analysis({ scrap }: { scrap: ScrapWithFiles }) {
         <div>
           <h3 className="font-semibold">Extras</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
-            {scrap.analysis_result_json.house_details.extras.map(
-              (extra, index) => (
-                <div key={index} className="flex items-center">
-                  <span className="w-1.5 h-1.5 bg-muted-foreground/50 rounded-full mr-2"></span>
-                  <span>{extra}</span>
-                </div>
-              ),
-            )}
+            {analysis.response.house_details.extras.map((extra, index) => (
+              <div key={index} className="flex items-center">
+                <span className="w-1.5 h-1.5 bg-muted-foreground/50 rounded-full mr-2"></span>
+                <span>{extra}</span>
+              </div>
+            ))}
           </div>
         </div>
-        {scrap.analysis_result_json.condominium_details &&
-          (scrap.analysis_result_json.condominium_details.amenities ?? [])
-            .length > 0 && (
+        {analysis.response.condominium_details &&
+          (analysis.response.condominium_details.amenities ?? []).length >
+            0 && (
             <div>
               <h3 className="font-semibold mt-4">Detalhes do Condomínio</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
-                {scrap.analysis_result_json.condominium_details.amenities.map(
+                {analysis.response.condominium_details.amenities.map(
                   (amenity, index) => (
                     <div key={index} className="flex items-center">
                       <span className="w-1.5 h-1.5 bg-muted-foreground/50 rounded-full mr-2"></span>
@@ -360,54 +354,54 @@ function Analysis({ scrap }: { scrap: ScrapWithFiles }) {
           <div className="gap-1">
             <p>
               <span className="font-semibold">Tipo de Propriedade:</span>{" "}
-              {scrap.analysis_result_json.legal.property_ownership_type}
+              {analysis.response.legal.property_ownership_type}
             </p>
-            {scrap.analysis_result_json.legal.registration_number && (
+            {analysis.response.legal.registration_number && (
               <p>
                 <span className="font-semibold">Matrícula:</span>{" "}
-                {scrap.analysis_result_json.legal.registration_number}
+                {analysis.response.legal.registration_number}
               </p>
             )}
-            {scrap.analysis_result_json.legal.registry_office && (
+            {analysis.response.legal.registry_office && (
               <p>
                 <span className="font-semibold">Cartório:</span>{" "}
-                {scrap.analysis_result_json.legal.registry_office}
+                {analysis.response.legal.registry_office}
               </p>
             )}
-            {scrap.analysis_result_json.legal.tax_id && (
+            {analysis.response.legal.tax_id && (
               <p>
                 <span className="font-semibold">Inscrição Fiscal:</span>{" "}
-                {scrap.analysis_result_json.legal.tax_id}
+                {analysis.response.legal.tax_id}
               </p>
             )}
           </div>
           <div className="gap-1">
             <p>
               <span className="font-semibold">Leiloeiro:</span>{" "}
-              {scrap.analysis_result_json.auction.auctioneer_name}
+              {analysis.response.auction.auctioneer_name}
             </p>
             <p>
               <span className="font-semibold">Registro:</span>{" "}
-              {scrap.analysis_result_json.auction.auctioneer_registration}
+              {analysis.response.auction.auctioneer_registration}
             </p>
             <p>
               <span className="font-semibold">Website:</span>{" "}
               <a
-                href={scrap.analysis_result_json.auction.auctionner_website}
+                href={analysis.response.auction.auctionner_website}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary hover:underline"
               >
-                {scrap.analysis_result_json.auction.auctionner_website}
+                {analysis.response.auction.auctionner_website}
               </a>
             </p>
           </div>
         </div>
-        {scrap.analysis_result_json.legal.liens.length > 0 && (
+        {analysis.response.legal.liens.length > 0 && (
           <div>
             <h3 className="font-semibold">Ônus</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-              {scrap.analysis_result_json.legal.liens.map((lien, index) => (
+              {analysis.response.legal.liens.map((lien, index) => (
                 <Popover key={index}>
                   <PopoverTrigger asChild>
                     <div className="p-4 border rounded-lg cursor-pointer hover:bg-muted/50">
@@ -440,21 +434,20 @@ function Analysis({ scrap }: { scrap: ScrapWithFiles }) {
         <div>
           <h3 className="font-semibold">Débitos</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-            {scrap.analysis_result_json.financial.specific_debts.IPTU && (
+            {analysis.response.financial.specific_debts.IPTU && (
               <Popover>
                 <PopoverTrigger asChild>
                   <div className="p-4 border rounded-lg w-full cursor-pointer hover:bg-muted/50">
                     <p className="font-medium">IPTU</p>
                     <p className="text-xl font-bold">
                       {formatCurrency(
-                        scrap.analysis_result_json.financial.specific_debts.IPTU
-                          .value,
+                        analysis.response.financial.specific_debts.IPTU.value,
                       )}
                     </p>
                     <p className="text-sm text-muted-foreground">
                       Responsável:{" "}
                       {
-                        scrap.analysis_result_json.financial.specific_debts.IPTU
+                        analysis.response.financial.specific_debts.IPTU
                           .responsible
                       }
                     </p>
@@ -463,36 +456,35 @@ function Analysis({ scrap }: { scrap: ScrapWithFiles }) {
                 <PopoverContent className="w-80">
                   <p className="text-sm">
                     {
-                      scrap.analysis_result_json.financial.specific_debts.IPTU
+                      analysis.response.financial.specific_debts.IPTU
                         .excerpt_document
                     }
                   </p>
                   <p className="text-sm text-right">
                     {
-                      scrap.analysis_result_json.financial.specific_debts.IPTU
+                      analysis.response.financial.specific_debts.IPTU
                         .document_mentioned
                     }
                   </p>
                 </PopoverContent>
               </Popover>
             )}
-            {scrap.analysis_result_json.financial.specific_debts
-              .active_debt && (
+            {analysis.response.financial.specific_debts.active_debt && (
               <Popover>
                 <PopoverTrigger asChild>
                   <div className="p-4 border rounded-lg w-full cursor-pointer hover:bg-muted/50">
                     <p className="font-medium">Dívida Ativa</p>
                     <p className="text-xl font-bold">
                       {formatCurrency(
-                        scrap.analysis_result_json.financial.specific_debts
-                          .active_debt.value,
+                        analysis.response.financial.specific_debts.active_debt
+                          .value,
                       )}
                     </p>
                     <p className="text-sm text-muted-foreground">
                       Responsável:{" "}
                       {
-                        scrap.analysis_result_json.financial.specific_debts
-                          .active_debt.responsible
+                        analysis.response.financial.specific_debts.active_debt
+                          .responsible
                       }
                     </p>
                   </div>
@@ -500,36 +492,35 @@ function Analysis({ scrap }: { scrap: ScrapWithFiles }) {
                 <PopoverContent className="w-80">
                   <p className="text-sm">
                     {
-                      scrap.analysis_result_json.financial.specific_debts
-                        .active_debt.excerpt_document
+                      analysis.response.financial.specific_debts.active_debt
+                        .excerpt_document
                     }
                   </p>
                   <p className="text-sm text-right">
                     {
-                      scrap.analysis_result_json.financial.specific_debts
-                        .active_debt.document_mentioned
+                      analysis.response.financial.specific_debts.active_debt
+                        .document_mentioned
                     }
                   </p>
                 </PopoverContent>
               </Popover>
             )}
-            {scrap.analysis_result_json.financial.specific_debts
-              .condominium && (
+            {analysis.response.financial.specific_debts.condominium && (
               <Popover>
                 <PopoverTrigger asChild>
                   <div className="p-4 border rounded-lg w-full cursor-pointer hover:bg-muted/50">
                     <p className="font-medium">Condomínio</p>
                     <p className="text-xl font-bold">
                       {formatCurrency(
-                        scrap.analysis_result_json.financial.specific_debts
-                          .condominium.value,
+                        analysis.response.financial.specific_debts.condominium
+                          .value,
                       )}
                     </p>
                     <p className="text-sm text-muted-foreground">
                       Responsável:{" "}
                       {
-                        scrap.analysis_result_json.financial.specific_debts
-                          .condominium.responsible
+                        analysis.response.financial.specific_debts.condominium
+                          .responsible
                       }
                     </p>
                   </div>
@@ -537,24 +528,24 @@ function Analysis({ scrap }: { scrap: ScrapWithFiles }) {
                 <PopoverContent className="w-80">
                   <p className="text-sm">
                     {
-                      scrap.analysis_result_json.financial.specific_debts
-                        .condominium.excerpt_document
+                      analysis.response.financial.specific_debts.condominium
+                        .excerpt_document
                     }
                   </p>
                   <p className="text-sm text-right">
                     {
-                      scrap.analysis_result_json.financial.specific_debts
-                        .condominium.document_mentioned
+                      analysis.response.financial.specific_debts.condominium
+                        .document_mentioned
                     }
                   </p>
                 </PopoverContent>
               </Popover>
             )}
-            {scrap.analysis_result_json.financial.other_debts.length > 0 && (
+            {analysis.response.financial.other_debts.length > 0 && (
               <div className="col-span-full">
                 <h3 className="font-semibold mt-4 mb-2">Outros Débitos</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {scrap.analysis_result_json.financial.other_debts.map(
+                  {analysis.response.financial.other_debts.map(
                     (debt, index) => (
                       <Popover key={index}>
                         <PopoverTrigger asChild>
@@ -586,24 +577,23 @@ function Analysis({ scrap }: { scrap: ScrapWithFiles }) {
         </div>
       </section>
 
-      {scrap.analysis_result_json.notes &&
-        scrap.analysis_result_json.notes.length > 0 && (
-          <>
-            <Separator />
-            <section className="space-y-4">
-              <h2 className="text-xl font-semibold flex items-center">
-                <StickyNote className="w-5 h-5 mr-2" /> Observações
-              </h2>
-              <ul className="list-disc list-inside space-y-2">
-                {scrap.analysis_result_json.notes.map((note, index) => (
-                  <li key={index} className="text-sm">
-                    {note}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          </>
-        )}
+      {analysis.response.notes && analysis.response.notes.length > 0 && (
+        <>
+          <Separator />
+          <section className="space-y-4">
+            <h2 className="text-xl font-semibold flex items-center">
+              <StickyNote className="w-5 h-5 mr-2" /> Observações
+            </h2>
+            <ul className="list-disc list-inside space-y-2">
+              {analysis.response.notes.map((note, index) => (
+                <li key={index} className="text-sm">
+                  {note}
+                </li>
+              ))}
+            </ul>
+          </section>
+        </>
+      )}
     </div>
   );
 }
@@ -622,7 +612,7 @@ function OriginalDescription({ scrap }: { scrap: ScrapWithFiles }) {
           <strong>Descrição:</strong> {scrap.description || "Não disponível"}
         </p>
       </div>
-      {!scrap.analysis_result_json && (
+      {scrap.analyses.length === 0 && (
         <div className="mt-4">
           <UIButton
             onClick={() => requestAnalysisMutation()}
@@ -666,7 +656,7 @@ function DescriptionCard({
     <Card>
       <h2 className="text-2xl font-bold mb-4">Descrição do Lote</h2>
       <div className="flex flex-col lg:flex-row gap-6">
-        {scrap.analysis_result_json == null ? (
+        {scrap.analyses.length === 0 ? (
           <OriginalDescription scrap={scrap} />
         ) : (
           <Analysis scrap={scrap} />
