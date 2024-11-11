@@ -13,29 +13,6 @@ import { eq } from "drizzle-orm";
 import OpenAI from "openai";
 import { zodResponseFormat } from "openai/helpers/zod.mjs";
 
-function getPrompt(scrap: ScrapWithFiles): string {
-  return `Você é um advogado especializado em leilões de imóveis no Brasil. Preciso da sua ajuda para responder às perguntas a seguir sobre este imóvel em leilão. Utilize apenas as informações encontradas nos arquivos fornecidos para responder.
-
-### Perguntas
-- ${getAllQuestions().join("\n- ")}
-
-### Conhecimento adicional
-- ${getAllKnowledge().join("\n- ")}
-
-### Instruções Adicionais
-
-1.  Responda cada pergunta com muita atenção e detalhe, citando o trecho do documento onde encontrou tal informação.
-2.  Use apenas as informações disponíveis nos arquivos para responder.
-3.	Se uma resposta não puder ser encontrada nos arquivos, escreva “não sei”.
-4.	Revise suas respostas para garantir precisão e aponte qualquer inconsistência encontrada.
-5.  Caso tenha encontrado inconsistências, responda as perguntas novamente corrigindo os erros.
-6.	Além das respostas para cada pergunta, incluindo a descrição do trecho do documento onde encontrou a informação, inclua um JSON com as respostas, seguindo o JSON Schema abaixo:
-
-<json-schema>
-${JSON.stringify(zodResponseFormat(schema, "analysis_result"), null, 2)}
-</json-schema>`;
-}
-
 export async function updateAnalysis(scrapId: number): Promise<void> {
   const scrap = await getScrapDetails(scrapId);
   if (!scrap) {
@@ -50,21 +27,9 @@ export async function updateAnalysis(scrapId: number): Promise<void> {
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     });
-    const file_ids: string[] = [];
-    file_ids.push(await getExistingFileID(scrap.edital_link, "edital.pdf"));
-    if (scrap.matricula_link) {
-      file_ids.push(
-        await getExistingFileID(scrap.matricula_link, "matricula.pdf"),
-      );
-    }
-    if (scrap.laudo_link) {
-      file_ids.push(await getExistingFileID(scrap.laudo_link, "laudo.pdf"));
-    }
-    if (scrap.description) {
-      file_ids.push(await getDescriptionFileID(scrap));
-    }
 
     // Create a thread
+    const file_ids = await getOpenAIFileIDs(scrap);
     const prompt = getPrompt(scrap);
     const thread = await openai.beta.threads.create({
       messages: [
@@ -127,6 +92,48 @@ export async function updateAnalysis(scrapId: number): Promise<void> {
     console.error("Error requesting analysis:", error);
     throw new Error("Failed to request analysis");
   }
+}
+
+function getPrompt(scrap: ScrapWithFiles): string {
+  return `Você é um advogado especializado em leilões de imóveis no Brasil. Preciso da sua ajuda para responder às perguntas a seguir sobre este imóvel em leilão. Utilize apenas as informações encontradas nos arquivos fornecidos para responder.
+
+### Perguntas
+- ${getAllQuestions().join("\n- ")}
+
+### Conhecimento adicional
+- ${getAllKnowledge().join("\n- ")}
+
+### Instruções Adicionais
+
+1.  Responda cada pergunta com muita atenção e detalhe, citando o trecho do documento onde encontrou tal informação.
+2.  Use apenas as informações disponíveis nos arquivos para responder.
+3.	Se uma resposta não puder ser encontrada nos arquivos, escreva “não sei”.
+4.	Revise suas respostas para garantir precisão e aponte qualquer inconsistência encontrada.
+5.  Caso tenha encontrado inconsistências, responda as perguntas novamente corrigindo os erros.
+6.	Além das respostas para cada pergunta, incluindo a descrição do trecho do documento onde encontrou a informação, inclua um JSON com as respostas, seguindo o JSON Schema abaixo:
+
+<json-schema>
+${JSON.stringify(zodResponseFormat(schema, "analysis_result"), null, 2)}
+</json-schema>`;
+}
+
+async function getOpenAIFileIDs(scrap: ScrapWithFiles): Promise<string[]> {
+  const file_ids: string[] = [];
+  if (scrap.edital_link) {
+    file_ids.push(await getExistingFileID(scrap.edital_link, "edital.pdf"));
+  }
+  if (scrap.matricula_link) {
+    file_ids.push(
+      await getExistingFileID(scrap.matricula_link, "matricula.pdf"),
+    );
+  }
+  if (scrap.laudo_link) {
+    file_ids.push(await getExistingFileID(scrap.laudo_link, "laudo.pdf"));
+  }
+  if (scrap.description) {
+    file_ids.push(await getDescriptionFileID(scrap));
+  }
+  return file_ids;
 }
 
 async function getDescriptionFileID(scrap: ScrapWithFiles): Promise<string> {
