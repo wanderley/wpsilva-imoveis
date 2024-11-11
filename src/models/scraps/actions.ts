@@ -1,7 +1,13 @@
 "use server";
 
 import { db } from "@/db/index";
-import { ScrapWithFiles, scrapAnalysesTable, scrapsTable } from "@/db/schema";
+import {
+  ScrapProfit,
+  ScrapWithFiles,
+  scrapAnalysesTable,
+  scrapProfitTable,
+  scrapsTable,
+} from "@/db/schema";
 import {
   SQLWrapper,
   and,
@@ -21,6 +27,7 @@ export async function getScraps(scraperID: string): Promise<ScrapWithFiles[]> {
       analyses: {
         orderBy: [desc(scrapAnalysesTable.created_at)],
       },
+      profit: true,
     },
     where: eq(scrapsTable.scraper_id, scraperID),
   });
@@ -35,6 +42,7 @@ export async function getScrapDetails(
       analyses: {
         orderBy: [desc(scrapAnalysesTable.created_at)],
       },
+      profit: true,
     },
     where: eq(scrapsTable.id, scrapId),
   });
@@ -61,6 +69,7 @@ export async function getLots(extraWhere?: SQLWrapper) {
       analyses: {
         orderBy: [desc(scrapAnalysesTable.created_at)],
       },
+      profit: true,
     },
     where: and(
       eq(scrapsTable.fetch_status, "fetched"),
@@ -131,8 +140,16 @@ export async function searchLots(
       analyses: {
         orderBy: [desc(scrapAnalysesTable.created_at)],
       },
+      profit: true,
     },
     where: and(eq(scrapsTable.fetch_status, "fetched"), ...conditions),
     orderBy: [asc(nextAuctionDate), desc(discount)],
   });
+}
+
+export async function saveScrapProfit(profit: ScrapProfit) {
+  await db
+    .update(scrapProfitTable)
+    .set(profit)
+    .where(eq(scrapProfitTable.id, profit.id));
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useScrapDetails, useUpdateScrapMutation } from "@/hooks";
+import { useScrapDetails } from "@/hooks";
 import { Modal } from "flowbite-react";
 import { useEffect } from "react";
 
@@ -14,7 +14,6 @@ interface Props {
 
 export function LotModal({ scrapID, showModal, setShowModal }: Props) {
   const { data: scrap } = useScrapDetails(scrapID);
-  const { mutate } = useUpdateScrapMutation();
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {

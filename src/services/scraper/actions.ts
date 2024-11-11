@@ -1,9 +1,14 @@
 "use server";
 
 import { db } from "@/db";
-import { scrapAnalysesTable, scrapFilesTable, scrapsTable } from "@/db/schema";
+import {
+  scrapAnalysesTable,
+  scrapFilesTable,
+  scrapProfitTable,
+  scrapsTable,
+} from "@/db/schema";
 import { getScrapDetails } from "@/models/scraps/actions";
-import { computePotentialProfit } from "@/models/scraps/helpers";
+import { computeProfit } from "@/models/scraps/helpers";
 import { getScraper } from "@/services/scraper";
 import { Lot, Scraper } from "@/services/scraper/scraper";
 import { and, count, eq, inArray } from "drizzle-orm";
@@ -137,9 +142,6 @@ export async function updateScrap(
         .where(eq(scrapsTable.id, scrapID))
         .execute();
     } else if (scrapData) {
-      const existingScrap = await db.query.scrapsTable.findFirst({
-        where: eq(scrapsTable.id, scrapID),
-      });
       await db
         .update(scrapsTable)
         .set({
@@ -158,10 +160,6 @@ export async function updateScrap(
           laudo_link: scrapData.laudoLink,
           matricula_link: scrapData.matriculaLink,
           edital_link: scrapData.editalLink,
-          valor_arrematacao:
-            existingScrap?.valor_arrematacao || scrapData.bid || undefined,
-          valor_venda:
-            existingScrap?.valor_venda || scrapData.appraisal || undefined,
         })
         .where(
           and(eq(scrapsTable.scraper_id, scraperID), eq(scrapsTable.url, url)),
@@ -186,7 +184,7 @@ export async function updateScrap(
           .execute();
       }
       await maybeUpdateAnalysis(scrapID);
-      await updatePotentialProfit(scrapID);
+      await updateProfit(scrapID);
     }
   } catch (error) {
     console.error("Error updating scrap:", error);
@@ -229,23 +227,38 @@ async function maybeUpdateAnalysis(scrapID: number): Promise<void> {
   }
 }
 
-async function updatePotentialProfit(scrapId: number): Promise<void> {
-  const scrap = await getScrapDetails(scrapId);
+async function updateProfit(scrapID: number): Promise<void> {
+  const scrap = await getScrapDetails(scrapID);
   if (!scrap) {
     return;
   }
-  const { lucro, lucro_percentual } = computePotentialProfit({
-    ...scrap,
-    valor_arrematacao: scrap.valor_arrematacao,
-    valor_venda: scrap.valor_venda,
+  let profit = await db.query.scrapProfitTable.findFirst({
+    where: eq(scrapProfitTable.scrap_id, scrapID),
   });
+  if (!profit) {
+    await db.insert(scrapProfitTable).values({ scrap_id: scrapID }).execute();
+    profit = (await db.query.scrapProfitTable.findFirst({
+      where: eq(scrapProfitTable.scrap_id, scrapID),
+    }))!;
+  }
+  if (profit.status === "overridden") {
+    return;
+  }
+  profit = {
+    ...profit,
+    valor_arrematacao: scrap.bid ?? profit.valor_arrematacao,
+    valor_venda: scrap.appraisal ?? profit.valor_venda,
+  };
+  const { lucro, lucro_percentual } = computeProfit(profit);
+  profit = {
+    ...profit,
+    lucro,
+    lucro_percentual,
+  };
 
   await db
-    .update(scrapsTable)
-    .set({
-      lucro,
-      lucro_percentual,
-    })
-    .where(eq(scrapsTable.id, scrapId))
+    .update(scrapProfitTable)
+    .set(profit)
+    .where(eq(scrapProfitTable.scrap_id, scrapID))
     .execute();
 }

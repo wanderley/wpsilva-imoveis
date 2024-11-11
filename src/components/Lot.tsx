@@ -9,14 +9,15 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
-import { ScrapWithFiles } from "@/db/schema";
+import { ScrapProfit, ScrapWithFiles } from "@/db/schema";
 import {
   useRequestAnalysisMutation,
   useScrapDetails,
   useUpdateScrapMutation,
+  useUpdateScrapProfitMutation,
   useUpdateScraperMutation,
 } from "@/hooks";
-import { computePotentialProfit } from "@/models/scraps/helpers";
+import { computeProfit } from "@/models/scraps/helpers";
 import { Schema } from "@/services/analyser/schema";
 import { UseMutateFunction } from "@tanstack/react-query";
 import {
@@ -820,19 +821,31 @@ function DescriptionCard({
   );
 }
 
-function PotentialProfitCard({
-  scrap,
-  mutate,
-}: {
-  scrap: ScrapWithFiles;
-  mutate: UseMutateFunction<void, Error, ScrapWithFiles, unknown>;
-}) {
+function PotentialProfitEmptyCard() {
+  return (
+    <Card>
+      <h2 className="text-2xl font-bold mb-4">Potencial de Lucro</h2>
+      <div>
+        <p>Não há dados suficientes para calcular o potencial de lucro.</p>
+      </div>
+    </Card>
+  );
+}
+
+function PotentialProfitCard({ scrap }: { scrap: ScrapWithFiles }) {
+  const { mutate } = useUpdateScrapProfitMutation();
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [editingField, setEditingField] = useState<string | null>(null);
   const [valorArrematacao, setValorArrematacao] = useState<number>(
-    scrap.valor_arrematacao,
+    scrap.profit?.valor_arrematacao || 0,
   );
-  const [valorVenda, setValorVenda] = useState<number>(scrap.valor_venda);
+  const [valorVenda, setValorVenda] = useState<number>(
+    scrap.profit?.valor_venda || 0,
+  );
+  const profit = scrap.profit;
+  if (profit == null) {
+    return <PotentialProfitEmptyCard />;
+  }
   const {
     total_custo_arrematacao_percentual,
     total_custo_pos_imissao_percentual,
@@ -845,17 +858,17 @@ function PotentialProfitCard({
     total_custo_pos_venda,
     lucro,
     total_custo_sem_imposto_venda,
-  } = computePotentialProfit({
-    ...scrap,
+  } = computeProfit({
+    ...profit,
     valor_arrematacao: valorArrematacao,
     valor_venda: valorVenda,
   });
-  const mutateWithPotentialProfit = (scrap: ScrapWithFiles) => {
+  const mutateWithPotentialProfit = (profit: ScrapProfit) => {
     mutate({
-      ...scrap,
+      ...profit,
       lucro: lucro,
       lucro_percentual: lucro_percentual,
-      potential_profit_status: "overridden",
+      status: "overridden",
     });
   };
   return (
@@ -981,7 +994,7 @@ function PotentialProfitCard({
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === "Tab") {
                         mutateWithPotentialProfit({
-                          ...scrap,
+                          ...profit,
                           valor_arrematacao: Number(valorArrematacao),
                         });
                         setEditingField(null);
@@ -993,7 +1006,7 @@ function PotentialProfitCard({
                     className="w-4 h-4 text-green-500 cursor-pointer ml-2"
                     onClick={() => {
                       mutateWithPotentialProfit({
-                        ...scrap,
+                        ...profit,
                         valor_arrematacao: Number(valorArrematacao),
                       });
                       setEditingField(null);
@@ -1002,14 +1015,14 @@ function PotentialProfitCard({
                   <X
                     className="w-4 h-4 text-red-500 cursor-pointer ml-2"
                     onClick={() => {
-                      setValorArrematacao(scrap.valor_arrematacao);
+                      setValorArrematacao(profit.valor_arrematacao);
                       setEditingField(null);
                     }}
                   />
                   <RefreshCw
                     className="w-4 h-4 text-blue-500 cursor-pointer ml-2"
                     onClick={() =>
-                      setValorArrematacao(scrap.bid || scrap.valor_arrematacao)
+                      setValorArrematacao(scrap.bid || profit.valor_arrematacao)
                     }
                   />
                 </div>
@@ -1040,7 +1053,7 @@ function PotentialProfitCard({
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === "Tab") {
                         mutateWithPotentialProfit({
-                          ...scrap,
+                          ...profit,
                           valor_venda: valorVenda,
                         });
                         setEditingField(null);
@@ -1053,7 +1066,7 @@ function PotentialProfitCard({
                     className="w-4 h-4 text-green-500 cursor-pointer ml-2"
                     onClick={() => {
                       mutateWithPotentialProfit({
-                        ...scrap,
+                        ...profit,
                         valor_venda: valorVenda,
                       });
                       setEditingField(null);
@@ -1062,14 +1075,14 @@ function PotentialProfitCard({
                   <X
                     className="w-4 h-4 text-red-500 cursor-pointer ml-2"
                     onClick={() => {
-                      setValorVenda(scrap.valor_venda);
+                      setValorVenda(profit.valor_venda);
                       setEditingField(null);
                     }}
                   />
                   <RefreshCw
                     className="w-4 h-4 text-blue-500 cursor-pointer ml-2"
                     onClick={() =>
-                      setValorVenda(scrap.appraisal || scrap.valor_venda)
+                      setValorVenda(scrap.appraisal || profit.valor_venda)
                     }
                   />
                 </div>
@@ -1126,12 +1139,12 @@ function PotentialProfitCard({
                     type="number"
                     className="w-1/2"
                     value={
-                      scrap.custo_arrematacao_comissao_leiloeiro_percentual *
+                      profit.custo_arrematacao_comissao_leiloeiro_percentual *
                       100
                     }
                     onChange={(e) =>
                       mutateWithPotentialProfit({
-                        ...scrap,
+                        ...profit,
                         custo_arrematacao_comissao_leiloeiro_percentual:
                           Number(e.currentTarget.value) / 100,
                       })
@@ -1142,7 +1155,7 @@ function PotentialProfitCard({
                   <p className="ml-2 text-gray-600">
                     R${" "}
                     {(
-                      scrap.custo_arrematacao_comissao_leiloeiro_percentual *
+                      profit.custo_arrematacao_comissao_leiloeiro_percentual *
                       valorArrematacao
                     ).toLocaleString()}
                   </p>
@@ -1157,10 +1170,10 @@ function PotentialProfitCard({
                     id="itbi"
                     type="number"
                     className="w-1/2"
-                    value={scrap.custo_arrematacao_itbi_percentual * 100}
+                    value={profit.custo_arrematacao_itbi_percentual * 100}
                     onChange={(e) =>
                       mutateWithPotentialProfit({
-                        ...scrap,
+                        ...profit,
                         custo_arrematacao_itbi_percentual:
                           Number(e.currentTarget.value) / 100,
                       })
@@ -1171,7 +1184,8 @@ function PotentialProfitCard({
                   <p className="ml-2 text-gray-600">
                     R${" "}
                     {(
-                      scrap.custo_arrematacao_itbi_percentual * valorArrematacao
+                      profit.custo_arrematacao_itbi_percentual *
+                      valorArrematacao
                     ).toLocaleString()}
                   </p>
                 </div>
@@ -1185,10 +1199,10 @@ function PotentialProfitCard({
                     id="registro"
                     type="number"
                     className="w-full"
-                    value={scrap.custo_arrematacao_registro}
+                    value={profit.custo_arrematacao_registro}
                     onChange={(e) =>
                       mutateWithPotentialProfit({
-                        ...scrap,
+                        ...profit,
                         custo_arrematacao_registro: Number(
                           e.currentTarget.value,
                         ),
@@ -1208,10 +1222,10 @@ function PotentialProfitCard({
                     id="advogado"
                     type="number"
                     className="w-full"
-                    value={scrap.custo_arrematacao_advogado}
+                    value={profit.custo_arrematacao_advogado}
                     onChange={(e) =>
                       mutateWithPotentialProfit({
-                        ...scrap,
+                        ...profit,
                         custo_arrematacao_advogado: Number(
                           e.currentTarget.value,
                         ),
@@ -1240,10 +1254,10 @@ function PotentialProfitCard({
                     id="advogado"
                     type="number"
                     className="w-full"
-                    value={scrap.custo_pos_imissao_reforma}
+                    value={profit.custo_pos_imissao_reforma}
                     onChange={(e) =>
                       mutateWithPotentialProfit({
-                        ...scrap,
+                        ...profit,
                         custo_pos_imissao_reforma: Number(
                           e.currentTarget.value,
                         ),
@@ -1263,10 +1277,10 @@ function PotentialProfitCard({
                     id="outros"
                     type="number"
                     className="w-full"
-                    value={scrap.custo_pos_imissao_outros}
+                    value={profit.custo_pos_imissao_outros}
                     onChange={(e) =>
                       mutateWithPotentialProfit({
-                        ...scrap,
+                        ...profit,
                         custo_pos_imissao_outros: Number(e.currentTarget.value),
                       })
                     }
@@ -1284,10 +1298,10 @@ function PotentialProfitCard({
                     id="iptu"
                     type="number"
                     className="w-full"
-                    value={scrap.custo_pos_imissao_divida_iptu}
+                    value={profit.custo_pos_imissao_divida_iptu}
                     onChange={(e) =>
                       mutateWithPotentialProfit({
-                        ...scrap,
+                        ...profit,
                         custo_pos_imissao_divida_iptu: Number(
                           e.currentTarget.value,
                         ),
@@ -1307,10 +1321,10 @@ function PotentialProfitCard({
                     id="condominio"
                     type="number"
                     className="w-full"
-                    value={scrap.custo_pos_imissao_divida_condominio}
+                    value={profit.custo_pos_imissao_divida_condominio}
                     onChange={(e) =>
                       mutateWithPotentialProfit({
-                        ...scrap,
+                        ...profit,
                         custo_pos_imissao_divida_condominio: Number(
                           e.currentTarget.value,
                         ),
@@ -1339,10 +1353,10 @@ function PotentialProfitCard({
                 <TextInput
                   id="prazoVenda"
                   type="number"
-                  value={scrap.custo_pos_arrematacao_prazo_de_venda_em_meses}
+                  value={profit.custo_pos_arrematacao_prazo_de_venda_em_meses}
                   onChange={(e) =>
                     mutateWithPotentialProfit({
-                      ...scrap,
+                      ...profit,
                       custo_pos_arrematacao_prazo_de_venda_em_meses: Number(
                         e.currentTarget.value,
                       ),
@@ -1358,10 +1372,10 @@ function PotentialProfitCard({
                 <TextInput
                   id="iptuMensal"
                   type="number"
-                  value={scrap.custo_pos_arrematacao_valor_iptu_mensal}
+                  value={profit.custo_pos_arrematacao_valor_iptu_mensal}
                   onChange={(e) =>
                     mutateWithPotentialProfit({
-                      ...scrap,
+                      ...profit,
                       custo_pos_arrematacao_valor_iptu_mensal: Number(
                         e.currentTarget.value,
                       ),
@@ -1377,10 +1391,10 @@ function PotentialProfitCard({
                 <TextInput
                   id="condominionMensal"
                   type="number"
-                  value={scrap.custo_pos_arrematacao_valor_condominio_mensal}
+                  value={profit.custo_pos_arrematacao_valor_condominio_mensal}
                   onChange={(e) =>
                     mutateWithPotentialProfit({
-                      ...scrap,
+                      ...profit,
                       custo_pos_arrematacao_valor_condominio_mensal: Number(
                         e.currentTarget.value,
                       ),
@@ -1409,11 +1423,11 @@ function PotentialProfitCard({
                     type="number"
                     className="w-1/2"
                     value={
-                      scrap.custo_pos_venda_comissao_corretora_percentual * 100
+                      profit.custo_pos_venda_comissao_corretora_percentual * 100
                     }
                     onChange={(e) =>
                       mutateWithPotentialProfit({
-                        ...scrap,
+                        ...profit,
                         custo_pos_venda_comissao_corretora_percentual:
                           Number(e.currentTarget.value) / 100,
                       })
@@ -1424,7 +1438,7 @@ function PotentialProfitCard({
                   <p className="ml-2 text-gray-600">
                     R${" "}
                     {(
-                      scrap.custo_pos_venda_comissao_corretora_percentual *
+                      profit.custo_pos_venda_comissao_corretora_percentual *
                       valorVenda
                     ).toLocaleString()}
                   </p>
@@ -1440,12 +1454,12 @@ function PotentialProfitCard({
                     type="number"
                     className="w-1/2"
                     value={
-                      scrap.custo_pos_venda_imposto_ganho_capita_percentual *
+                      profit.custo_pos_venda_imposto_ganho_capita_percentual *
                       100
                     }
                     onChange={(e) =>
                       mutateWithPotentialProfit({
-                        ...scrap,
+                        ...profit,
                         custo_pos_venda_imposto_ganho_capita_percentual:
                           Number(e.currentTarget.value) / 100,
                       })
@@ -1456,7 +1470,7 @@ function PotentialProfitCard({
                   <p className="ml-2 text-gray-600">
                     R${" "}
                     {(
-                      scrap.custo_pos_venda_imposto_ganho_capita_percentual *
+                      profit.custo_pos_venda_imposto_ganho_capita_percentual *
                       total_custo_sem_imposto_venda
                     ).toLocaleString()}
                   </p>
@@ -1499,7 +1513,7 @@ export function Lot({ scrapID }: { scrapID: number }) {
             </Carousel>
           </div>
           <DescriptionCard scrap={scrap} mutate={mutate} />
-          <PotentialProfitCard scrap={scrap} mutate={mutate} />
+          <PotentialProfitCard scrap={scrap} />
         </div>
       )}
     </>

@@ -1,10 +1,11 @@
-import { ScrapWithFiles } from "@/db/schema";
+import { ScrapProfit, ScrapWithFiles } from "@/db/schema";
 import {
   SearchLotsFilters,
   getPendingReviewLots,
   getScrapDetails,
   getScraps,
   saveScrap,
+  saveScrapProfit,
   searchLots,
 } from "@/models/scraps/actions";
 import { refreshScraps, updateScrap } from "@/services/scraper/actions";
@@ -128,6 +129,18 @@ export function useRequestAnalysisMutation(
         queryKey: queryKeys.scrapDetails(scrapID),
       });
       callbacks?.onSuccess?.();
+    },
+  });
+}
+
+export function useUpdateScrapProfitMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (profit: ScrapProfit) => await saveScrapProfit(profit),
+    onSuccess: (_, profit) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.scrapDetails(profit.scrap_id),
+      });
     },
   });
 }

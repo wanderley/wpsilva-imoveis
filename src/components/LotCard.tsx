@@ -43,14 +43,14 @@ function BottomContent({ lot }: { lot: ScrapWithFiles }) {
             </Badge>
             <Badge
               color={
-                lot.lucro_percentual !== null && lot.lucro_percentual > 0
+                (lot.profit?.lucro_percentual ?? -Infinity) > 0
                   ? "success"
                   : "red"
               }
               className="text-xs"
             >
-              {Math.abs(lot.lucro_percentual ?? 0).toFixed(0)}%{" "}
-              {lot.lucro_percentual !== null && lot.lucro_percentual > 0
+              {Math.abs(lot.profit?.lucro_percentual ?? 0).toFixed(0)}%{" "}
+              {(lot.profit?.lucro_percentual ?? -Infinity) > 0
                 ? "lucro"
                 : "prejuízo"}
             </Badge>

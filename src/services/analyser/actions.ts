@@ -5,7 +5,7 @@ import {
   ScrapWithFiles,
   openaiFilesTable,
   scrapAnalysesTable,
-  scrapsTable,
+  scrapProfitTable,
 } from "@/db/schema";
 import { getScrapDetails } from "@/models/scraps/actions";
 import {
@@ -38,7 +38,7 @@ export async function updateAnalysis(
 
     // Create a thread
     const file_ids = await getOpenAIFileIDs(scrap);
-    const prompt = getPrompt(scrap);
+    const prompt = getPrompt();
     const thread = await openai.beta.threads.create({
       messages: [
         {
@@ -100,7 +100,7 @@ export async function updateAnalysis(
   }
 }
 
-function getPrompt(scrap: ScrapWithFiles): string {
+function getPrompt(): string {
   return `Você é um advogado especializado em leilões de imóveis no Brasil. Preciso da sua ajuda para responder às perguntas a seguir sobre este imóvel em leilão. Utilize apenas as informações encontradas nos arquivos fornecidos para responder.
 
 ### Perguntas
@@ -188,16 +188,17 @@ async function getExistingFileID(url: string, name: string): Promise<string> {
 
 async function updateCosts(scrapId: number, json: Schema): Promise<void> {
   const scrap = await getScrapDetails(scrapId);
-  if (!scrap || scrap.potential_profit_status === "overridden") {
+  const profit = scrap?.profit;
+  if (!profit || profit.status === "overridden") {
     return;
   }
   const values = {
     custo_pos_imissao_divida_condominio:
-      scrap.custo_pos_imissao_divida_condominio,
+      profit.custo_pos_imissao_divida_condominio,
     custo_pos_arrematacao_valor_condominio_mensal:
-      scrap.custo_pos_arrematacao_valor_condominio_mensal,
-    custo_pos_imissao_divida_iptu: scrap.custo_pos_imissao_divida_iptu,
-    custo_pos_imissao_reforma: scrap.custo_pos_imissao_reforma,
+      profit.custo_pos_arrematacao_valor_condominio_mensal,
+    custo_pos_imissao_divida_iptu: profit.custo_pos_imissao_divida_iptu,
+    custo_pos_imissao_reforma: profit.custo_pos_imissao_reforma,
   };
 
   if (json.property_type === "Apartamento") {
@@ -221,7 +222,7 @@ async function updateCosts(scrapId: number, json: Schema): Promise<void> {
   }
 
   await db
-    .update(scrapsTable)
+    .update(scrapProfitTable)
     .set({ ...values })
-    .where(eq(scrapsTable.id, scrapId));
+    .where(eq(scrapProfitTable.scrap_id, scrapId));
 }
