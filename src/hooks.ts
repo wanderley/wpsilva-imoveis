@@ -119,7 +119,7 @@ export function useRequestAnalysisMutation(
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async () => await updateAnalysis(scrapID),
+    mutationFn: async () => await updateAnalysis(scrapID, "gpt-4o"),
     onMutate: () => {
       callbacks?.onMutate?.();
     },

@@ -13,7 +13,10 @@ import { eq } from "drizzle-orm";
 import OpenAI from "openai";
 import { zodResponseFormat } from "openai/helpers/zod.mjs";
 
-export async function updateAnalysis(scrapId: number): Promise<void> {
+export async function updateAnalysis(
+  scrapId: number,
+  model: "gpt-4o" | "gpt-4o-mini" = "gpt-4o-mini",
+): Promise<void> {
   const scrap = await getScrapDetails(scrapId);
   if (!scrap) {
     throw new Error("Scrap not found");
@@ -48,7 +51,7 @@ export async function updateAnalysis(scrapId: number): Promise<void> {
       openai.beta.threads.runs
         .stream(thread.id, {
           assistant_id: process.env.OPENAI_ASSISTANT_ID!,
-          model: "gpt-4o-mini",
+          model,
           top_p: 0.7,
           temperature: 0.3,
         })
@@ -68,7 +71,7 @@ export async function updateAnalysis(scrapId: number): Promise<void> {
     });
 
     const parsedText = await openai.beta.chat.completions.parse({
-      model: "gpt-4o",
+      model,
       messages: [{ role: "user", content: text as string }],
       response_format: zodResponseFormat(schema, "analysis_result"),
     });

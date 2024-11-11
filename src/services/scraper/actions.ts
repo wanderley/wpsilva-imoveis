@@ -202,7 +202,7 @@ export async function updateScrap(
             .execute();
         }
         if (!scrap.analysis_result_json) {
-          await updateAnalysis(scrap.id);
+          await updateAnalysis(scrap.id, "gpt-4o-mini");
         }
         await updatePotentialProfit(scrap.id);
       }
