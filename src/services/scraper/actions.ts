@@ -21,7 +21,10 @@ export async function refreshScraps(scraperID: string): Promise<void> {
   if (!scraper) {
     throw new Error(`Scraper ${scraperID} not found`);
   }
-  const browser = await puppeteer.launch();
+  const browser = await puppeteer.launch({
+    // TODO: Remove this once we have a proper way to run the scraper
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  });
   try {
     const page = await browser.newPage();
     await page.setViewport({ width: 1080, height: 1024 });
