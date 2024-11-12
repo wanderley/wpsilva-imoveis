@@ -7,7 +7,6 @@ import {
   json,
   mysqlEnum,
   mysqlTable,
-  primaryKey,
   text,
   timestamp,
   uniqueIndex,
@@ -32,21 +31,13 @@ export const users = mysqlTable("users", {
   updated_at: updatedAt,
 });
 
-export const verificationTokens = mysqlTable(
-  "verification_tokens",
-  {
-    identifier: varchar("identifier", { length: 255 })
-      .notNull()
-      .references(() => users.email, { onDelete: "cascade" }),
-    token: varchar("token", { length: 255 }).notNull(),
-    expires: timestamp("expires", { mode: "date" }).notNull(),
-  },
-  (verificationToken) => ({
-    compositePk: primaryKey({
-      columns: [verificationToken.identifier, verificationToken.token],
-    }),
-  }),
-);
+export const verificationTokens = mysqlTable("verification_tokens", {
+  identifier: varchar("identifier", { length: 255 })
+    .notNull()
+    .references(() => users.email, { onDelete: "cascade" }),
+  token: varchar("token", { length: 255 }).notNull(),
+  expires: timestamp("expires", { mode: "date" }).notNull(),
+});
 
 export const verificationTokensRelations = relations(
   verificationTokens,
