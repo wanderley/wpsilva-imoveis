@@ -94,9 +94,9 @@ async function scrapLink(scraper: Scraper, page: Page): Promise<Lot | null> {
     secondAuctionDate: await tryFetchField(scraper.secondAuctionDate),
     secondAuctionBid: await tryFetchField(scraper.secondAuctionBid),
     images: (await tryFetchField(scraper.images)) || [],
-    laudo_link: await tryFetchField(scraper.laudoLink),
-    matricula_link: await tryFetchField(scraper.matriculaLink),
-    edital_link: await tryFetchField(scraper.editalLink),
+    laudoLink: await tryFetchField(scraper.laudoLink),
+    matriculaLink: await tryFetchField(scraper.matriculaLink),
+    editalLink: await tryFetchField(scraper.editalLink),
   };
   if (lot.bid === undefined) {
     if (
