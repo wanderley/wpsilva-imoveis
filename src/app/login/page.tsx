@@ -1,6 +1,6 @@
 "use client";
 
-import { requestVerificationCode } from "@/services/login/actions";
+import { useRequestVerificationTokenMutation } from "@/features/login/hooks";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -8,11 +8,13 @@ import { useState } from "react";
 export default function Login() {
   const [email, setEmail] = useState<string | null>(null);
   const [password, setPassword] = useState<string | null>(null);
-  const [codeSent, setCodeSent] = useState(false);
-  const requestVerification = async () => {
-    if (email) await requestVerificationCode(email);
-    setCodeSent(true);
-  };
+
+  const [tokenSent, setTokenSent] = useState(false);
+  const { isPendingVerificationToken, requestVerificationToken } =
+    useRequestVerificationTokenMutation({
+      // TODO: handle error
+      onSettled: () => setTokenSent(true),
+    });
 
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
@@ -35,21 +37,23 @@ export default function Login() {
               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
               placeholder="name@company.com"
               required
+              disabled={isPendingVerificationToken}
               value={email ?? ""}
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
-          {!codeSent && (
+          {!tokenSent && (
             <div>
               <button
                 className="w-full bg-blue-500 text-white p-2 rounded-lg"
-                onClick={requestVerification}
+                disabled={isPendingVerificationToken}
+                onClick={() => email && requestVerificationToken({ email })}
               >
                 Enviar código de verificação
               </button>
             </div>
           )}
-          {codeSent && (
+          {tokenSent && (
             <>
               <div>
                 <label

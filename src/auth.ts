@@ -1,6 +1,7 @@
-import { db } from "@/db";
-import { verificationTokens } from "@/db/schema";
-import { and, eq } from "drizzle-orm";
+import {
+  findUserByEmail,
+  findVerificationToken,
+} from "@/features/login/repository";
 import NextAuth, { CredentialsSignin, User } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
@@ -26,31 +27,27 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials): Promise<User | null> {
-        const verificationToken = await db.query.verificationTokens.findFirst({
-          with: {
-            user: true,
-          },
-          where: and(
-            eq(verificationTokens.token, credentials.password as string),
-            eq(verificationTokens.identifier, credentials.email as string),
-          ),
-          orderBy: (verificationToken, { desc }) => [
-            desc(verificationToken.expires),
-          ],
-        });
-        if (!verificationToken) {
+        const user = await findUserByEmail(credentials.email as string);
+        if (!user) {
+          throw new InvalidLoginError();
+        }
+        const verificationToken = await findVerificationToken(
+          credentials.email as string,
+        );
+        if (
+          verificationToken === undefined ||
+          verificationToken.token !== (credentials.password as string)
+        ) {
           throw new InvalidLoginError();
         }
         if (verificationToken.expires < new Date()) {
           throw new ExpiredVerificationCodeError();
         }
-        return verificationToken.user
-          ? {
-              id: verificationToken.user.id,
-              name: verificationToken.user.name,
-              email: verificationToken.user.email,
-            }
-          : null;
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+        };
       },
     }),
   ],
