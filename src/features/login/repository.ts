@@ -20,6 +20,12 @@ export async function hasValidVerificationToken(email: string) {
 }
 
 export async function createVerificationToken(email: string): Promise<string> {
+  // Delete any existing verification tokens for this email
+  await db
+    .delete(verificationTokens)
+    .where(eq(verificationTokens.identifier, email));
+
+  // Create a new verification token
   const token = crypto.randomUUID();
   await db.insert(verificationTokens).values({
     identifier: email,
@@ -28,6 +34,7 @@ export async function createVerificationToken(email: string): Promise<string> {
   });
   return token;
 }
+
 export async function findUserByEmail(email: string) {
   return await db.query.users.findFirst({
     where: eq(users.email, email),
