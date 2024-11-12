@@ -55,3 +55,12 @@ export function computeProfit(data: ScrapProfit) {
     total_custo_sem_imposto_venda,
   };
 }
+
+export function updateProfit(profit: ScrapProfit): ScrapProfit {
+  const { lucro, lucro_percentual } = computeProfit(profit);
+  return {
+    ...profit,
+    lucro,
+    lucro_percentual,
+  };
+}

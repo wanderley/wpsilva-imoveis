@@ -8,7 +8,7 @@ import {
   scrapsTable,
 } from "@/db/schema";
 import { getScrapDetails } from "@/models/scraps/actions";
-import { computeProfit } from "@/models/scraps/helpers";
+import { updateProfit } from "@/models/scraps/helpers";
 import { getScraper } from "@/services/scraper";
 import { Lot, Scraper } from "@/services/scraper/scraper";
 import { and, count, eq, inArray } from "drizzle-orm";
@@ -184,7 +184,7 @@ export async function updateScrap(
           .execute();
       }
       await maybeUpdateAnalysis(scrapID);
-      await updateProfit(scrapID);
+      await maybeUpdateProfit(scrapID);
     }
   } catch (error) {
     console.error("Error updating scrap:", error);
@@ -227,7 +227,7 @@ async function maybeUpdateAnalysis(scrapID: number): Promise<void> {
   }
 }
 
-async function updateProfit(scrapID: number): Promise<void> {
+async function maybeUpdateProfit(scrapID: number): Promise<void> {
   const scrap = await getScrapDetails(scrapID);
   if (!scrap) {
     return;
@@ -244,17 +244,11 @@ async function updateProfit(scrapID: number): Promise<void> {
   if (profit.status === "overridden") {
     return;
   }
-  profit = {
+  profit = updateProfit({
     ...profit,
     valor_arrematacao: scrap.bid ?? profit.valor_arrematacao,
     valor_venda: scrap.appraisal ?? profit.valor_venda,
-  };
-  const { lucro, lucro_percentual } = computeProfit(profit);
-  profit = {
-    ...profit,
-    lucro,
-    lucro_percentual,
-  };
+  });
 
   await db
     .update(scrapProfitTable)
