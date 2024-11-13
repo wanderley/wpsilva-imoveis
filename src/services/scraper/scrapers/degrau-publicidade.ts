@@ -72,7 +72,7 @@ function build(url: string, pages: string[]): Scraper {
     bid: pipe(getTextFromSelector(".BoxLanceValor"), getNumberFromReais),
     appraisal: pipe(getTextFromSelector(".ValorAvaliacao"), getNumberFromReais),
     firstAuctionDate: pipe(
-      getTextFromSelector(".Praca1DataHoraAbertura"),
+      getTextFromSelector(".Praca1DataHoraEncerramento"),
       getBrazilianDate("dd/MM/yyyy - HH:mm"),
     ),
     firstAuctionBid: pipe(
@@ -80,7 +80,7 @@ function build(url: string, pages: string[]): Scraper {
       getNumberFromReais,
     ),
     secondAuctionDate: pipe(
-      getTextFromSelector(".Praca2DataHoraAbertura"),
+      getTextFromSelector(".Praca2DataHoraEncerramento"),
       getBrazilianDate("dd/MM/yyyy - HH:mm"),
     ),
     secondAuctionBid: pipe(
