@@ -8,7 +8,10 @@ import {
   saveScrapProfit,
   searchLots,
 } from "@/models/scraps/actions";
-import { refreshScraps, updateScrap } from "@/services/scraper/actions";
+import {
+  fetchScrapFromSource,
+  refreshScraps,
+} from "@/services/scraper/actions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { updateAnalysis } from "./services/analyser/actions";
@@ -52,7 +55,7 @@ export function useRefreshScrapsMutation(scrapID: string) {
   });
 }
 
-export function useUpdateScraperMutation(
+export function useFetchScrapFromSourceMutation(
   scrapID: string,
   callbacks?: {
     onSuccess?: (id: number) => unknown;
@@ -68,7 +71,7 @@ export function useUpdateScraperMutation(
       scrapID: string;
       url: string;
       id: number;
-    }) => await updateScrap(scrapID, url),
+    }) => await fetchScrapFromSource(scrapID, url),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.scraps(scrapID) });
       queryClient.invalidateQueries({

@@ -116,7 +116,7 @@ async function scrapLink(scraper: Scraper, page: Page): Promise<Lot | null> {
   return lot;
 }
 
-export async function updateScrap(
+export async function fetchScrapFromSource(
   scraperID: string,
   url: string,
 ): Promise<void> {

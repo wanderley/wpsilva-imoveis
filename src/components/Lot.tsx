@@ -13,11 +13,11 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Scrap, ScrapProfit } from "@/db/schema";
 import {
+  useFetchScrapFromSourceMutation,
   useRequestAnalysisMutation,
   useScrapDetails,
   useUpdateScrapMutation,
   useUpdateScrapProfitMutation,
-  useUpdateScraperMutation,
 } from "@/hooks";
 import {
   computeProfit,
@@ -653,9 +653,8 @@ function DescriptionCard({
     }
     return date < new Date();
   };
-  const { isPending, mutate: refreshScrapsMutation } = useUpdateScraperMutation(
-    scrap.scraper_id,
-  );
+  const { isPending, mutate: fetchScrapFromSource } =
+    useFetchScrapFromSourceMutation(scrap.scraper_id);
 
   return (
     <Card>
@@ -741,7 +740,7 @@ function DescriptionCard({
                   }`}
                   onClick={() =>
                     !isPending &&
-                    refreshScrapsMutation({
+                    fetchScrapFromSource({
                       scrapID: scrap.scraper_id,
                       url: scrap.url,
                       id: scrap.id,

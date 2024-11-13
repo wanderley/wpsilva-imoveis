@@ -4,9 +4,9 @@ import { SCRAPERS } from "@/app/scraper/constants";
 import { LotModal } from "@/components/LotModal";
 import { LotStatusBadge } from "@/components/LotStatusBadge";
 import {
+  useFetchScrapFromSourceMutation,
   useRefreshScrapsMutation,
   useScraps,
-  useUpdateScraperMutation,
 } from "@/hooks";
 import { Button, Table } from "flowbite-react";
 import { useState } from "react";
@@ -18,7 +18,7 @@ export default function Page({ params }: { params: { id: number } }) {
 
   const { isLoading, data } = useScraps(scrapID);
   const { isPending, mutate } = useRefreshScrapsMutation(scrapID);
-  const updateMutation = useUpdateScraperMutation(scrapID);
+  const updateMutation = useFetchScrapFromSourceMutation(scrapID);
 
   return (
     <div>

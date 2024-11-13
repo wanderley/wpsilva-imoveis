@@ -3,7 +3,7 @@ import { scrapsTable } from "@/db/schema";
 import { and, eq, gte, or } from "drizzle-orm";
 
 import { scrapers } from ".";
-import { refreshScraps, updateScrap } from "./actions";
+import { fetchScrapFromSource, refreshScraps } from "./actions";
 
 async function updateAllScraps(scraperID?: string) {
   console.log("Starting to update all scraps...");
@@ -38,7 +38,7 @@ async function updateAllScraps(scraperID?: string) {
 
       for (const scrap of scrapsToUpdate) {
         try {
-          await updateScrap(scraper.url, scrap.url);
+          await fetchScrapFromSource(scraper.url, scrap.url);
           console.log(`Updated scrap: ${scrap.url}`);
         } catch (error) {
           console.error(`Error updating scrap ${scrap.url}:`, error);
