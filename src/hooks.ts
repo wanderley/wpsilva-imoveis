@@ -13,10 +13,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { updateAnalysis } from "./services/analyser/actions";
 
-const queryKeys = {
+export const queryKeys = {
   scraps: (scrapID: string) => ["scraps", scrapID],
   pendingReviewLots: ["pending-review-lots"],
-  scrapDetails: (id: number) => ["scrapDetails", id],
+  scrapDetails: (id: number) => ["scrapDetails", String(id)],
 };
 
 export function useScraps(scrapID: string) {
