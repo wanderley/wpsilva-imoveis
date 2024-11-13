@@ -25,7 +25,7 @@ const PREFERRED_AUCTION_DATE_FIELD = sql<string | null>`(CASE
   ELSE ${scrapsTable.first_auction_date}
 END)`;
 const PREFERRED_AUCTION_BID_FIELD = sql<number | null>`(CASE 
-  WHEN ${PREFERRED_AUCTION_DATE_FIELD} < CURRENT_DATE THEN ${scrapsTable.bid}
+  WHEN ${scrapsTable.first_auction_date} < CURRENT_DATE THEN ${scrapsTable.bid}
   WHEN ${scrapsTable.second_auction_date} IS NOT NULL THEN ${scrapsTable.second_auction_bid}
   ELSE ${scrapsTable.first_auction_bid}
 END)`;

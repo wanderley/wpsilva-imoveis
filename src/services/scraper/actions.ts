@@ -247,13 +247,15 @@ async function maybeUpdateProfit(scrapID: number): Promise<void> {
       where: eq(scrapProfitTable.scrap_id, scrapID),
     }))!;
   }
-  if (profit.status === "overridden") {
-    return;
+
+  let valorVenda = profit.valor_venda;
+  if (profit.status === "default-values") {
+    valorVenda = scrap.appraisal ?? profit.valor_venda;
   }
   profit = updateProfit({
     ...profit,
     valor_arrematacao: scrap.preferred_auction_bid ?? profit.valor_arrematacao,
-    valor_venda: scrap.appraisal ?? profit.valor_venda,
+    valor_venda: valorVenda,
   });
 
   await db
