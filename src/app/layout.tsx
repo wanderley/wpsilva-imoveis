@@ -1,6 +1,7 @@
 import { Navbar } from "@/components/Navbar";
 import { QueryClientProvider } from "@/components/QueryClientProvider";
 import { SessionProvider } from "@/components/SessionProvider";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 
@@ -36,6 +37,7 @@ export default function RootLayout({
           <Navbar />
           <QueryClientProvider>
             <div className="p-4">{children}</div>
+            {process.env.NODE_ENV === "development" && <ReactQueryDevtools />}
           </QueryClientProvider>
         </SessionProvider>
       </body>
