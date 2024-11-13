@@ -7,6 +7,8 @@ import Link from "next/link";
 import { useState } from "react";
 import { HiClock } from "react-icons/hi";
 
+import { formatCurrency } from "./lib/currency";
+
 function parsePreferredAuctionDate(lot: Scrap) {
   const date = getPreferredAuctionDate(lot);
   if (!date) {
@@ -30,11 +32,11 @@ function BottomContent({ lot }: { lot: Scrap }) {
           Endereço: {lot.address || "Endereço não disponível"}
         </p>
         <p className="text-lg font-bold text-gray-700 dark:text-gray-300">
-          Lance Atual: R$ {lot.bid?.toLocaleString() || "N/A"}
+          Lance Atual: {formatCurrency(lot.bid)}
         </p>
         <div className="flex justify-between items-center mt-1">
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Avaliação: R$ {lot.appraisal?.toLocaleString() || "N/A"}
+            Avaliação: {formatCurrency(lot.appraisal)}
           </p>
           {lot.profit && (
             <div className="flex gap-1">

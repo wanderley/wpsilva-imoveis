@@ -61,12 +61,7 @@ import {
   X,
 } from "react-feather";
 
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(value);
-};
+import { formatCurrency } from "./lib/currency";
 
 const getConditionBadgeVariant = (
   condition: Schema["appraisal"]["general_condition"],
@@ -677,12 +672,12 @@ function DescriptionCard({
           <dl className="space-y-2">
             <div>
               <dt className="font-semibold">Avaliação:</dt>
-              <dd>R$ {scrap.appraisal?.toLocaleString()}</dd>
+              <dd>{formatCurrency(scrap.appraisal)}</dd>
             </div>
             <div>
               <dt className="font-semibold">Lance Atual:</dt>
               <dd className="text-2xl font-bold text-green-600">
-                R$ {scrap.bid?.toLocaleString() || "N/A"}
+                {formatCurrency(scrap.bid)}
               </dd>
             </div>
             {scrap.profit && (
@@ -701,7 +696,7 @@ function DescriptionCard({
                     high_profit: "text-2xl font-bold text-green-600",
                   })}
                 >
-                  R$ {Math.abs(scrap.profit.lucro).toLocaleString()} (
+                  {formatCurrency(Math.abs(scrap.profit.lucro))} (
                   {Math.abs(scrap.profit.lucro_percentual).toFixed(0)}%)
                 </dd>
               </div>
@@ -714,7 +709,7 @@ function DescriptionCard({
                 }
               >
                 {scrap.first_auction_date
-                  ? `${new Date(scrap.first_auction_date).toLocaleString()} - R$ ${scrap.first_auction_bid?.toLocaleString()}`
+                  ? `${new Date(scrap.first_auction_date).toLocaleString()} - ${formatCurrency(scrap.first_auction_bid)}`
                   : "Não definido"}
               </dd>
             </div>
@@ -726,7 +721,7 @@ function DescriptionCard({
                 }
               >
                 {scrap.second_auction_date
-                  ? `${new Date(scrap.second_auction_date).toLocaleString()} - R$ ${scrap.second_auction_bid?.toLocaleString()}`
+                  ? `${new Date(scrap.second_auction_date).toLocaleString()} - ${formatCurrency(scrap.second_auction_bid)}`
                   : "Não definido"}
               </dd>
             </div>
@@ -917,7 +912,7 @@ function PotentialProfitCard({ scrap }: { scrap: Scrap }) {
                     : "custoArrematacao",
                 )
               }
-              title={`R$ ${total_custo_arrematacao.toFixed(2)}`}
+              title={formatCurrency(total_custo_arrematacao)}
             ></div>
             <div
               className="h-full bg-green-500 cursor-pointer"
@@ -929,7 +924,7 @@ function PotentialProfitCard({ scrap }: { scrap: Scrap }) {
                     : "extraPosImissao",
                 )
               }
-              title={`R$ ${total_custo_pos_imissao.toFixed(2)}`}
+              title={formatCurrency(total_custo_pos_imissao)}
             ></div>
             <div
               className="h-full bg-yellow-500 cursor-pointer"
@@ -941,7 +936,7 @@ function PotentialProfitCard({ scrap }: { scrap: Scrap }) {
                     : "custoPosArrematacao",
                 )
               }
-              title={`R$ ${total_custo_pos_arrematacao.toFixed(2)}`}
+              title={formatCurrency(total_custo_pos_arrematacao)}
             ></div>
             <div
               className="h-full bg-red-500 cursor-pointer"
@@ -951,7 +946,7 @@ function PotentialProfitCard({ scrap }: { scrap: Scrap }) {
                   activeSection === "posVenda" ? null : "posVenda",
                 )
               }
-              title={`R$ ${total_custo_pos_venda.toFixed(2)}`}
+              title={formatCurrency(total_custo_pos_venda)}
             ></div>
           </div>
           <div className="flex justify-between mt-2 text-sm text-gray-600">
@@ -1059,7 +1054,7 @@ function PotentialProfitCard({ scrap }: { scrap: Scrap }) {
               ) : (
                 <>
                   <p className="text-2xl font-bold mr-2">
-                    R$ {valorArrematacao.toLocaleString()}
+                    {formatCurrency(valorArrematacao)}
                   </p>
                   <Edit3
                     className="w-4 h-4 text-gray-500 cursor-pointer"
@@ -1119,7 +1114,7 @@ function PotentialProfitCard({ scrap }: { scrap: Scrap }) {
               ) : (
                 <>
                   <p className="text-2xl font-bold mr-2">
-                    R$ {valorVenda.toLocaleString()}
+                    {formatCurrency(valorVenda)}
                   </p>
                   <Edit3
                     className="w-4 h-4 text-gray-500 cursor-pointer"
@@ -1140,7 +1135,7 @@ function PotentialProfitCard({ scrap }: { scrap: Scrap }) {
                   lucro_percentual > 0 ? "text-green-600" : "text-red-600"
                 }`}
               >
-                R$ {lucro.toLocaleString()}
+                {formatCurrency(lucro)}
               </p>
             </div>
             <Progress
@@ -1155,8 +1150,7 @@ function PotentialProfitCard({ scrap }: { scrap: Scrap }) {
         {activeSection === "custoArrematacao" && (
           <div className="mb-6">
             <h3 className="text-xl font-semibold mb-4">
-              Custos de Arrematação (R${" "}
-              {total_custo_arrematacao.toLocaleString()})
+              Custos de Arrematação ({formatCurrency(total_custo_arrematacao)})
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="w-2/4">
@@ -1183,11 +1177,10 @@ function PotentialProfitCard({ scrap }: { scrap: Scrap }) {
                     step={1}
                   />
                   <p className="ml-2 text-gray-600">
-                    R${" "}
-                    {(
+                    {formatCurrency(
                       profit.custo_arrematacao_comissao_leiloeiro_percentual *
-                      valorArrematacao
-                    ).toLocaleString()}
+                        valorArrematacao,
+                    )}
                   </p>
                 </div>
               </div>
@@ -1212,11 +1205,10 @@ function PotentialProfitCard({ scrap }: { scrap: Scrap }) {
                     step={1}
                   />
                   <p className="ml-2 text-gray-600">
-                    R${" "}
-                    {(
+                    {formatCurrency(
                       profit.custo_arrematacao_itbi_percentual *
-                      valorArrematacao
-                    ).toLocaleString()}
+                        valorArrematacao,
+                    )}
                   </p>
                 </div>
               </div>
@@ -1272,7 +1264,7 @@ function PotentialProfitCard({ scrap }: { scrap: Scrap }) {
         {activeSection === "extraPosImissao" && (
           <div className="mb-6">
             <h3 className="text-xl font-semibold mb-4">
-              Custos Pós Imissão (R$ {total_custo_pos_imissao.toLocaleString()})
+              Custos Pós Imissão ({formatCurrency(total_custo_pos_imissao)})
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="w-2/4">
@@ -1372,8 +1364,8 @@ function PotentialProfitCard({ scrap }: { scrap: Scrap }) {
         {activeSection === "custoPosArrematacao" && (
           <div className="mb-6">
             <h3 className="text-xl font-semibold mb-4">
-              Custos Pós Arrematação (R${" "}
-              {total_custo_pos_arrematacao.toLocaleString()})
+              Custos Pós Arrematação (
+              {formatCurrency(total_custo_pos_arrematacao)})
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -1440,7 +1432,7 @@ function PotentialProfitCard({ scrap }: { scrap: Scrap }) {
         {activeSection === "posVenda" && (
           <div className="mb-6">
             <h3 className="text-xl font-semibold mb-4">
-              Custos Pós Venda (R$ {total_custo_pos_venda.toLocaleString()})
+              Custos Pós Venda ({formatCurrency(total_custo_pos_venda)})
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="w-2/4">
@@ -1466,11 +1458,10 @@ function PotentialProfitCard({ scrap }: { scrap: Scrap }) {
                     step={1}
                   />
                   <p className="ml-2 text-gray-600">
-                    R${" "}
-                    {(
+                    {formatCurrency(
                       profit.custo_pos_venda_comissao_corretora_percentual *
-                      valorVenda
-                    ).toLocaleString()}
+                        valorVenda,
+                    )}
                   </p>
                 </div>
               </div>
@@ -1498,11 +1489,10 @@ function PotentialProfitCard({ scrap }: { scrap: Scrap }) {
                     step={1}
                   />
                   <p className="ml-2 text-gray-600">
-                    R${" "}
-                    {(
+                    {formatCurrency(
                       profit.custo_pos_venda_imposto_ganho_capita_percentual *
-                      total_custo_sem_imposto_venda
-                    ).toLocaleString()}
+                        total_custo_sem_imposto_venda,
+                    )}
                   </p>
                 </div>
               </div>
