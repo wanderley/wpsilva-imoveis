@@ -1,22 +1,26 @@
 import { LotModal } from "@/components/LotModal";
 import { Scrap } from "@/db/schema";
+import { getPreferredAuctionDate } from "@/models/scraps/helpers";
 import { Badge, Card, Carousel } from "flowbite-react";
 import Link from "next/link";
 import { useState } from "react";
 import { HiClock } from "react-icons/hi";
 
+function parsePreferredAuctionDate(lot: Scrap) {
+  const date = getPreferredAuctionDate(lot);
+  if (!date) {
+    return "Data não definida";
+  }
+  return date.toLocaleDateString("pt-BR");
+}
+
 function BottomContent({ lot }: { lot: Scrap }) {
-  const discount = lot.appraisal
-    ? ((lot.appraisal - (lot.bid || 0)) / lot.appraisal) * 100
-    : 0;
   const discountColor =
-    discount > 40 ? "success" : discount <= 0 ? "red" : "warning";
-  const nextAuctionDate =
-    lot.first_auction_date && lot.first_auction_date >= new Date()
-      ? new Date(lot.first_auction_date)
-      : lot.second_auction_date && lot.second_auction_date >= new Date()
-        ? new Date(lot.second_auction_date)
-        : null;
+    lot.gross_discount > 40
+      ? "success"
+      : lot.gross_discount <= 0
+        ? "red"
+        : "warning";
   return (
     <>
       {" "}
@@ -39,7 +43,7 @@ function BottomContent({ lot }: { lot: Scrap }) {
           </p>
           <div className="flex gap-1">
             <Badge color={discountColor} className="text-xs">
-              {discount.toFixed(0)}% desc.
+              {lot.gross_discount.toFixed(0)}% desc.
             </Badge>
             <Badge
               color={
@@ -60,9 +64,7 @@ function BottomContent({ lot }: { lot: Scrap }) {
       <div className="flex justify-end items-center mt-2">
         <p className="text-xs text-gray-600 dark:text-gray-400 flex items-center">
           <HiClock className="mr-1" size={12} />
-          {nextAuctionDate
-            ? nextAuctionDate.toLocaleDateString()
-            : "Data não definida"}
+          {parsePreferredAuctionDate(lot)}
         </p>
       </div>
     </>

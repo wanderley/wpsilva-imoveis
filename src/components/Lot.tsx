@@ -17,7 +17,10 @@ import {
   useUpdateScrapProfitMutation,
   useUpdateScraperMutation,
 } from "@/hooks";
-import { computeProfit } from "@/models/scraps/helpers";
+import {
+  computeProfit,
+  getPreferredAuctionDate,
+} from "@/models/scraps/helpers";
 import { Schema } from "@/services/analyser/schema";
 import { UseMutateFunction } from "@tanstack/react-query";
 import {
@@ -646,7 +649,13 @@ function DescriptionCard({
   mutate: UseMutateFunction<void, Error, Scrap, unknown>;
 }) {
   const isPastDate = (date: Date | null) => {
-    if (!date) return false;
+    if (!date) {
+      return false;
+    }
+    const preferredAuctionDate = getPreferredAuctionDate(scrap);
+    if (preferredAuctionDate && date < preferredAuctionDate) {
+      return true;
+    }
     return date < new Date();
   };
   const { isPending, mutate: refreshScrapsMutation } = useUpdateScraperMutation(

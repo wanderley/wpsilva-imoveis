@@ -252,7 +252,7 @@ async function maybeUpdateProfit(scrapID: number): Promise<void> {
   }
   profit = updateProfit({
     ...profit,
-    valor_arrematacao: scrap.bid ?? profit.valor_arrematacao,
+    valor_arrematacao: scrap.preferred_auction_bid ?? profit.valor_arrematacao,
     valor_venda: scrap.appraisal ?? profit.valor_venda,
   });
 
