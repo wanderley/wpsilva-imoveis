@@ -15,6 +15,7 @@
 
 # production
 /build
+drizzle.prod.config.ts
 
 # misc
 .DS_Store
