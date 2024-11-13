@@ -15,12 +15,6 @@ function parsePreferredAuctionDate(lot: Scrap) {
 }
 
 function BottomContent({ lot }: { lot: Scrap }) {
-  const discountColor =
-    lot.gross_discount > 40
-      ? "success"
-      : lot.gross_discount <= 0
-        ? "red"
-        : "warning";
   return (
     <>
       {" "}
@@ -42,21 +36,11 @@ function BottomContent({ lot }: { lot: Scrap }) {
             Avaliação: R$ {lot.appraisal?.toLocaleString() || "N/A"}
           </p>
           <div className="flex gap-1">
-            <Badge color={discountColor} className="text-xs">
-              {lot.gross_discount.toFixed(0)}% desc.
-            </Badge>
-            <Badge
-              color={
-                (lot.profit?.lucro_percentual ?? -Infinity) > 0
-                  ? "success"
-                  : "red"
-              }
-              className="text-xs"
-            >
+            <Badge color={lucroBadgeColor(lot)} className="text-xs">
               {Math.abs(lot.profit?.lucro_percentual ?? 0).toFixed(0)}%{" "}
               {(lot.profit?.lucro_percentual ?? -Infinity) > 0
-                ? "lucro"
-                : "prejuízo"}
+                ? "lucro esperado"
+                : "prejuízo esperado"}
             </Badge>
           </div>
         </div>
@@ -69,6 +53,17 @@ function BottomContent({ lot }: { lot: Scrap }) {
       </div>
     </>
   );
+}
+
+function lucroBadgeColor(lot: Scrap) {
+  const lucroPercentual = lot.profit?.lucro_percentual ?? -Infinity;
+  if (lucroPercentual > 30) {
+    return "success";
+  }
+  if (lucroPercentual > 0) {
+    return "warning";
+  }
+  return "red";
 }
 
 function CardLink({
