@@ -49,7 +49,7 @@ import {
   Sofa,
   StickyNote,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Check,
   CheckSquare,
@@ -866,6 +866,10 @@ function PotentialProfitCard({ scrap }: { scrap: Scrap }) {
   const [valorVenda, setValorVenda] = useState<number>(
     scrap.profit?.valor_venda || 0,
   );
+  useEffect(() => {
+    setValorArrematacao(scrap.profit?.valor_arrematacao || 0);
+    setValorVenda(scrap.profit?.valor_venda || 0);
+  }, [scrap.profit]);
   const profit = scrap.profit;
   if (profit == null) {
     return <PotentialProfitEmptyCard />;
