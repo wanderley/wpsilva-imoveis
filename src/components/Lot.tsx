@@ -1,6 +1,7 @@
 "use client";
 
 import { LotStatusBadge } from "@/components/LotStatusBadge";
+import { selectOptionBasedOnProfitBand } from "@/components/lib/scraps";
 import { Badge } from "@/components/ui/badge";
 import { Button as UIButton } from "@/components/ui/button";
 import {
@@ -9,6 +10,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Scrap, ScrapProfit } from "@/db/schema";
 import {
   useRequestAnalysisMutation,
@@ -58,8 +60,6 @@ import {
   ThumbsUp,
   X,
 } from "react-feather";
-
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("pt-BR", {
@@ -685,6 +685,27 @@ function DescriptionCard({
                 R$ {scrap.bid?.toLocaleString() || "N/A"}
               </dd>
             </div>
+            {scrap.profit && (
+              <div>
+                <dt className="font-semibold">
+                  {selectOptionBasedOnProfitBand(scrap.profit, {
+                    else: "Lucro Esperado:",
+                    loss: "Prejuízo Esperado:",
+                  })}
+                </dt>
+                <dd
+                  className={selectOptionBasedOnProfitBand(scrap.profit, {
+                    loss: "text-2xl font-bold text-red-600",
+                    low_profit: "text-2xl font-bold text-gray-600",
+                    moderate_profit: "text-2xl font-bold text-yellow-400",
+                    high_profit: "text-2xl font-bold text-green-600",
+                  })}
+                >
+                  R$ {Math.abs(scrap.profit.lucro).toLocaleString()} (
+                  {Math.abs(scrap.profit.lucro_percentual).toFixed(0)}%)
+                </dd>
+              </div>
+            )}
             <div>
               <dt className="font-semibold">1º Leilão:</dt>
               <dd

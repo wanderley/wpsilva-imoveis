@@ -1,4 +1,5 @@
 import { LotModal } from "@/components/LotModal";
+import { selectOptionBasedOnProfitBand } from "@/components/lib/scraps";
 import { Scrap } from "@/db/schema";
 import { getPreferredAuctionDate } from "@/models/scraps/helpers";
 import { Badge, Card, Carousel } from "flowbite-react";
@@ -35,14 +36,25 @@ function BottomContent({ lot }: { lot: Scrap }) {
           <p className="text-sm text-gray-600 dark:text-gray-400">
             Avaliação: R$ {lot.appraisal?.toLocaleString() || "N/A"}
           </p>
-          <div className="flex gap-1">
-            <Badge color={lucroBadgeColor(lot)} className="text-xs">
-              {Math.abs(lot.profit?.lucro_percentual ?? 0).toFixed(0)}%{" "}
-              {(lot.profit?.lucro_percentual ?? -Infinity) > 0
-                ? "lucro esperado"
-                : "prejuízo esperado"}
-            </Badge>
-          </div>
+          {lot.profit && (
+            <div className="flex gap-1">
+              <Badge
+                color={selectOptionBasedOnProfitBand(lot.profit, {
+                  loss: "danger",
+                  low_profit: "gray",
+                  moderate_profit: "warning",
+                  high_profit: "success",
+                })}
+                className="text-xs"
+              >
+                {Math.abs(lot.profit?.lucro_percentual ?? 0).toFixed(0)}%{" "}
+                {selectOptionBasedOnProfitBand(lot.profit, {
+                  loss: "prejuízo esperado",
+                  else: "lucro esperado",
+                })}
+              </Badge>
+            </div>
+          )}
         </div>
       </div>
       <div className="flex justify-end items-center mt-2">
@@ -53,17 +65,6 @@ function BottomContent({ lot }: { lot: Scrap }) {
       </div>
     </>
   );
-}
-
-function lucroBadgeColor(lot: Scrap) {
-  const lucroPercentual = lot.profit?.lucro_percentual ?? -Infinity;
-  if (lucroPercentual > 30) {
-    return "success";
-  }
-  if (lucroPercentual > 0) {
-    return "warning";
-  }
-  return "red";
 }
 
 function CardLink({
