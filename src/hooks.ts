@@ -1,4 +1,4 @@
-import { ScrapProfit, ScrapWithFiles } from "@/db/schema";
+import { Scrap, ScrapProfit } from "@/db/schema";
 import {
   SearchLotsFilters,
   getPendingReviewLots,
@@ -27,7 +27,7 @@ export function useScraps(scrapID: string) {
 }
 
 export function useSearchLots(filters: SearchLotsFilters) {
-  return useQuery<ScrapWithFiles[]>({
+  return useQuery<Scrap[]>({
     queryKey: ["lots", filters],
     queryFn: async () => await searchLots(filters),
   });
@@ -96,7 +96,7 @@ export function useScrapDetails(id: number) {
 export function useUpdateScrapMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (scrap: ScrapWithFiles) => await saveScrap(scrap),
+    mutationFn: async (scrap: Scrap) => await saveScrap(scrap),
     onSuccess: (_, scrap) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.scrapDetails(scrap.id),

@@ -2,7 +2,7 @@
 
 import { db } from "@/db";
 import {
-  ScrapWithFiles,
+  Scrap,
   openaiFilesTable,
   scrapAnalysesTable,
   scrapProfitTable,
@@ -123,7 +123,7 @@ ${JSON.stringify(zodResponseFormat(schema, "analysis_result"), null, 2)}
 </json-schema>`;
 }
 
-async function getOpenAIFileIDs(scrap: ScrapWithFiles): Promise<string[]> {
+async function getOpenAIFileIDs(scrap: Scrap): Promise<string[]> {
   const file_ids: string[] = [];
   if (scrap.edital_link) {
     file_ids.push(await getExistingFileID(scrap.edital_link, "edital.pdf"));
@@ -142,7 +142,7 @@ async function getOpenAIFileIDs(scrap: ScrapWithFiles): Promise<string[]> {
   return file_ids;
 }
 
-async function getDescriptionFileID(scrap: ScrapWithFiles): Promise<string> {
+async function getDescriptionFileID(scrap: Scrap): Promise<string> {
   const buffer = Buffer.from(scrap.description || "");
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,

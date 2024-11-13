@@ -1,11 +1,11 @@
 import { LotModal } from "@/components/LotModal";
-import { ScrapWithFiles } from "@/db/schema";
+import { Scrap } from "@/db/schema";
 import { Badge, Card, Carousel } from "flowbite-react";
 import Link from "next/link";
 import { useState } from "react";
 import { HiClock } from "react-icons/hi";
 
-function BottomContent({ lot }: { lot: ScrapWithFiles }) {
+function BottomContent({ lot }: { lot: Scrap }) {
   const discount = lot.appraisal
     ? ((lot.appraisal - (lot.bid || 0)) / lot.appraisal) * 100
     : 0;
@@ -74,7 +74,7 @@ function CardLink({
   mode,
   children,
 }: {
-  lot: ScrapWithFiles;
+  lot: Scrap;
   mode: "page" | "modal";
   children: React.ReactNode;
 }) {
@@ -100,7 +100,7 @@ export default function LotCard({
   lot,
   mode,
 }: {
-  lot: ScrapWithFiles;
+  lot: Scrap;
   mode: "page" | "modal";
 }) {
   return (

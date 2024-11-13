@@ -1,4 +1,4 @@
-import { ScrapWithFiles } from "@/db/schema";
+import { Scrap } from "@/db/schema";
 import { Pagination } from "flowbite-react";
 
 import LotCard from "./LotCard";
@@ -10,7 +10,7 @@ export function LotsGrid({
   itemsPerPage,
   onPageChange,
 }: {
-  lots: ScrapWithFiles[];
+  lots: Scrap[];
   openLotMode: "page" | "modal";
   currentPage: number;
   itemsPerPage: number;
@@ -23,7 +23,7 @@ export function LotsGrid({
   return (
     <>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-4">
-        {currentItems.map((lot: ScrapWithFiles) => (
+        {currentItems.map((lot: Scrap) => (
           <LotCard key={lot.id} lot={lot} mode={openLotMode} />
         ))}
       </div>

@@ -1,9 +1,9 @@
 "use client";
 
-import { ScrapWithFiles } from "@/db/schema";
+import { Scrap } from "@/db/schema";
 import { Badge } from "flowbite-react";
 
-export const LotStatusBadge = ({ scrap }: { scrap: ScrapWithFiles }) => {
+export const LotStatusBadge = ({ scrap }: { scrap: Scrap }) => {
   let color = "success";
   let text = "Carregado";
   switch (scrap.fetch_status) {

@@ -1,4 +1,4 @@
-import { ScrapWithFiles } from "@/db/schema";
+import { Scrap } from "@/db/schema";
 import { getInterestingLots } from "@/models/scraps/actions";
 import { useQuery } from "@tanstack/react-query";
 import { Button, Spinner } from "flowbite-react";
@@ -38,7 +38,7 @@ export function InterestingLots() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
-  const { data, isLoading } = useQuery<ScrapWithFiles[]>({
+  const { data, isLoading } = useQuery<Scrap[]>({
     queryKey: ["interesting-lots"],
     queryFn: async () => await getInterestingLots(),
   });

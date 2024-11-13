@@ -172,7 +172,7 @@ export const openaiFilesTable = mysqlTable(
 
 export type ScrapProfit = typeof scrapProfitTable.$inferSelect;
 
-export type ScrapWithFiles = typeof scrapsTable.$inferSelect & {
+export type Scrap = typeof scrapsTable.$inferSelect & {
   files: (typeof scrapFilesTable.$inferSelect)[];
   analyses: (typeof scrapAnalysesTable.$inferSelect)[];
   profit: ScrapProfit | null;

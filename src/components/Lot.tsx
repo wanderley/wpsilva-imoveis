@@ -9,7 +9,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
-import { ScrapProfit, ScrapWithFiles } from "@/db/schema";
+import { Scrap, ScrapProfit } from "@/db/schema";
 import {
   useRequestAnalysisMutation,
   useScrapDetails,
@@ -106,7 +106,7 @@ const getReformTypeBadgeVariant = (
   }
 };
 
-function Analysis({ scrap }: { scrap: ScrapWithFiles }) {
+function Analysis({ scrap }: { scrap: Scrap }) {
   const { isPending, mutate: requestAnalysisMutation } =
     useRequestAnalysisMutation(scrap.id);
 
@@ -599,7 +599,7 @@ function Analysis({ scrap }: { scrap: ScrapWithFiles }) {
   );
 }
 
-function OriginalDescription({ scrap }: { scrap: ScrapWithFiles }) {
+function OriginalDescription({ scrap }: { scrap: Scrap }) {
   const { isPending, mutate: requestAnalysisMutation } =
     useRequestAnalysisMutation(scrap.id);
   return (
@@ -642,8 +642,8 @@ function DescriptionCard({
   scrap,
   mutate,
 }: {
-  scrap: ScrapWithFiles;
-  mutate: UseMutateFunction<void, Error, ScrapWithFiles, unknown>;
+  scrap: Scrap;
+  mutate: UseMutateFunction<void, Error, Scrap, unknown>;
 }) {
   const isPastDate = (date: Date | null) => {
     if (!date) return false;
@@ -832,7 +832,7 @@ function PotentialProfitEmptyCard() {
   );
 }
 
-function PotentialProfitCard({ scrap }: { scrap: ScrapWithFiles }) {
+function PotentialProfitCard({ scrap }: { scrap: Scrap }) {
   const { mutate } = useUpdateScrapProfitMutation();
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [editingField, setEditingField] = useState<string | null>(null);

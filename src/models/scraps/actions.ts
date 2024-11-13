@@ -2,8 +2,8 @@
 
 import { db } from "@/db/index";
 import {
+  Scrap,
   ScrapProfit,
-  ScrapWithFiles,
   scrapAnalysesTable,
   scrapProfitTable,
   scrapsTable,
@@ -20,7 +20,7 @@ import {
   sql,
 } from "drizzle-orm";
 
-export async function getScraps(scraperID: string): Promise<ScrapWithFiles[]> {
+export async function getScraps(scraperID: string): Promise<Scrap[]> {
   return await db.query.scrapsTable.findMany({
     with: {
       files: true,
@@ -35,7 +35,7 @@ export async function getScraps(scraperID: string): Promise<ScrapWithFiles[]> {
 
 export async function getScrapDetails(
   scrapId: number,
-): Promise<ScrapWithFiles | undefined> {
+): Promise<Scrap | undefined> {
   return await db.query.scrapsTable.findFirst({
     with: {
       files: true,
@@ -48,7 +48,7 @@ export async function getScrapDetails(
   });
 }
 
-export async function saveScrap(scrap: ScrapWithFiles): Promise<void> {
+export async function saveScrap(scrap: Scrap): Promise<void> {
   await db.update(scrapsTable).set(scrap).where(eq(scrapsTable.id, scrap.id));
 }
 
@@ -80,11 +80,11 @@ export async function getLots(extraWhere?: SQLWrapper) {
   });
 }
 
-export async function getPendingReviewLots(): Promise<ScrapWithFiles[]> {
+export async function getPendingReviewLots(): Promise<Scrap[]> {
   return await getLots(isNull(scrapsTable.is_interesting));
 }
 
-export async function getInterestingLots(): Promise<ScrapWithFiles[]> {
+export async function getInterestingLots(): Promise<Scrap[]> {
   return await getLots(eq(scrapsTable.is_interesting, 1));
 }
 
@@ -95,9 +95,7 @@ export type SearchLotsFilters = {
   active: "0" | "1" | "";
 };
 
-export async function searchLots(
-  filters: SearchLotsFilters,
-): Promise<ScrapWithFiles[]> {
+export async function searchLots(filters: SearchLotsFilters): Promise<Scrap[]> {
   const nextAuctionDate = sql<Date | null>`CASE 
       WHEN DATE(${scrapsTable.first_auction_date}) >= CURRENT_DATE THEN DATE(${scrapsTable.first_auction_date})
       WHEN DATE(${scrapsTable.second_auction_date}) >= CURRENT_DATE THEN DATE(${scrapsTable.second_auction_date})
