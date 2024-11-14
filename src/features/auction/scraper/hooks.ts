@@ -1,3 +1,5 @@
+"use client";
+
 import { queryKeys } from "@/hooks";
 import { refreshScraps } from "@/services/scraper/actions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";

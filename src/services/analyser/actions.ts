@@ -7,7 +7,7 @@ import {
   scrapAnalysesTable,
   scrapProfitTable,
 } from "@/db/schema";
-import { getScrapDetails } from "@/models/scraps/actions";
+import { findScrapByID } from "@/features/auction/scrap/repository";
 import {
   Schema,
   getAllKnowledge,
@@ -22,7 +22,7 @@ export async function updateAnalysis(
   scrapId: number,
   model: "gpt-4o" | "gpt-4o-mini" = "gpt-4o-mini",
 ): Promise<void> {
-  const scrap = await getScrapDetails(scrapId);
+  const scrap = await findScrapByID(scrapId);
   if (!scrap) {
     throw new Error("Scrap not found");
   }
@@ -187,7 +187,7 @@ async function getExistingFileID(url: string, name: string): Promise<string> {
 }
 
 async function updateCosts(scrapId: number, json: Schema): Promise<void> {
-  const scrap = await getScrapDetails(scrapId);
+  const scrap = await findScrapByID(scrapId);
   const profit = scrap?.profit;
   if (!profit || profit.status === "overridden") {
     return;

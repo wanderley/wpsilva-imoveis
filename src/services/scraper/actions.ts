@@ -7,7 +7,7 @@ import {
   scrapProfitTable,
   scrapsTable,
 } from "@/db/schema";
-import { getScrapDetails } from "@/models/scraps/actions";
+import { findScrapByID } from "@/features/auction/scrap/repository";
 import { updateProfit } from "@/models/scraps/helpers";
 import { getScraper } from "@/services/scraper";
 import { Lot, Scraper } from "@/services/scraper/scraper";
@@ -234,7 +234,7 @@ async function maybeUpdateAnalysis(scrapID: number): Promise<void> {
 }
 
 async function maybeUpdateProfit(scrapID: number): Promise<void> {
-  const scrap = await getScrapDetails(scrapID);
+  const scrap = await findScrapByID(scrapID);
   if (!scrap) {
     return;
   }
