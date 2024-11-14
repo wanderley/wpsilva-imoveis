@@ -1,7 +1,7 @@
 "use client";
 
 import { LotsGrid } from "@/components/LotsGrid";
-import { useSearchLots } from "@/hooks";
+import { usePagination, useSearchLots } from "@/hooks";
 import { SearchLotsFilters } from "@/models/scraps/actions";
 import { Button, Label, Select, Spinner, TextInput } from "flowbite-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -139,13 +139,6 @@ function useFilters() {
   };
 
   return { newFilters, filters, updateFilters, updateUrl, clearFilters };
-}
-
-function usePagination() {
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 9;
-
-  return { currentPage, setCurrentPage, itemsPerPage };
 }
 
 function EmptyState() {

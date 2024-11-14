@@ -39,7 +39,9 @@ const GROSS_DISCOUNT_FIELD = sql<number>`((
   )
 ) / ${scrapsTable.appraisal} * 100)`;
 
-export async function getScraps(scraperID: string): Promise<Scrap[]> {
+export async function getAllScrapsByScrapperID(
+  scraperID: string,
+): Promise<Scrap[]> {
   return await db.query.scrapsTable.findMany({
     extras: {
       preferred_auction_date: PREFERRED_AUCTION_DATE_FIELD.as(
@@ -58,6 +60,7 @@ export async function getScraps(scraperID: string): Promise<Scrap[]> {
       profit: true,
     },
     where: eq(scrapsTable.scraper_id, scraperID),
+    orderBy: [desc(scrapsTable.created_at)],
   });
 }
 

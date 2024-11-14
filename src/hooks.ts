@@ -1,9 +1,9 @@
 import { Scrap, ScrapProfit } from "@/db/schema";
 import {
   SearchLotsFilters,
+  getAllScrapsByScrapperID,
   getPendingReviewLots,
   getScrapDetails,
-  getScraps,
   saveScrap,
   saveScrapProfit,
   searchLots,
@@ -13,6 +13,7 @@ import {
   refreshScraps,
 } from "@/services/scraper/actions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 
 import { updateAnalysis } from "./services/analyser/actions";
 
@@ -25,7 +26,7 @@ export const queryKeys = {
 export function useScraps(scrapID: string) {
   return useQuery({
     queryKey: queryKeys.scraps(scrapID),
-    queryFn: async () => await getScraps(scrapID),
+    queryFn: async () => await getAllScrapsByScrapperID(scrapID),
   });
 }
 
@@ -146,4 +147,12 @@ export function useUpdateScrapProfitMutation() {
       });
     },
   });
+}
+
+export function usePagination(
+  { itemsPerPage = 9 }: { itemsPerPage?: number } = { itemsPerPage: 9 },
+) {
+  const [currentPage, setCurrentPage] = useState(1);
+
+  return { currentPage, setCurrentPage, itemsPerPage };
 }
