@@ -10,13 +10,13 @@ import { usePagination } from "@/hooks";
 import { Button } from "flowbite-react";
 
 function UpdateButton({ scraperID }: { scraperID: string }) {
-  const { isPending, mutate } = useRefreshScrapsMutation(scraperID);
+  const { isPending, mutate } = useRefreshScrapsMutation();
   return (
     <Button
       size="sm"
       color="failure"
       disabled={isPending}
-      onClick={() => mutate({ scraperID: scraperID })}
+      onClick={() => mutate({ scraperID })}
     >
       Forçar Atualização
     </Button>

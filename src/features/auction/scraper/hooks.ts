@@ -13,12 +13,12 @@ export function useScraps(scraperID: string) {
   });
 }
 
-export function useRefreshScrapsMutation(scraperID: string) {
+export function useRefreshScrapsMutation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ scraperID }: { scraperID: string }) =>
       await refreshScraps(scraperID),
-    onSuccess: () => {
+    onSuccess: (_, { scraperID }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.scraps(scraperID) });
     },
   });
