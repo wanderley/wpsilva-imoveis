@@ -5,14 +5,14 @@ import { LotsGrid } from "@/components/LotsGrid";
 import { usePagination, useRefreshScrapsMutation, useScraps } from "@/hooks";
 import { Button } from "flowbite-react";
 
-function UpdateButton({ scrapID }: { scrapID: string }) {
-  const { isPending, mutate } = useRefreshScrapsMutation(scrapID);
+function UpdateButton({ scraperID }: { scraperID: string }) {
+  const { isPending, mutate } = useRefreshScrapsMutation(scraperID);
   return (
     <Button
       size="sm"
       color="failure"
       disabled={isPending}
-      onClick={() => mutate({ scrapID })}
+      onClick={() => mutate({ scraperID: scraperID })}
     >
       Forçar Atualização
     </Button>
@@ -29,7 +29,7 @@ export default function Page({ params }: { params: { id: number } }) {
       <section className="mb-12">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-semibold">Site: {scraperID}</h2>
-          <UpdateButton scrapID={scraperID} />
+          <UpdateButton scraperID={scraperID} />
         </div>
         {isLoading && <p>Carregando...</p>}
         {!isLoading && data?.length == 0 && <p>Nenhum lote encontrado!</p>}

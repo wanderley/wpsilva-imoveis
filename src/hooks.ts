@@ -18,15 +18,15 @@ import { useState } from "react";
 import { updateAnalysis } from "./services/analyser/actions";
 
 export const queryKeys = {
-  scraps: (scrapID: string) => ["scraps", scrapID],
+  scraps: (scraperID: string) => ["scraps", scraperID],
   pendingReviewLots: ["pending-review-lots"],
   scrapDetails: (id: number) => ["scrapDetails", String(id)],
 };
 
-export function useScraps(scrapID: string) {
+export function useScraps(scraperID: string) {
   return useQuery({
-    queryKey: queryKeys.scraps(scrapID),
-    queryFn: async () => await getAllScrapsByScrapperID(scrapID),
+    queryKey: queryKeys.scraps(scraperID),
+    queryFn: async () => await getAllScrapsByScrapperID(scraperID),
   });
 }
 
@@ -45,13 +45,13 @@ export function usePendingReviewLots() {
   });
 }
 
-export function useRefreshScrapsMutation(scrapID: string) {
+export function useRefreshScrapsMutation(scraperID: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ scrapID }: { scrapID: string }) =>
-      await refreshScraps(scrapID),
+    mutationFn: async ({ scraperID }: { scraperID: string }) =>
+      await refreshScraps(scraperID),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.scraps(scrapID) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.scraps(scraperID) });
     },
   });
 }
