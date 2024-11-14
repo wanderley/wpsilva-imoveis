@@ -20,16 +20,16 @@ import {
   sql,
 } from "drizzle-orm";
 
-const PREFERRED_AUCTION_DATE_FIELD = sql<string | null>`(CASE 
+export const PREFERRED_AUCTION_DATE_FIELD = sql<string | null>`(CASE 
   WHEN ${scrapsTable.second_auction_date} IS NOT NULL THEN ${scrapsTable.second_auction_date}
   ELSE ${scrapsTable.first_auction_date}
 END)`;
-const PREFERRED_AUCTION_BID_FIELD = sql<number | null>`(CASE 
+export const PREFERRED_AUCTION_BID_FIELD = sql<number | null>`(CASE 
   WHEN ${scrapsTable.first_auction_date} < CURRENT_DATE THEN ${scrapsTable.bid}
   WHEN ${scrapsTable.second_auction_date} IS NOT NULL THEN ${scrapsTable.second_auction_bid}
   ELSE ${scrapsTable.first_auction_bid}
 END)`;
-const GROSS_DISCOUNT_FIELD = sql<number>`((
+export const GROSS_DISCOUNT_FIELD = sql<number>`((
   ${scrapsTable.appraisal} - (
     CASE
       WHEN ${PREFERRED_AUCTION_DATE_FIELD} >= CURRENT_DATE THEN
@@ -38,31 +38,6 @@ const GROSS_DISCOUNT_FIELD = sql<number>`((
     END
   )
 ) / ${scrapsTable.appraisal} * 100)`;
-
-export async function getAllScrapsByScrapperID(
-  scraperID: string,
-): Promise<Scrap[]> {
-  return await db.query.scrapsTable.findMany({
-    extras: {
-      preferred_auction_date: PREFERRED_AUCTION_DATE_FIELD.as(
-        "preferred_auction_date",
-      ),
-      preferred_auction_bid: PREFERRED_AUCTION_BID_FIELD.as(
-        "preferred_auction_bid",
-      ),
-      gross_discount: GROSS_DISCOUNT_FIELD.as("gross_discount"),
-    },
-    with: {
-      files: true,
-      analyses: {
-        orderBy: [desc(scrapAnalysesTable.created_at)],
-      },
-      profit: true,
-    },
-    where: eq(scrapsTable.scraper_id, scraperID),
-    orderBy: [desc(scrapsTable.created_at)],
-  });
-}
 
 export async function getScrapDetails(
   scrapId: number,

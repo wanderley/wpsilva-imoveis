@@ -1,17 +1,13 @@
 import { Scrap, ScrapProfit } from "@/db/schema";
 import {
   SearchLotsFilters,
-  getAllScrapsByScrapperID,
   getPendingReviewLots,
   getScrapDetails,
   saveScrap,
   saveScrapProfit,
   searchLots,
 } from "@/models/scraps/actions";
-import {
-  fetchScrapFromSource,
-  refreshScraps,
-} from "@/services/scraper/actions";
+import { fetchScrapFromSource } from "@/services/scraper/actions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
@@ -22,13 +18,6 @@ export const queryKeys = {
   pendingReviewLots: ["pending-review-lots"],
   scrapDetails: (id: number) => ["scrapDetails", String(id)],
 };
-
-export function useScraps(scraperID: string) {
-  return useQuery({
-    queryKey: queryKeys.scraps(scraperID),
-    queryFn: async () => await getAllScrapsByScrapperID(scraperID),
-  });
-}
 
 export function useSearchLots(filters: SearchLotsFilters) {
   return useQuery<Scrap[]>({
@@ -42,17 +31,6 @@ export function usePendingReviewLots() {
     queryKey: queryKeys.pendingReviewLots,
     queryFn: async () => await getPendingReviewLots(),
     initialData: [],
-  });
-}
-
-export function useRefreshScrapsMutation(scraperID: string) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({ scraperID }: { scraperID: string }) =>
-      await refreshScraps(scraperID),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.scraps(scraperID) });
-    },
   });
 }
 

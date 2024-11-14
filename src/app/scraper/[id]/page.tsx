@@ -2,7 +2,11 @@
 
 import { SCRAPERS } from "@/app/scraper/constants";
 import { LotsGrid } from "@/components/LotsGrid";
-import { usePagination, useRefreshScrapsMutation, useScraps } from "@/hooks";
+import {
+  useRefreshScrapsMutation,
+  useScraps,
+} from "@/features/auction/scraper/hooks";
+import { usePagination } from "@/hooks";
 import { Button } from "flowbite-react";
 
 function UpdateButton({ scraperID }: { scraperID: string }) {
