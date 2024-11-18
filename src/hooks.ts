@@ -14,6 +14,7 @@ import { useState } from "react";
 import { updateAnalysis } from "./services/analyser/actions";
 
 export const queryKeys = {
+  scrapers: ["scrapers"],
   scraps: (scraperID: string) => ["scraps", scraperID],
   pendingReviewLots: ["pending-review-lots"],
   scrapDetails: (id: number) => ["scrapDetails", String(id)],

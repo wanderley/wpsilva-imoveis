@@ -1,6 +1,5 @@
 "use client";
 
-import { SCRAPERS } from "@/app/scraper/constants";
 import { LotsGrid } from "@/components/LotsGrid";
 import {
   useRefreshScrapsMutation,
@@ -23,8 +22,8 @@ function UpdateButton({ scraperID }: { scraperID: string }) {
   );
 }
 
-export default function Page({ params }: { params: { id: number } }) {
-  const scraperID = SCRAPERS[params.id];
+export default function Page({ params }: { params: { id: string } }) {
+  const scraperID = params.id;
   const { isLoading, data } = useScraps(scraperID);
   const { currentPage, setCurrentPage, itemsPerPage } = usePagination();
 

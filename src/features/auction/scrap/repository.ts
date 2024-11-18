@@ -34,7 +34,9 @@ export const GROSS_DISCOUNT_FIELD = sql<number>`((
   )
 ) / ${scrapsTable.appraisal} * 100)`;
 
-export async function findScraps(options: FindScrapsOptions): Promise<Scrap[]> {
+export async function findScraps(
+  options?: FindScrapsOptions,
+): Promise<Scrap[]> {
   return await db.query.scrapsTable.findMany({
     extras: {
       preferred_auction_date: PREFERRED_AUCTION_DATE_FIELD.as(
@@ -48,15 +50,15 @@ export async function findScraps(options: FindScrapsOptions): Promise<Scrap[]> {
     with: {
       files: true,
       analyses: {
-        where: options.analysis?.where,
-        orderBy: options.analysis?.orderBy || [
+        where: options?.analysis?.where,
+        orderBy: options?.analysis?.orderBy || [
           desc(scrapAnalysesTable.created_at),
         ],
       },
       profit: true,
     },
-    where: options.scrap?.where,
-    orderBy: options.scrap?.orderBy,
+    where: options?.scrap?.where,
+    orderBy: options?.scrap?.orderBy,
   });
 }
 
