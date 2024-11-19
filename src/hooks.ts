@@ -15,7 +15,7 @@ import { updateAnalysis } from "./services/analyser/actions";
 
 export const queryKeys = {
   scrapers: ["scrapers"],
-  scraps: (scraperID: string) => ["scraps", scraperID],
+  scraps: (scraperID: string, status?: string) => ["scraps", scraperID, status],
   pendingReviewLots: ["pending-review-lots"],
   scrapDetails: (id: number) => ["scrapDetails", String(id)],
 };

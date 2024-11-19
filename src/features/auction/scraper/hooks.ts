@@ -1,15 +1,15 @@
 "use client";
 
+import { getAllScrapsByScrapperID } from "@/features/auction/scraper/api";
+import { ScrapStatus } from "@/features/auction/scraper/repository";
 import { queryKeys } from "@/hooks";
 import { refreshScraps } from "@/services/scraper/actions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { getAllScrapsByScrapperID } from "./api";
-
-export function useScraps(scraperID: string) {
+export function useScraps(scraperID: string, status?: ScrapStatus) {
   return useQuery({
-    queryKey: queryKeys.scraps(scraperID),
-    queryFn: async () => await getAllScrapsByScrapperID(scraperID),
+    queryKey: queryKeys.scraps(scraperID, status),
+    queryFn: async () => await getAllScrapsByScrapperID(scraperID, status),
   });
 }
 

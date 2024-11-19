@@ -35,38 +35,48 @@ export default function ScraperCard({
       <CardContent>
         <div className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-            <Link href={`/scraper/${scraperID}`}>
+            <Link href={`/scraper/${scraperID}?status=all`}>
               <StatusCard
                 title="Total"
                 value={statusTotals.totalLots}
                 color=""
               />
             </Link>
-            <StatusCard
-              title="Sucesso"
-              value={statusTotals.successLots}
-              color="text-green-600"
-            />
-            <StatusCard
-              title="Falhou"
-              value={statusTotals.failedLots}
-              color="text-red-600"
-            />
-            <StatusCard
-              title="Incompleto"
-              value={statusTotals.incompleteLots}
-              color="text-orange-500"
-            />
-            <StatusCard
-              title="Sem Análise"
-              value={statusTotals.lotsWithoutAnalysis}
-              color="text-yellow-500"
-            />
-            <StatusCard
-              title="Não Baixado"
-              value={statusTotals.notFetchedLots}
-              color="text-blue-600"
-            />
+            <Link href={`/scraper/${scraperID}?status=success`}>
+              <StatusCard
+                title="Sucesso"
+                value={statusTotals.successLots}
+                color="text-green-600"
+              />
+            </Link>
+            <Link href={`/scraper/${scraperID}?status=failed`}>
+              <StatusCard
+                title="Falhou"
+                value={statusTotals.failedLots}
+                color="text-red-600"
+              />
+            </Link>
+            <Link href={`/scraper/${scraperID}?status=incomplete`}>
+              <StatusCard
+                title="Incompleto"
+                value={statusTotals.incompleteLots}
+                color="text-orange-500"
+              />
+            </Link>
+            <Link href={`/scraper/${scraperID}?status=without-analysis`}>
+              <StatusCard
+                title="Sem Análise"
+                value={statusTotals.lotsWithoutAnalysis}
+                color="text-yellow-500"
+              />
+            </Link>
+            <Link href={`/scraper/${scraperID}?status=not-fetched`}>
+              <StatusCard
+                title="Não Baixado"
+                value={statusTotals.notFetchedLots}
+                color="text-blue-600"
+              />
+            </Link>
           </div>
         </div>
       </CardContent>

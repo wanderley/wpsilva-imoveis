@@ -3,18 +3,21 @@
 import { db } from "@/db";
 import { scrapAnalysesTable, scrapsTable } from "@/db/schema";
 import {
+  PREFERRED_AUCTION_DATE_FIELD,
+  findScraps,
+} from "@/features/auction/scrap/repository";
+import {
   SQLWrapper,
   and,
   asc,
   count,
+  desc,
   eq,
   isNotNull,
   isNull,
   sql,
   sum,
 } from "drizzle-orm";
-
-import { PREFERRED_AUCTION_DATE_FIELD } from "../scrap/repository";
 
 export async function fetchScrapersMetrics(filters?: SQLWrapper[]) {
   const monthField = sql<string>`DATE_FORMAT(${PREFERRED_AUCTION_DATE_FIELD}, '%Y-%m')`;
@@ -140,4 +143,72 @@ export async function fetchScrapersMetrics(filters?: SQLWrapper[]) {
       new Set(counters.map((metric) => metric.scraper_id)),
     ).sort((a, b) => a.localeCompare(b)),
   };
+}
+
+export type ScrapStatus =
+  | "all"
+  | "success"
+  | "failed"
+  | "incomplete"
+  | "without-analysis"
+  | "not-fetched";
+
+export async function fetchScrapsByStatus(
+  scraperID: string,
+  status?: ScrapStatus,
+) {
+  const filters = [];
+  switch (status) {
+    case "success":
+      filters.push(eq(scrapsTable.fetch_status, "fetched"));
+      break;
+    case "failed":
+      filters.push(eq(scrapsTable.fetch_status, "failed"));
+      break;
+    case "incomplete":
+      filters.push(
+        eq(
+          sql`CASE WHEN 
+              (
+                ${isNull(scrapsTable.first_auction_date)} AND
+                ${isNull(scrapsTable.second_auction_date)}
+              ) OR
+              ${isNull(scrapsTable.edital_link)} OR
+              ${isNull(scrapsTable.matricula_link)} OR
+              ${isNull(scrapsTable.address)} OR
+              ${isNull(scrapsTable.case_number)} OR
+              ${isNull(scrapsTable.case_link)} OR
+              ${isNull(scrapsTable.bid)} OR
+              ${isNull(scrapsTable.appraisal)}
+            THEN 1 ELSE 0 END`,
+          1,
+        ),
+      );
+      break;
+    case "without-analysis":
+      filters.push(
+        eq(
+          db.$count(
+            scrapAnalysesTable,
+            eq(sql`scrap_analyses.scrap_id`, scrapsTable.id),
+          ),
+          0,
+        ),
+      );
+      break;
+    case "not-fetched":
+      filters.push(eq(scrapsTable.fetch_status, "not-fetched"));
+      break;
+    case "all":
+      break;
+  }
+  return await findScraps({
+    scrap: {
+      where: and(eq(scrapsTable.scraper_id, scraperID), ...filters),
+      orderBy: [desc(scrapsTable.created_at)],
+    },
+    analysis: {
+      orderBy: [desc(scrapAnalysesTable.created_at)],
+    },
+  });
 }
