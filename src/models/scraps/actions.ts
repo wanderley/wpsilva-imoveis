@@ -16,6 +16,7 @@ import {
   eq,
   gte,
   isNull,
+  lt,
   lte,
   sql,
 } from "drizzle-orm";
@@ -68,7 +69,7 @@ export async function searchLots(filters: SearchLotsFilters): Promise<Scrap[]> {
   }
   switch (filters.active) {
     case "0":
-      conditions.push(isNull(PREFERRED_AUCTION_DATE_FIELD));
+      conditions.push(lt(PREFERRED_AUCTION_DATE_FIELD, sql`CURRENT_DATE`));
       break;
     case "":
     case "1":
