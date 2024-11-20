@@ -2,7 +2,7 @@
 
 import { LotStatusBadge } from "@/components/LotStatusBadge";
 import { selectOptionBasedOnProfitBand } from "@/components/lib/scraps";
-import { Badge } from "@/components/ui/badge";
+import { Badge, BadgeProps } from "@/components/ui/badge";
 import { Button as UIButton } from "@/components/ui/button";
 import {
   Popover,
@@ -636,6 +636,42 @@ function OriginalDescription({ scrap }: { scrap: Scrap }) {
   );
 }
 
+function AuctionStatus({ scrap }: { scrap: Scrap }) {
+  let text = undefined;
+  let color: BadgeProps["variant"] = undefined;
+  switch (scrap.auction_status) {
+    case "waiting-to-start":
+      text = "Aguardando Início";
+      color = "warning";
+      break;
+    case "open-for-bids":
+      text = "Aberto para Lance";
+      color = "success";
+      break;
+    case "sold":
+      text = "Arrematado";
+      color = "destructive";
+      break;
+    case "closed":
+      text = "Fechado";
+      color = "destructive";
+      break;
+    case "impaired":
+      text = "Leilão prejudicado";
+      color = "destructive";
+      break;
+    case "suspended":
+      text = "Suspenso";
+      color = "destructive";
+      break;
+    case "unknown":
+      text = "Desconhecido";
+      color = "default";
+      break;
+  }
+  return <Badge variant={color}>{text}</Badge>;
+}
+
 function DescriptionCard({
   scrap,
   mutate,
@@ -727,7 +763,7 @@ function DescriptionCard({
             <div>
               <dt className="font-semibold">Status:</dt>
               <dd>
-                <LotStatusBadge scrap={scrap} />
+                <AuctionStatus scrap={scrap} /> <LotStatusBadge scrap={scrap} />
               </dd>
             </div>
             <div>
