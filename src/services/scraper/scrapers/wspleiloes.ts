@@ -1,6 +1,8 @@
 import {
   getNumberFromReais,
+  getTextFromSelector,
   parseBrazilianDate,
+  pipe,
 } from "@/services/scraper/parsers";
 import { Scraper } from "@/services/scraper/scraper";
 
@@ -52,6 +54,22 @@ export const Wspleiloes: Scraper = {
     }
     return links;
   },
+  status: pipe(getTextFromSelector("#status_lote .label_lote"), (status) => {
+    switch (status) {
+      case "Aguarde Abertura":
+        return "waiting-to-start";
+      case "Aberto para Lances":
+        return "open-for-bids";
+      case "Vendido":
+        return "sold";
+      case "Sem Licitante":
+      case "Fechado para Lances":
+        return "closed";
+      default:
+        console.error(`[www.wspleiloes.com.br] Unknown status: ${status}`);
+        return "unknown";
+    }
+  }),
   name: async (page) =>
     await page.evaluate(() =>
       document

@@ -83,6 +83,7 @@ async function scrapLink(scraper: Scraper, page: Page): Promise<Lot | null> {
   const lot = {
     name,
     address,
+    status: await tryFetchField(scraper.status),
     description:
       (await tryFetchField(scraper.description)) || "Descrição não encontrada",
     caseNumber: await tryFetchField(scraper.caseNumber),
@@ -151,6 +152,7 @@ export async function fetchScrapFromSource(
       await db
         .update(scrapsTable)
         .set({
+          auction_status: scrapData.status ?? "unknown",
           name: scrapData.name,
           fetch_status: "fetched",
           address: scrapData.address,

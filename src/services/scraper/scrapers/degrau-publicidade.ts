@@ -44,6 +44,27 @@ function build(url: string, pages: string[]): Scraper {
       }
       return links;
     },
+    status: pipe(getTextFromSelector(".BoxBtLoteLabel"), (status) => {
+      switch (status) {
+        case "Aguardando início":
+          return "waiting-to-start";
+        case "Aberto para lance":
+          return "open-for-bids";
+        case "Leilão arrematado":
+          return "sold";
+        case "Leilão encerrado":
+          return "closed";
+        case "Leilão prejudicado":
+          return "impaired";
+        case "Leilão suspenso":
+          return "suspended";
+        default:
+          console.error(
+            `[www.degrau-publicidade.com.br] Unknown status: ${status}`,
+          );
+          return "unknown";
+      }
+    }),
     name: pipe(
       getTextFromSelector(".dg-lote-titulo > strong"),
       removeUnnecessarySpaces,

@@ -60,6 +60,15 @@ export const scrapsTable = mysqlTable("scraps", {
   case_link: varchar({ length: 767 }),
   bid: float(),
   appraisal: float(),
+  auction_status: mysqlEnum([
+    "waiting-to-start",
+    "open-for-bids",
+    "sold",
+    "closed",
+    "impaired",
+    "suspended",
+    "unknown",
+  ]).default("unknown"),
   first_auction_date: datetime(),
   first_auction_bid: float(),
   second_auction_date: datetime(),
@@ -180,3 +189,6 @@ export type Scrap = typeof scrapsTable.$inferSelect & {
   analyses: (typeof scrapAnalysesTable.$inferSelect)[];
   profit: ScrapProfit | null;
 };
+
+export type ScrapAuctionStatus =
+  (typeof scrapsTable.auction_status.enumValues)[number];

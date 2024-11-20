@@ -46,6 +46,7 @@ export const VallandLeiloes: Scraper = {
 
     return links;
   },
+  status: notFound,
   name: pipe(getTextFromSelector(".pageLote h4"), removeUnnecessarySpaces),
   address: pipe(
     getTextFromSelector(".conteudo"),

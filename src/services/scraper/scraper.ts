@@ -1,9 +1,11 @@
+import { ScrapAuctionStatus } from "@/db/schema";
 import { Page } from "puppeteer";
 
 export type Lot = {
   name: string;
   address: string | null;
   description: string;
+  status?: ScrapAuctionStatus | null;
   caseNumber?: string | null;
   caseLink?: string | null;
   bid?: number | null;
@@ -21,6 +23,7 @@ export type Lot = {
 export type Scraper = {
   url: string;
   search: (page: Page) => Promise<Array<string>>;
+  status: (page: Page) => Promise<ScrapAuctionStatus | undefined>;
   name: (page: Page) => Promise<string | undefined>;
   address: (page: Page) => Promise<string | undefined>;
   description: (page: Page) => Promise<string | undefined>;
@@ -40,6 +43,10 @@ export type Scraper = {
 
 export async function notFound<T>(_page: Page): Promise<T | undefined> {
   return undefined;
+}
+
+export function identity<T>(value: T): (_page: Page) => Promise<T> {
+  return async (_page: Page) => value;
 }
 
 export async function scrollToBottom(page: Page) {
