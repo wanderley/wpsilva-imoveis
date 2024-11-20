@@ -1,6 +1,7 @@
 import { LotModal } from "@/components/LotModal";
 import { selectOptionBasedOnProfitBand } from "@/components/lib/scraps";
 import { Scrap } from "@/db/schema";
+import AuctionStatus from "@/features/auction/scrap/components/AuctionStatus";
 import { getPreferredAuctionDate } from "@/models/scraps/helpers";
 import { Badge, Card, Carousel } from "flowbite-react";
 import Link from "next/link";
@@ -61,6 +62,7 @@ function BottomContent({ lot }: { lot: Scrap }) {
       </div>
       <div className="flex justify-end items-center mt-2">
         <p className="text-xs text-gray-600 dark:text-gray-400 flex items-center">
+          <AuctionStatus scrap={lot} as="text" />
           <HiClock className="mr-1" size={12} />
           {parsePreferredAuctionDate(lot)}
         </p>
