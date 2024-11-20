@@ -84,6 +84,22 @@ function Filters({
           </Select>
         </div>
 
+        {/* Auction Status */}
+        <div>
+          <div className="mb-2 block">
+            <Label htmlFor="auction-status" value="Status para lance" />
+          </div>
+          <Select
+            id="auction-status"
+            value={filters.auctionStatus}
+            onChange={updateFilters("auctionStatus")}
+          >
+            <option value="all">Todos</option>
+            <option value="available">Disponível</option>
+            <option value="unavailable">Indisponível</option>
+          </Select>
+        </div>
+
         {/* Apply Filters Button */}
         <Button color="dark" className="w-full" onClick={updateUrl}>
           Aplicar Filtros
@@ -105,6 +121,8 @@ function useFilters() {
     max: searchParams.get("max") || "",
     phase: (searchParams.get("phase") || "") as SearchLotsFilters["phase"],
     active: (searchParams.get("active") || "1") as SearchLotsFilters["active"],
+    auctionStatus: (searchParams.get("auctionStatus") ||
+      "available") as SearchLotsFilters["auctionStatus"],
   });
 
   const [filters, setFilters] = useState<SearchLotsFilters>({
@@ -112,6 +130,8 @@ function useFilters() {
     max: searchParams.get("max") || "",
     phase: (searchParams.get("phase") || "") as SearchLotsFilters["phase"],
     active: (searchParams.get("active") || "1") as SearchLotsFilters["active"],
+    auctionStatus: (searchParams.get("auctionStatus") ||
+      "available") as SearchLotsFilters["auctionStatus"],
   });
 
   const updateFilters =
@@ -134,6 +154,7 @@ function useFilters() {
       max: "",
       phase: "",
       active: "1",
+      auctionStatus: "all",
     });
     updateUrl();
   };

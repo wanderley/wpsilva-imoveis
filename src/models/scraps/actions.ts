@@ -15,9 +15,11 @@ import {
   desc,
   eq,
   gte,
+  inArray,
   isNull,
   lt,
   lte,
+  notInArray,
   sql,
 } from "drizzle-orm";
 
@@ -57,6 +59,7 @@ export type SearchLotsFilters = {
   max: string;
   phase: "interesting" | "pendingReview" | "";
   active: "0" | "1" | "";
+  auctionStatus: "available" | "unavailable" | "all";
 };
 
 export async function searchLots(filters: SearchLotsFilters): Promise<Scrap[]> {
@@ -82,6 +85,24 @@ export async function searchLots(filters: SearchLotsFilters): Promise<Scrap[]> {
       break;
     case "pendingReview":
       conditions.push(isNull(scrapsTable.is_interesting));
+      break;
+  }
+  switch (filters.auctionStatus) {
+    case "available":
+      conditions.push(
+        inArray(scrapsTable.auction_status, [
+          "waiting-to-start",
+          "open-for-bids",
+        ]),
+      );
+      break;
+    case "unavailable":
+      conditions.push(
+        notInArray(scrapsTable.auction_status, [
+          "waiting-to-start",
+          "open-for-bids",
+        ]),
+      );
       break;
   }
 
