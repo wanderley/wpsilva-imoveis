@@ -241,6 +241,7 @@ export function getBrazilianDate(formatDate: string) {
 export function removeUnnecessarySpaces(text: string): string {
   return text.replace(/\s+/g, " ").trim();
 }
+
 export function matchCaseNumber(prefix: string): (text: string) => string {
   return (text: string) =>
     text.match(
