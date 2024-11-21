@@ -131,6 +131,10 @@ export async function fetchScrapFromSource(
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
   const page = await browser.newPage();
+await page.setUserAgent(
+    // This should dodge cloudflare bot protection
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+  );
   await page.setViewport({ width: 1080, height: 1024 });
 
   try {
