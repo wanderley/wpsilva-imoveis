@@ -18,12 +18,20 @@ export function pipe<T1, T2, T3, T4>(
   fn2: (value: T2) => T3 | undefined,
   fn3: (value: T3) => T4 | undefined,
 ): Extractor<T4>;
-export function pipe<T1, T2, T3, T4>(
+export function pipe<T1, T2, T3, T4, T5>(
+  extractor: Extractor<T1>,
+  fn1: (value: T1) => T2 | undefined,
+  fn2: (value: T2) => T3 | undefined,
+  fn3: (value: T3) => T4 | undefined,
+  fn4: (value: T4) => T5 | undefined,
+): Extractor<T5>;
+export function pipe<T1, T2, T3, T4, T5>(
   extractor: Extractor<T1>,
   fn1: (value: T1) => T2 | undefined,
   fn2?: (value: T2) => T3 | undefined,
   fn3?: (value: T3) => T4 | undefined,
-): Extractor<T2 | T3 | T4> {
+  fn4?: (value: T4) => T5 | undefined,
+): Extractor<T2 | T3 | T4 | T5> {
   return async (page: Page) => {
     const res = await extractor(page);
     if (res === undefined) {
@@ -43,7 +51,14 @@ export function pipe<T1, T2, T3, T4>(
     if (!fn3) {
       return secondResult;
     }
-    return fn3(secondResult);
+    const thirdResult = fn3(secondResult);
+    if (thirdResult === undefined) {
+      return undefined;
+    }
+    if (!fn4) {
+      return thirdResult;
+    }
+    return fn4(thirdResult);
   };
 }
 
