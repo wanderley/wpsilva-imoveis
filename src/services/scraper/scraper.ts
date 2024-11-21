@@ -22,6 +22,7 @@ export type Lot = {
 
 export type Scraper = {
   url: string;
+login?: (page: Page) => Promise<void>;
   search: (page: Page) => Promise<Array<string>>;
   status: (page: Page) => Promise<ScrapAuctionStatus | undefined>;
   name: (page: Page) => Promise<string | undefined>;
