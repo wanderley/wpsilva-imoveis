@@ -189,23 +189,7 @@ export async function fetchScrapFromSource(
         )
         .execute();
 
-      // Remove all existing files for this scrap
-      await db
-        .delete(scrapFilesTable)
-        .where(eq(scrapFilesTable.scrap_id, scrapID))
-        .execute();
-
-      // Insert new images
-      for (const imageUrl of scrapData.images) {
-        await db
-          .insert(scrapFilesTable)
-          .values({
-            scrap_id: scrapID,
-            file_type: "jpg",
-            url: imageUrl,
-          })
-          .execute();
-      }
+      await updateImages(scrapID, scrapData.images);
       await maybeUpdateAnalysis(scrapID);
       await maybeUpdateProfit(scrapID);
     }
@@ -250,6 +234,27 @@ async function getScrapID(scraperID: string, url: string): Promise<number> {
     throw new Error(`Scrap ${url} not found`);
   }
   return scrap.id;
+}
+
+async function updateImages(
+  scrapID: number,
+  imageUrls: string[],
+): Promise<void> {
+  await db
+    .delete(scrapFilesTable)
+    .where(eq(scrapFilesTable.scrap_id, scrapID))
+    .execute();
+
+  await db
+    .insert(scrapFilesTable)
+    .values(
+      imageUrls.map((imageUrl) => ({
+        scrap_id: scrapID,
+        file_type: "jpg" as "jpg",
+        url: imageUrl,
+      })),
+    )
+    .execute();
 }
 
 async function maybeUpdateAnalysis(scrapID: number): Promise<void> {
