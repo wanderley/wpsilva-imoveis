@@ -60,8 +60,7 @@ export async function refreshScraps(scraperID: string): Promise<void> {
   }
 }
 
-async function scrapLink(scraper: Scraper, page: Page): Promise<Lot | null> {
-  // TODO: Log fields that couldn't be fetched
+async function scrapLink(scraper: Scraper, page: Page): Promise<Lot> {
   async function tryFetchField<T>(
     fieldName: string,
     field: (page: Page) => Promise<T>,
@@ -75,23 +74,11 @@ async function scrapLink(scraper: Scraper, page: Page): Promise<Lot | null> {
       return undefined;
     }
   }
-  const name = await tryFetchField("name", scraper.name);
-  if (name == undefined) {
-    console.error(`[${scraper.url}] Field name not found`);
-    return null;
-  }
-  const address = await tryFetchField("address", scraper.address);
-  if (address == undefined) {
-    console.error(`[${scraper.url}] Field address not found`);
-    return null;
-  }
   const lot = {
-    name,
-    address,
+    name: await tryFetchField("name", scraper.name),
+    address: await tryFetchField("address", scraper.address),
     status: await tryFetchField("status", scraper.status),
-    description:
-      (await tryFetchField("description", scraper.description)) ||
-      "Descrição não encontrada",
+    description: await tryFetchField("description", scraper.description),
     caseNumber: await tryFetchField("caseNumber", scraper.caseNumber),
     caseLink: await tryFetchField("caseLink", scraper.caseLink),
     bid: await tryFetchField("bid", scraper.bid),
@@ -151,48 +138,35 @@ export async function fetchScrapFromSource(
     }
     await page.goto(url);
     await page.waitForNetworkIdle();
-    let scrapData;
-    try {
-      scrapData = await scrapLink(scraper, page);
-    } catch (_) {
-      scrapData = null;
-    }
-    if (!scrapData) {
-      await db
-        .update(scrapsTable)
-        .set({ fetch_status: "failed" })
-        .where(eq(scrapsTable.id, scrapID))
-        .execute();
-    } else if (scrapData) {
-      await db
-        .update(scrapsTable)
-        .set({
-          auction_status: scrapData.status ?? "unknown",
-          name: scrapData.name,
-          fetch_status: "fetched",
-          address: scrapData.address,
-          description: scrapData.description,
-          case_number: scrapData.caseNumber,
-          case_link: scrapData.caseLink,
-          bid: scrapData.bid,
-          appraisal: scrapData.appraisal,
-          first_auction_date: scrapData.firstAuctionDate,
-          first_auction_bid: scrapData.firstAuctionBid,
-          second_auction_date: scrapData.secondAuctionDate,
-          second_auction_bid: scrapData.secondAuctionBid,
-          laudo_link: scrapData.laudoLink,
-          matricula_link: scrapData.matriculaLink,
-          edital_link: scrapData.editalLink,
-        })
-        .where(
-          and(eq(scrapsTable.scraper_id, scraperID), eq(scrapsTable.url, url)),
-        )
-        .execute();
+    const scrapData = await scrapLink(scraper, page);
+    await db
+      .update(scrapsTable)
+      .set({
+        auction_status: scrapData.status ?? "unknown",
+        name: scrapData.name,
+        fetch_status: fetchStatus(scrapData),
+        address: scrapData.address,
+        description: scrapData.description,
+        case_number: scrapData.caseNumber,
+        case_link: scrapData.caseLink,
+        bid: scrapData.bid,
+        appraisal: scrapData.appraisal,
+        first_auction_date: scrapData.firstAuctionDate,
+        first_auction_bid: scrapData.firstAuctionBid,
+        second_auction_date: scrapData.secondAuctionDate,
+        second_auction_bid: scrapData.secondAuctionBid,
+        laudo_link: scrapData.laudoLink,
+        matricula_link: scrapData.matriculaLink,
+        edital_link: scrapData.editalLink,
+      })
+      .where(
+        and(eq(scrapsTable.scraper_id, scraperID), eq(scrapsTable.url, url)),
+      )
+      .execute();
 
-      await maybeUpdateImages(scrapID, scrapData.images);
-      await maybeUpdateAnalysis(scrapID);
-      await maybeUpdateProfit(scrapID);
-    }
+    await maybeUpdateImages(scrapID, scrapData.images);
+    await maybeUpdateAnalysis(scrapID);
+    await maybeUpdateProfit(scrapID);
   } catch (error) {
     await db
       .update(scrapsTable)
@@ -234,6 +208,13 @@ async function getScrapID(scraperID: string, url: string): Promise<number> {
     throw new Error(`Scrap ${url} not found`);
   }
   return scrap.id;
+}
+
+function fetchStatus(scrapData: Lot): "fetched" | "failed" {
+  if (scrapData.name === undefined || scrapData.address === undefined) {
+    return "failed";
+  }
+  return "fetched";
 }
 
 async function maybeUpdateImages(

@@ -2,22 +2,22 @@ import { ScrapAuctionStatus } from "@/db/schema";
 import { Page } from "puppeteer";
 
 export type Lot = {
-  name: string;
-  address: string | null;
-  description: string;
-  status?: ScrapAuctionStatus | null;
-  caseNumber?: string | null;
-  caseLink?: string | null;
-  bid?: number | null;
-  appraisal?: number | null;
-  firstAuctionDate?: Date | null;
-  firstAuctionBid?: number | null;
-  secondAuctionDate?: Date | null;
-  secondAuctionBid?: number | null;
+  name?: string;
+  address?: string;
+  description?: string;
+  status?: ScrapAuctionStatus;
+  caseNumber?: string;
+  caseLink?: string;
+  bid?: number;
+  appraisal?: number;
+  firstAuctionDate?: Date;
+  firstAuctionBid?: number;
+  secondAuctionDate?: Date;
+  secondAuctionBid?: number;
   images: Array<string>;
-  laudoLink?: string | null;
-  matriculaLink?: string | null;
-  editalLink?: string | null;
+  laudoLink?: string;
+  matriculaLink?: string;
+  editalLink?: string;
 };
 
 export type Scraper = {
