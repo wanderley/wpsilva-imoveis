@@ -39,6 +39,9 @@ export async function refreshScraps(scraperID: string): Promise<void> {
           .execute()
       ).map((r) => r.url),
     );
+    console.info(
+      `Found ${urls.length} lots and ${existingURLs.size} already exist`,
+    );
     for (const url of urls) {
       if (existingURLs.has(url)) {
         continue;
