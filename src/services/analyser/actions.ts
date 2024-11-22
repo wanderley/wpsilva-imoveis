@@ -137,13 +137,13 @@ async function getOpenAIFileIDs(scrap: Scrap): Promise<string[]> {
     file_ids.push(await getExistingFileID(scrap.laudo_link, "laudo.pdf"));
   }
   if (scrap.description) {
-    file_ids.push(await getDescriptionFileID(scrap));
+    file_ids.push(await getDescriptionFileID(scrap.description));
   }
   return file_ids;
 }
 
-async function getDescriptionFileID(scrap: Scrap): Promise<string> {
-  const buffer = Buffer.from(scrap.description || "");
+async function getDescriptionFileID(description: string): Promise<string> {
+  const buffer = Buffer.from(description);
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
   });
