@@ -43,6 +43,7 @@ async function updateAllScraps(scraperID?: string) {
           console.error(
             `[${scraper.url}] Failed to update scrap: ${scrapUrl(scrap.id)}`,
           );
+          console.error(error);
         }
       }
     } catch (error) {
