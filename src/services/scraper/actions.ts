@@ -121,13 +121,13 @@ async function scrapLink(scraper: Scraper, page: Page): Promise<Lot | null> {
     if (
       lot.firstAuctionBid !== undefined &&
       lot.firstAuctionDate !== undefined &&
-      new Date(lot.firstAuctionDate) >= new Date()
+      lot.firstAuctionDate >= new Date()
     ) {
       lot.bid = lot.firstAuctionBid;
     } else if (
       lot.secondAuctionBid !== undefined &&
       lot.secondAuctionDate !== undefined &&
-      new Date(lot.secondAuctionDate) >= new Date()
+      lot.secondAuctionDate >= new Date()
     ) {
       lot.bid = lot.secondAuctionBid || lot.firstAuctionBid;
     }
