@@ -6,18 +6,17 @@ import { scrapers } from ".";
 import { fetchScrapFromSource, refreshScraps } from "./actions";
 
 async function updateAllScraps(scraperID?: string) {
-  console.log("Starting to update all scraps...");
+  console.info("Starting to update all scraps...");
 
   for (const scraper of scrapers) {
     if (scraperID && scraper.url !== scraperID) {
       continue;
     }
     try {
-      console.log(`Refreshing scraps for scraper: ${scraper.url}`);
       await refreshScraps(scraper.url);
 
       const scrapsToUpdate = await db
-        .select({ url: scrapsTable.url })
+        .select({ id: scrapsTable.id, url: scrapsTable.url })
         .from(scrapsTable)
         .where(
           and(
@@ -32,24 +31,31 @@ async function updateAllScraps(scraperID?: string) {
         )
         .execute();
 
-      console.log(
-        `Updating ${scrapsToUpdate.length} scraps for scraper: ${scraper.url}`,
+      console.info(
+        `[${scraper.url}] Found ${scrapsToUpdate.length} scraps to update`,
       );
 
       for (const scrap of scrapsToUpdate) {
         try {
           await fetchScrapFromSource(scraper.url, scrap.url);
-          console.log(`Updated scrap: ${scrap.url}`);
+          console.info(`[${scraper.url}] Updated scrap: ${scrapUrl(scrap.id)}`);
         } catch (error) {
-          console.error(`Error updating scrap ${scrap.url}:`, error);
+          console.error(
+            `[${scraper.url}] Failed to update scrap: ${scrapUrl(scrap.id)}`,
+          );
         }
       }
     } catch (error) {
-      console.error(`Can't refresh scrapper: ${scraper.url}`);
+      console.error(`[${scraper.url}] Can't refresh scrapper`);
       console.error(error);
     }
   }
-  console.log("Finished updating all scraps.");
+  console.info("Finished updating all scraps.");
+}
+
+function scrapUrl(scrapID: number): string {
+  const prefix = process.env.AUTH_URL ?? `http://localhost:3000`;
+  return `${prefix}/lot/${scrapID}`;
 }
 
 updateAllScraps(process.argv[2])
