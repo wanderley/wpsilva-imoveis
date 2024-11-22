@@ -27,6 +27,19 @@
         "uriFormat": "%s",
         "webRoot": "${workspaceFolder}"
       }
+    },
+    {
+      "name": "debug scraper",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "pnpm dotenv -c local pnpm scrap ${input:scraper}"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "scraper",
+      "type": "promptString",
+      "description": "Enter the name of the scraper to run"
     }
   ]
 }
