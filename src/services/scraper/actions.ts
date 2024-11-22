@@ -247,7 +247,7 @@ async function maybeUpdateImages(
     .values(
       imageUrls.map((imageUrl) => ({
         scrap_id: scrapID,
-        file_type: "jpg" as "jpg",
+        file_type: "jpg" as const,
         url: imageUrl,
       })),
     )
