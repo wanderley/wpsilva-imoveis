@@ -250,3 +250,40 @@ export function matchCaseNumber(prefix: string): (text: string) => string {
       ),
     )![1];
 }
+
+export function matchText(
+  pattern: RegExp,
+  fn?: (match: string, ...args: string[]) => string,
+): (text: string) => string | undefined {
+  return (text: string) => {
+    const match = text.match(pattern);
+    if (match === null) {
+      return undefined;
+    }
+    if (fn === undefined) {
+      return match[0];
+    }
+    return fn(match[0], ...match.slice(1));
+  };
+}
+
+export function replaceText(
+  pattern: string,
+  replacement: string,
+): (text: string) => string;
+export function replaceText(
+  pattern: RegExp,
+  replacement: (match: string, ...args: string[]) => string,
+): (text: string) => string;
+export function replaceText(
+  pattern: string | RegExp,
+  replacement: string | ((match: string, ...args: string[]) => string),
+): (text: string) => string {
+  return (text: string) => {
+    if (typeof replacement === "string") {
+      return text.replace(pattern, replacement);
+    } else {
+      return text.replace(pattern, replacement);
+    }
+  };
+}
