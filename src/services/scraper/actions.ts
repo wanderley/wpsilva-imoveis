@@ -17,6 +17,7 @@ import puppeteer, { Browser, Page } from "puppeteer";
 import { updateAnalysis } from "../analyser/actions";
 
 export async function refreshScraps(scraperID: string): Promise<void> {
+  console.info(`[${scraperID}] Refreshing scraps`);
   const scraper = getScraper(scraperID);
   if (!scraper) {
     throw new Error(`Scraper ${scraperID} not found`);
@@ -35,7 +36,7 @@ export async function refreshScraps(scraperID: string): Promise<void> {
       ).map((r) => r.url),
     );
     console.info(
-      `Found ${urls.length} lots and ${existingURLs.size} already exist`,
+      `[${scraperID}] ${urls.length} lots found: ${urls.length - existingURLs.size} new, ${existingURLs.size} existing`,
     );
     for (const url of urls) {
       if (existingURLs.has(url)) {
@@ -51,8 +52,9 @@ export async function refreshScraps(scraperID: string): Promise<void> {
         .execute();
     }
   } catch (error) {
-    console.error("Error refreshing scraps:", error);
-    throw error;
+    throw new Error(`Error refreshing scraps for ${scraperID}`, {
+      cause: error,
+    });
   } finally {
     await browser.close();
   }
@@ -61,41 +63,59 @@ export async function refreshScraps(scraperID: string): Promise<void> {
 async function scrapLink(scraper: Scraper, page: Page): Promise<Lot | null> {
   // TODO: Log fields that couldn't be fetched
   async function tryFetchField<T>(
+    fieldName: string,
     field: (page: Page) => Promise<T>,
   ): Promise<T | undefined> {
     try {
       return await field(page);
     } catch (error) {
-      console.error(`Error fetching field: ${error}`);
+      console.error(
+        `Error fetching field ${fieldName}: ${(error as Error).message}`,
+      );
       return undefined;
     }
   }
-  const name = await tryFetchField(scraper.name);
+  const name = await tryFetchField("name", scraper.name);
   if (name == undefined) {
+    console.error(`[${scraper.url}] Field name not found`);
     return null;
   }
-  const address = await tryFetchField(scraper.address);
+  const address = await tryFetchField("address", scraper.address);
   if (address == undefined) {
+    console.error(`[${scraper.url}] Field address not found`);
     return null;
   }
   const lot = {
     name,
     address,
-    status: await tryFetchField(scraper.status),
+    status: await tryFetchField("status", scraper.status),
     description:
-      (await tryFetchField(scraper.description)) || "Descrição não encontrada",
-    caseNumber: await tryFetchField(scraper.caseNumber),
-    caseLink: await tryFetchField(scraper.caseLink),
-    bid: await tryFetchField(scraper.bid),
-    appraisal: await tryFetchField(scraper.appraisal),
-    firstAuctionDate: await tryFetchField(scraper.firstAuctionDate),
-    firstAuctionBid: await tryFetchField(scraper.firstAuctionBid),
-    secondAuctionDate: await tryFetchField(scraper.secondAuctionDate),
-    secondAuctionBid: await tryFetchField(scraper.secondAuctionBid),
-    images: (await tryFetchField(scraper.images)) || [],
-    laudoLink: await tryFetchField(scraper.laudoLink),
-    matriculaLink: await tryFetchField(scraper.matriculaLink),
-    editalLink: await tryFetchField(scraper.editalLink),
+      (await tryFetchField("description", scraper.description)) ||
+      "Descrição não encontrada",
+    caseNumber: await tryFetchField("caseNumber", scraper.caseNumber),
+    caseLink: await tryFetchField("caseLink", scraper.caseLink),
+    bid: await tryFetchField("bid", scraper.bid),
+    appraisal: await tryFetchField("appraisal", scraper.appraisal),
+    firstAuctionDate: await tryFetchField(
+      "firstAuctionDate",
+      scraper.firstAuctionDate,
+    ),
+    firstAuctionBid: await tryFetchField(
+      "firstAuctionBid",
+      scraper.firstAuctionBid,
+    ),
+    secondAuctionDate: await tryFetchField(
+      "secondAuctionDate",
+      scraper.secondAuctionDate,
+    ),
+    secondAuctionBid: await tryFetchField(
+      "secondAuctionBid",
+      scraper.secondAuctionBid,
+    ),
+    images: (await tryFetchField("images", scraper.images)) || [],
+    laudoLink: await tryFetchField("laudoLink", scraper.laudoLink),
+    matriculaLink: await tryFetchField("matriculaLink", scraper.matriculaLink),
+    editalLink: await tryFetchField("editalLink", scraper.editalLink),
   };
   if (lot.bid === undefined) {
     if (
@@ -190,7 +210,6 @@ export async function fetchScrapFromSource(
       await maybeUpdateProfit(scrapID);
     }
   } catch (error) {
-    console.error("Error updating scrap:", error);
     await db
       .update(scrapsTable)
       .set({
@@ -200,7 +219,9 @@ export async function fetchScrapFromSource(
         and(eq(scrapsTable.scraper_id, scraperID), eq(scrapsTable.url, url)),
       )
       .execute();
-    throw error;
+    throw new Error(`Failed to fetch scrap ${url}`, {
+      cause: error,
+    });
   } finally {
     await browser.close();
   }
