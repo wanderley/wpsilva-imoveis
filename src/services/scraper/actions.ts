@@ -189,7 +189,7 @@ export async function fetchScrapFromSource(
         )
         .execute();
 
-      await updateImages(scrapID, scrapData.images);
+      await maybeUpdateImages(scrapID, scrapData.images);
       await maybeUpdateAnalysis(scrapID);
       await maybeUpdateProfit(scrapID);
     }
@@ -236,15 +236,31 @@ async function getScrapID(scraperID: string, url: string): Promise<number> {
   return scrap.id;
 }
 
-async function updateImages(
+async function maybeUpdateImages(
   scrapID: number,
   imageUrls: string[],
 ): Promise<void> {
+  // don't update images if scraper failed to fetch them
+  if (imageUrls.length === 0) {
+    return;
+  }
+
+  const count = await db.$count(
+    scrapFilesTable,
+    and(
+      eq(scrapFilesTable.scrap_id, scrapID),
+      inArray(scrapFilesTable.url, imageUrls),
+    ),
+  );
+  // don't update images if they are already in the database
+  if (count === imageUrls.length) {
+    return;
+  }
+
   await db
     .delete(scrapFilesTable)
     .where(eq(scrapFilesTable.scrap_id, scrapID))
     .execute();
-
   await db
     .insert(scrapFilesTable)
     .values(
