@@ -55,7 +55,7 @@ export async function updateAnalysis(
     const response_raw: string = await new Promise((resolve, reject) => {
       openai.beta.threads.runs
         .stream(thread.id, {
-          assistant_id: process.env.OPENAI_ASSISTANT_ID!,
+          assistant_id: process.env.SCRAPER_ANALYSER_OPENAI_ASSISTANT_ID!,
           model,
           top_p: 0.7,
           temperature: 0.3,
