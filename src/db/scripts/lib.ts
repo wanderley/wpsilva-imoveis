@@ -3,7 +3,7 @@ import path from "node:path";
 
 function getConfig() {
   const requiredEnvVars = [
-    "BACKUP_DIR",
+    "DB_BACKUP_DIR",
     "DB_USER",
     "DB_PASSWORD",
     "DB_PORT",

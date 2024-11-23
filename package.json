@@ -8,8 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "scrap": "tsx src/services/scraper/run.ts",
-    "db:backup:save": "tsx src/db/scripts/db-backup-save.ts",
-    "db:backup:restore": "tsx src/db/scripts/db-backup-restore.ts"
+    "db:local:backup": "dotenv -c local -- tsx src/db/scripts/db-backup-save.ts",
+    "db:local:restore": "dotenv -c local -- tsx src/db/scripts/db-backup-restore.ts",
+    "db:prod:backup": "dotenv -c prod -- tsx src/db/scripts/db-backup-save.ts"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.7.3",
