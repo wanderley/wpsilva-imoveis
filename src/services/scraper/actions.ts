@@ -247,7 +247,13 @@ async function maybeUpdateAnalysis(scrapID: number): Promise<void> {
   )[0];
   // If no analysis exists, create one
   if (analysesCount === 0) {
-    await updateAnalysis(scrapID, "gpt-4o-mini");
+    await updateAnalysis(
+      scrapID,
+      (process.env.SCRAPER_ANALYSER_MODEL_FOR_FIRST_FETCH as
+        | "gpt-4o"
+        | "gpt-4o-mini"
+        | undefined) ?? "gpt-4o-mini",
+    );
   }
 }
 
