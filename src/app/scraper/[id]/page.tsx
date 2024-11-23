@@ -125,7 +125,7 @@ export default function Page({ params }: { params: { id: string } }) {
         {!isLoading && data?.length != 0 && (
           <LotsGrid
             lots={data || []}
-            openLotMode={"modal"}
+            openLotMode={"page"}
             currentPage={currentPage}
             itemsPerPage={itemsPerPage}
             onPageChange={setCurrentPage}
