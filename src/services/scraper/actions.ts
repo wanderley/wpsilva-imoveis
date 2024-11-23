@@ -12,18 +12,20 @@ import { updateProfit } from "@/models/scraps/helpers";
 import { getScraper } from "@/services/scraper";
 import { Lot, Scraper } from "@/services/scraper/scraper";
 import { and, count, eq, inArray } from "drizzle-orm";
-import puppeteer, { Browser, Page } from "puppeteer";
+import { Page } from "puppeteer";
 
 import { updateAnalysis } from "../analyser/actions";
 
-export async function refreshScraps(scraperID: string): Promise<void> {
+export async function refreshScraps(
+  scraperID: string,
+  page: Page,
+): Promise<void> {
   console.info(`[${scraperID}] Refreshing scraps`);
   const scraper = getScraper(scraperID);
   if (!scraper) {
     throw new Error(`Scraper ${scraperID} not found`);
   }
 
-  const [browser, page] = await launch();
   try {
     const urls = [...new Set(await scraper.search(page))];
     const existingURLs = new Set(
@@ -55,8 +57,6 @@ export async function refreshScraps(scraperID: string): Promise<void> {
     throw new Error(`Error refreshing scraps for ${scraperID}`, {
       cause: error,
     });
-  } finally {
-    await browser.close();
   }
 }
 
@@ -125,13 +125,13 @@ async function scrapLink(scraper: Scraper, page: Page): Promise<Lot> {
 export async function fetchScrapFromSource(
   scraperID: string,
   url: string,
+  page: Page,
 ): Promise<void> {
   const scraper = getScraper(scraperID);
   if (!scraper) {
     throw new Error(`Scraper ${scraperID} not found`);
   }
   const scrapID = await getScrapID(scraperID, url);
-  const [browser, page] = await launch();
   try {
     if (scraper.login) {
       await scraper.login(page);
@@ -180,24 +180,7 @@ export async function fetchScrapFromSource(
     throw new Error(`Failed to fetch scrap ${url}`, {
       cause: error,
     });
-  } finally {
-    await browser.close();
   }
-}
-
-async function launch(): Promise<[Browser, Page]> {
-  const browser = await puppeteer.launch({
-    // TODO: Remove this once we have a proper way to run the scraper
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
-  });
-
-  const page = await browser.newPage();
-  await page.setViewport({ width: 1080, height: 1024 });
-  await page.setUserAgent(
-    // This should dodge cloudflare bot protection
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
-  );
-  return [browser, page];
 }
 
 async function getScrapID(scraperID: string, url: string): Promise<number> {

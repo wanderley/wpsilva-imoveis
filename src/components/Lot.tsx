@@ -655,7 +655,7 @@ function DescriptionCard({
     return date < new Date();
   };
   const { isPending, mutate: fetchScrapFromSource } =
-    useFetchScrapFromSourceMutation(scrap.scraper_id);
+    useFetchScrapFromSourceMutation();
 
   return (
     <Card>
@@ -739,14 +739,7 @@ function DescriptionCard({
                   className={`w-4 h-4 cursor-pointer ${
                     isPending ? "animate-spin" : ""
                   }`}
-                  onClick={() =>
-                    !isPending &&
-                    fetchScrapFromSource({
-                      scrapID: scrap.scraper_id,
-                      url: scrap.url,
-                      id: scrap.id,
-                    })
-                  }
+                  onClick={() => !isPending && fetchScrapFromSource({ scrap })}
                 />
               </dd>
             </div>

@@ -7,10 +7,10 @@ import {
   saveScrapProfit,
   searchLots,
 } from "@/models/scraps/actions";
-import { fetchScrapFromSource } from "@/services/scraper/actions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
+import { updateScrapFromSource } from "./features/auction/scrap/api";
 import { updateAnalysis } from "./services/analyser/actions";
 
 export const queryKeys = {
@@ -35,36 +35,31 @@ export function usePendingReviewLots() {
   });
 }
 
-export function useFetchScrapFromSourceMutation(
-  scrapID: string,
-  callbacks?: {
-    onSuccess?: (id: number) => unknown;
-    onError?: (id: number) => unknown;
-  },
-) {
+export function useFetchScrapFromSourceMutation(callbacks?: {
+  onSuccess?: (id: number) => unknown;
+  onError?: (id: number) => unknown;
+}) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({
-      scrapID,
-      url,
-    }: {
-      scrapID: string;
-      url: string;
-      id: number;
-    }) => await fetchScrapFromSource(scrapID, url),
-    onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.scraps(scrapID) });
+    mutationFn: async ({ scrap }: { scrap: Scrap }) =>
+      await updateScrapFromSource(scrap.id),
+    onSuccess: (_, { scrap }) => {
       queryClient.invalidateQueries({
-        queryKey: queryKeys.scrapDetails(id),
+        queryKey: queryKeys.scraps(scrap.scraper_id),
       });
-      callbacks?.onSuccess?.(id);
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.scrapDetails(scrap.id),
+      });
+      callbacks?.onSuccess?.(scrap.id);
     },
-    onError: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.scraps(scrapID) });
+    onError: (_, { scrap }) => {
       queryClient.invalidateQueries({
-        queryKey: queryKeys.scrapDetails(id),
+        queryKey: queryKeys.scraps(scrap.scraper_id),
       });
-      callbacks?.onError?.(id);
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.scrapDetails(scrap.id),
+      });
+      callbacks?.onError?.(scrap.id);
     },
   });
 }

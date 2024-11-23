@@ -6,6 +6,8 @@ import {
   fetchScrapersMetrics,
   fetchScrapsByStatus,
 } from "@/features/auction/scraper/repository";
+import { refreshScraps } from "@/services/scraper/actions";
+import { launchBrowser, newPage } from "@/services/scraper/lib/puppeteer";
 
 export async function getAllScrapsByScrapperID(
   scraperID: string,
@@ -34,6 +36,20 @@ export async function getReport(): Promise<{
       lastUpdated: new Date().toISOString(),
     },
   };
+}
+
+export async function checkNewScraps(scraperID: string): Promise<void> {
+  const browser = await launchBrowser();
+  const page = await newPage(browser);
+  try {
+    await refreshScraps(scraperID, page);
+  } catch (error) {
+    throw new Error(`Failed to check for new scraps from ${scraperID}`, {
+      cause: error,
+    });
+  } finally {
+    await browser.close();
+  }
 }
 
 export type ReportStatusTotals = {

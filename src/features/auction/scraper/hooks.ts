@@ -1,9 +1,11 @@
 "use client";
 
-import { getAllScrapsByScrapperID } from "@/features/auction/scraper/api";
+import {
+  checkNewScraps,
+  getAllScrapsByScrapperID,
+} from "@/features/auction/scraper/api";
 import { ScrapStatus } from "@/features/auction/scraper/repository";
 import { queryKeys } from "@/hooks";
-import { refreshScraps } from "@/services/scraper/actions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function useScraps(scraperID: string, status?: ScrapStatus) {
@@ -17,7 +19,7 @@ export function useRefreshScrapsMutation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ scraperID }: { scraperID: string }) =>
-      await refreshScraps(scraperID),
+      await checkNewScraps(scraperID),
     onSuccess: (_, { scraperID }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.scraps(scraperID) });
     },

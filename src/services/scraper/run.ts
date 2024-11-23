@@ -1,9 +1,13 @@
 import { db } from "@/db";
 import { scrapsTable } from "@/db/schema";
+import {
+  fetchScrapFromSource,
+  refreshScraps,
+} from "@/services/scraper/actions";
+import { launchBrowser, newPage } from "@/services/scraper/lib/puppeteer";
 import { and, eq, gte, or } from "drizzle-orm";
 
 import { scrapers } from ".";
-import { fetchScrapFromSource, refreshScraps } from "./actions";
 
 async function updateAllScraps(scraperID?: string) {
   console.info("Starting to update all scraps...");
@@ -12,8 +16,10 @@ async function updateAllScraps(scraperID?: string) {
     if (scraperID && scraper.url !== scraperID) {
       continue;
     }
+    const browser = await launchBrowser();
     try {
-      await refreshScraps(scraper.url);
+      const page = await newPage(browser);
+      await refreshScraps(scraper.url, page);
 
       const scrapsToUpdate = await db
         .select({ id: scrapsTable.id, url: scrapsTable.url })
@@ -36,19 +42,24 @@ async function updateAllScraps(scraperID?: string) {
       );
 
       for (const scrap of scrapsToUpdate) {
+        const page = await newPage(browser);
         try {
-          await fetchScrapFromSource(scraper.url, scrap.url);
+          await fetchScrapFromSource(scraper.url, scrap.url, page);
           console.info(`[${scraper.url}] Updated scrap: ${scrapUrl(scrap.id)}`);
         } catch (error) {
           console.error(
             `[${scraper.url}] Failed to update scrap: ${scrapUrl(scrap.id)}`,
           );
           console.error(error);
+        } finally {
+          await page.close();
         }
       }
     } catch (error) {
       console.error(`[${scraper.url}] Can't refresh scrapper`);
       console.error(error);
+    } finally {
+      await browser.close();
     }
   }
   console.info("Finished updating all scraps.");
