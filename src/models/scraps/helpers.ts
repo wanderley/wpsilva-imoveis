@@ -30,8 +30,9 @@ export function computeProfit(data: ScrapProfit) {
     total_custo_pos_arrematacao +
     total_custo_pos_venda;
   const total_custo = total_custo_sem_arrematacao + data.valor_arrematacao;
-  const lucro = data.valor_venda - total_custo;
-  const lucro_percentual = (lucro / data.valor_venda) * 100;
+  const lucro = data.valor_venda === 0 ? 0 : data.valor_venda - total_custo;
+  const lucro_percentual =
+    data.valor_venda === 0 ? 0 : (lucro / data.valor_venda) * 100;
   const total_custo_arrematacao_percentual =
     (total_custo_arrematacao / total_custo_sem_arrematacao) * 100;
   const total_custo_pos_imissao_percentual =
