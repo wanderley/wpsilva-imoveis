@@ -33,28 +33,15 @@ export const PortalZuk: Scraper = {
     //   domain: "www.portalzuk.com.br",
     // });
     await page.goto("https://www.portalzuk.com.br/");
-    try {
-      await page.waitForNetworkIdle();
-    } catch (e) {
-      console.error(
-        "[PortalZuk] Error waiting for network idle",
-        (e as Error).message,
-      );
-    }
     if (await page.$("a[href='https://www.portalzuk.com.br/login']")) {
       console.info("[PortalZuk] Logging in");
       await page.goto("https://www.portalzuk.com.br/login");
       await page.type("[name=email]", username);
       await page.type("[name=password]", password);
-      await page.click(".login-buttons button[type=submit]");
-      try {
-        await page.waitForNetworkIdle();
-      } catch (e) {
-        console.error(
-          "[PortalZuk] Error waiting for network idle",
-          (e as Error).message,
-        );
-      }
+      await Promise.all([
+        page.click(".login-buttons button[type=submit]"),
+        page.waitForNavigation(),
+      ]);
     }
     if (await page.$(".modal.show #close-modal-virada")) {
       await page.click(".modal.show #close-modal-virada");
