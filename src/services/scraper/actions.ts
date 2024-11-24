@@ -137,7 +137,6 @@ export async function fetchScrapFromSource(
       await scraper.login(page);
     }
     await page.goto(url);
-    await page.waitForNetworkIdle();
     const scrapData = await scrapLink(scraper, page);
     await db
       .update(scrapsTable)
