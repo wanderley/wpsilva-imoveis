@@ -68,11 +68,11 @@ export async function updateAnalysis(
           if (event.content[0].type === "text") {
             const { text } = event.content[0];
             resolve(text.value);
+          } else {
+            reject(new Error("Expected text response from OpenAI"));
           }
         })
-        .on("error", (error) => {
-          reject(error);
-        });
+        .on("error", reject);
     });
 
     const parsedText = await openai.beta.chat.completions.parse({
