@@ -35,6 +35,7 @@ async function updateAllScraps(scraperID?: string) {
             ),
           ),
         )
+        .orderBy(desc(scrapsTable.updated_at))
         .execute();
 
       console.info(
