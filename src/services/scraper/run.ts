@@ -1,13 +1,14 @@
 import { db } from "@/db";
 import { scrapsTable } from "@/db/schema";
+import { scrapers } from "@/services/scraper";
 import {
   fetchScrapFromSource,
   refreshScraps,
 } from "@/services/scraper/actions";
 import { launchBrowser, newPage } from "@/services/scraper/lib/puppeteer";
-import { and, eq, gte, or } from "drizzle-orm";
+import { and, desc, eq, gte, or } from "drizzle-orm";
 
-import { scrapers } from ".";
+const DAY = 1000 * 60 * 60 * 24;
 
 async function updateAllScraps(scraperID?: string) {
   console.info("Starting to update all scraps...");
@@ -30,8 +31,8 @@ async function updateAllScraps(scraperID?: string) {
             or(
               eq(scrapsTable.fetch_status, "not-fetched"),
               eq(scrapsTable.fetch_status, "failed"),
-              gte(scrapsTable.first_auction_date, new Date()),
-              gte(scrapsTable.second_auction_date, new Date()),
+              gte(scrapsTable.first_auction_date, new Date(Date.now() - DAY)),
+              gte(scrapsTable.second_auction_date, new Date(Date.now() - DAY)),
             ),
           ),
         )
