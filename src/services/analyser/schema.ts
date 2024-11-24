@@ -140,8 +140,8 @@ export const schema = z.object({
   auction: z.object({
     auctioneer_name: z
       .string()
-      .describe("Nome do arrematante.")
-      .questions("Qual é o nome do arrematante?"),
+      .describe("Nome do leiloeiro.")
+      .questions("Qual é o nome do leiloeiro?"),
     auctioneer_registration: z
       .string()
       .describe("Matrícula do leiloeiro. Por exemplo: JUCESP 12345.")
