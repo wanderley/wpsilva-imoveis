@@ -133,10 +133,9 @@ export async function fetchScrapFromSource(
   }
   const scrapID = await getScrapID(scraperID, url);
   try {
-    if (scraper.login) {
-      await scraper.login(page);
-    }
+    await login(scraper, page);
     await page.goto(url);
+    await waitUntilLoaded(scraper, page);
     const scrapData = await scrapLink(scraper, page);
     await db
       .update(scrapsTable)
@@ -286,4 +285,30 @@ async function maybeUpdateProfit(scrapID: number): Promise<void> {
     .set(profit)
     .where(eq(scrapProfitTable.scrap_id, scrapID))
     .execute();
+}
+
+async function login(scraper: Scraper, page: Page): Promise<void> {
+  try {
+    if (scraper.login) {
+      await scraper.login(page);
+    }
+  } catch (error) {
+    console.error(
+      `[${scraper.url}] Error logging in: ${(error as Error).message}`,
+    );
+  }
+}
+
+async function waitUntilLoaded(scraper: Scraper, page: Page): Promise<void> {
+  try {
+    if (scraper.waitUntilLoaded) {
+      await scraper.waitUntilLoaded(page);
+    }
+  } catch (error) {
+    console.error(
+      `[${scraper.url}] Error waiting for page to load: ${
+        (error as Error).message
+      }`,
+    );
+  }
 }
