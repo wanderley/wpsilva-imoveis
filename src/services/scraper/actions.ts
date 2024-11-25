@@ -140,7 +140,7 @@ export async function fetchScrapFromSource(
     await db
       .update(scrapsTable)
       .set({
-        auction_status: scrapData.status ?? "unknown",
+        auction_status: scrapData.status,
         name: scrapData.name,
         fetch_status: fetchStatus(scrapData),
         address: scrapData.address,
