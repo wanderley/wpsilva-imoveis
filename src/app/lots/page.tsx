@@ -221,13 +221,20 @@ export default function Page() {
     body = <EmptyState />;
   } else {
     body = (
-      <LotsGrid
-        lots={data || []}
-        openLotMode={"page"}
-        currentPage={currentPage}
-        itemsPerPage={itemsPerPage}
-        onPageChange={setCurrentPage}
-      />
+      <>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">
+          {data?.length == 1
+            ? `${data?.length} lote encontrado`
+            : `${data?.length} lotes encontrados`}
+        </h3>
+        <LotsGrid
+          lots={data || []}
+          openLotMode={"page"}
+          currentPage={currentPage}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+        />
+      </>
     );
   }
   return (
