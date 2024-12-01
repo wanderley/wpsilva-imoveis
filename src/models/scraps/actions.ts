@@ -60,36 +60,45 @@ export type SearchLotsFilters = {
   phase: "interesting" | "pendingReview" | "";
   active: "0" | "1" | "";
   auctionStatus: "available" | "unavailable" | "all";
+  profitMin: "10" | "20" | "30" | "40" | "";
 };
 
 export async function searchLots(filters: SearchLotsFilters): Promise<Scrap[]> {
-  const conditions: SQLWrapper[] = [];
+  const scrapConditions: SQLWrapper[] = [];
+  const profitConditions: SQLWrapper[] = [];
   if (filters.min !== "") {
-    conditions.push(gte(scrapsTable.bid, parseFloat(filters.min)));
+    scrapConditions.push(gte(scrapsTable.bid, parseFloat(filters.min)));
   }
   if (filters.max !== "") {
-    conditions.push(lte(scrapsTable.bid, parseFloat(filters.max)));
+    scrapConditions.push(lte(scrapsTable.bid, parseFloat(filters.max)));
+  }
+  if (filters.profitMin !== "") {
+    profitConditions.push(
+      gte(scrapProfitTable.lucro_percentual, parseFloat(filters.profitMin)),
+    );
   }
   switch (filters.active) {
     case "0":
-      conditions.push(lt(PREFERRED_AUCTION_DATE_FIELD, sql`CURRENT_DATE`));
+      scrapConditions.push(lt(PREFERRED_AUCTION_DATE_FIELD, sql`CURRENT_DATE`));
       break;
     case "":
     case "1":
-      conditions.push(gte(PREFERRED_AUCTION_DATE_FIELD, sql`CURRENT_DATE`));
+      scrapConditions.push(
+        gte(PREFERRED_AUCTION_DATE_FIELD, sql`CURRENT_DATE`),
+      );
       break;
   }
   switch (filters.phase) {
     case "interesting":
-      conditions.push(eq(scrapsTable.is_interesting, 1));
+      scrapConditions.push(eq(scrapsTable.is_interesting, 1));
       break;
     case "pendingReview":
-      conditions.push(isNull(scrapsTable.is_interesting));
+      scrapConditions.push(isNull(scrapsTable.is_interesting));
       break;
   }
   switch (filters.auctionStatus) {
     case "available":
-      conditions.push(
+      scrapConditions.push(
         inArray(scrapsTable.auction_status, [
           "waiting-to-start",
           "open-for-bids",
@@ -97,7 +106,7 @@ export async function searchLots(filters: SearchLotsFilters): Promise<Scrap[]> {
       );
       break;
     case "unavailable":
-      conditions.push(
+      scrapConditions.push(
         notInArray(scrapsTable.auction_status, [
           "waiting-to-start",
           "open-for-bids",
@@ -108,8 +117,11 @@ export async function searchLots(filters: SearchLotsFilters): Promise<Scrap[]> {
 
   return await findScraps({
     scrap: {
-      where: and(eq(scrapsTable.fetch_status, "fetched"), ...conditions),
+      where: and(eq(scrapsTable.fetch_status, "fetched"), ...scrapConditions),
       orderBy: [asc(PREFERRED_AUCTION_DATE_FIELD), desc(GROSS_DISCOUNT_FIELD)],
+    },
+    profit: {
+      where: and(...profitConditions),
     },
   });
 }

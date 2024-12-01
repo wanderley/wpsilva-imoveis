@@ -53,6 +53,24 @@ function Filters({
           </div>
         </div>
 
+        {/* Profit Limit */}
+        <div>
+          <div className="mb-2 block">
+            <Label htmlFor="profit-min" value="Lucro mínimo" />
+          </div>
+          <Select
+            id="profit-min"
+            value={filters.profitMin}
+            onChange={updateFilters("profitMin")}
+          >
+            <option value="">Sem limite</option>
+            <option value="10">10%+</option>
+            <option value="20">20%+</option>
+            <option value="30">30%+</option>
+            <option value="40">40%+</option>
+          </Select>
+        </div>
+
         {/* Lot Phase */}
         <div>
           <div className="mb-2 block">
@@ -123,6 +141,8 @@ function useFilters() {
     active: (searchParams.get("active") || "1") as SearchLotsFilters["active"],
     auctionStatus: (searchParams.get("auctionStatus") ||
       "available") as SearchLotsFilters["auctionStatus"],
+    profitMin: (searchParams.get("profitMin") ||
+      "") as SearchLotsFilters["profitMin"],
   });
 
   const [filters, setFilters] = useState<SearchLotsFilters>({
@@ -132,6 +152,8 @@ function useFilters() {
     active: (searchParams.get("active") || "1") as SearchLotsFilters["active"],
     auctionStatus: (searchParams.get("auctionStatus") ||
       "available") as SearchLotsFilters["auctionStatus"],
+    profitMin: (searchParams.get("profitMin") ||
+      "") as SearchLotsFilters["profitMin"],
   });
 
   const updateFilters =
@@ -155,6 +177,7 @@ function useFilters() {
       phase: "",
       active: "1",
       auctionStatus: "all",
+      profitMin: "",
     });
     updateUrl();
   };

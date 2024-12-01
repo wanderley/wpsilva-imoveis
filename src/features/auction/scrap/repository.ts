@@ -1,5 +1,10 @@
 import { db } from "@/db";
-import { Scrap, scrapAnalysesTable, scrapsTable } from "@/db/schema";
+import {
+  Scrap,
+  scrapAnalysesTable,
+  scrapProfitTable,
+  scrapsTable,
+} from "@/db/schema";
 import { SQL, desc, eq, sql } from "drizzle-orm";
 
 type FindScrapsOptions = {
@@ -10,6 +15,9 @@ type FindScrapsOptions = {
   analysis?: {
     where?: SQL<unknown>;
     orderBy?: SQL<unknown>[];
+  };
+  profit?: {
+    where?: SQL<unknown>;
   };
 };
 
@@ -57,7 +65,23 @@ export async function findScraps(
       },
       profit: true,
     },
-    where: options?.scrap?.where,
+    where: (scraps, { and, exists }) =>
+      and(
+        options?.scrap?.where,
+        options?.profit?.where
+          ? exists(
+              db
+                .select()
+                .from(scrapProfitTable)
+                .where(
+                  and(
+                    eq(scrapProfitTable.scrap_id, scraps.id),
+                    options?.profit?.where,
+                  ),
+                ),
+            )
+          : undefined,
+      ),
     orderBy: options?.scrap?.orderBy,
   });
 }
