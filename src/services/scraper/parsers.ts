@@ -62,6 +62,18 @@ export function pipe<T1, T2, T3, T4, T5>(
   };
 }
 
+export function or<T>(...extractors: Extractor<T>[]): Extractor<T> {
+  return async (page: Page) => {
+    for (const extractor of extractors) {
+      const res = await extractor(page);
+      if (res !== undefined) {
+        return res;
+      }
+    }
+    return undefined;
+  };
+}
+
 export function getTextFromSelector(selector: string): Extractor<string> {
   return async (page: Page) =>
     (await page.evaluate(

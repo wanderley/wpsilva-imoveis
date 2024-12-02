@@ -9,6 +9,7 @@ import {
   getNumberFromReais,
   getTextFromSelector,
   matchText,
+  or,
   pipe,
   removeUnnecessarySpaces,
 } from "@/services/scraper/parsers";
@@ -121,7 +122,10 @@ export const PortalZuk: Scraper = {
     removeUnnecessarySpaces,
   ),
   bid: pipe(
-    getTextFromSelector(".maior-lance-vlr"),
+    or(
+      getTextFromSelector(".maior-lance-vlr"),
+      getTextFromSelector("#maior-lance-vlr"),
+    ),
     (value) => (value == "0,00" ? undefined : value),
     getNumberFromReais,
   ),
