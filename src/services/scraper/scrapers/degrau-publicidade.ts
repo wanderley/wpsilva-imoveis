@@ -12,6 +12,7 @@ import {
   matchCaseNumber,
   pipe,
   removeUnnecessarySpaces,
+  replaceText,
 } from "@/services/scraper/parsers";
 import { Scraper, scrollToBottom } from "@/services/scraper/scraper";
 
@@ -146,6 +147,15 @@ export const VivaLeiloes: Scraper = {
     ".dg-lote-anexos li a",
     IncludesFinder("Edital"),
     ReturnAttribute("href"),
+  ),
+  address: pipe(
+    getFromSelector(
+      ".dg-lote-descricao-txt p span span",
+      IncludesFinder("Endereço:"),
+      ReturnText(),
+    ),
+    replaceText("Endereço:", ""),
+    removeUnnecessarySpaces,
   ),
 };
 
