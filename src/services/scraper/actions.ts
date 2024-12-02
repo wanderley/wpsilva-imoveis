@@ -6,9 +6,11 @@ import {
   scrapFilesTable,
   scrapProfitTable,
   scrapsTable,
+  validatedAddressTable,
 } from "@/db/schema";
 import { findScrapByID } from "@/features/auction/scrap/repository";
 import { updateProfit } from "@/models/scraps/helpers";
+import { validateAddress } from "@/services/google/address-validation";
 import { getScraper } from "@/services/scraper";
 import { Lot, Scraper } from "@/services/scraper/scraper";
 import { and, count, eq, inArray } from "drizzle-orm";
@@ -163,6 +165,7 @@ export async function fetchScrapFromSource(
       .execute();
 
     await maybeUpdateImages(scrapID, scrapData.images);
+    await maybeValidateAndSaveAddress(scrapData.address);
     await maybeUpdateAnalysis(scrapID);
     await maybeUpdateProfit(scrapID);
   } catch (error) {
@@ -285,6 +288,75 @@ async function maybeUpdateProfit(scrapID: number): Promise<void> {
     .set(profit)
     .where(eq(scrapProfitTable.scrap_id, scrapID))
     .execute();
+}
+
+async function maybeValidateAndSaveAddress(
+  address: string | undefined,
+): Promise<void> {
+  if (!address) return;
+
+  // Check if address is already validated
+  const existing = await db.query.validatedAddressTable.findFirst({
+    where: eq(validatedAddressTable.original_address, address),
+  });
+
+  if (existing) {
+    return;
+  }
+
+  const validatedAddress = await validateAddress(address);
+
+  // Only save if we have all required fields
+  if (
+    !validatedAddress?.formatted_address ||
+    !validatedAddress?.administrative_area_level_2 ||
+    !validatedAddress?.administrative_area_level_1 ||
+    !validatedAddress?.country ||
+    !validatedAddress?.route ||
+    !validatedAddress?.sublocality ||
+    !validatedAddress?.postal_code ||
+    validatedAddress?.latitude === undefined ||
+    validatedAddress?.longitude === undefined
+  ) {
+    // Save as not_found if validation failed or missing required fields
+    await db
+      .insert(validatedAddressTable)
+      .values({
+        original_address: address,
+        formatted_address: address, // Use original address as formatted
+        administrative_area_level_2: "UNKNOWN",
+        administrative_area_level_1: "UNKNOWN",
+        country: "UNKNOWN",
+        street_number: null,
+        route: "UNKNOWN",
+        sublocality: "UNKNOWN",
+        subpremise: null,
+        postal_code: "UNKNOWN",
+        latitude: 0,
+        longitude: 0,
+        validation_status: "not_found",
+      })
+      .execute();
+    return;
+  }
+
+  const addressData = {
+    original_address: address,
+    formatted_address: validatedAddress.formatted_address,
+    street_number: validatedAddress.street_number || null,
+    route: validatedAddress.route || "UNKNOWN",
+    sublocality: validatedAddress.sublocality || "UNKNOWN",
+    subpremise: validatedAddress.subpremise || null,
+    administrative_area_level_2: validatedAddress.administrative_area_level_2,
+    administrative_area_level_1: validatedAddress.administrative_area_level_1,
+    country: validatedAddress.country,
+    postal_code: validatedAddress.postal_code || "UNKNOWN",
+    latitude: validatedAddress.latitude,
+    longitude: validatedAddress.longitude,
+    validation_status: "valid" as const,
+  };
+
+  await db.insert(validatedAddressTable).values(addressData).execute();
 }
 
 async function login(scraper: Scraper, page: Page): Promise<void> {

@@ -1,3 +1,4 @@
+import { GoogleApiProvider } from "@/components/GoogleApiProvider";
 import { Navbar } from "@/components/Navbar";
 import { QueryClientProvider } from "@/components/QueryClientProvider";
 import { SessionProvider } from "@/components/SessionProvider";
@@ -36,7 +37,9 @@ export default function RootLayout({
         <SessionProvider>
           <Navbar />
           <QueryClientProvider>
-            <div className="p-4">{children}</div>
+            <GoogleApiProvider apiKey={process.env.GOOGLE_MAPS_API_KEY!}>
+              <div className="p-4">{children}</div>
+            </GoogleApiProvider>
             {process.env.NODE_ENV === "development" && <ReactQueryDevtools />}
           </QueryClientProvider>
         </SessionProvider>

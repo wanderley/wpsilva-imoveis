@@ -62,6 +62,7 @@ import {
   X,
 } from "react-feather";
 
+import { Map } from "./Map";
 import { formatCurrency } from "./lib/currency";
 
 const getConditionBadgeVariant = (
@@ -595,6 +596,24 @@ function Analysis({ scrap }: { scrap: Scrap }) {
         </>
       )}
     </div>
+  );
+}
+
+function LocationSection({ scrap }: { scrap: Scrap }) {
+  const validatedAddress = scrap.validatedAddress;
+  if (!validatedAddress || validatedAddress.validation_status !== "valid") {
+    return null;
+  }
+
+  return (
+    <Card>
+      <h2 className="text-2xl font-bold mb-4">Localização</h2>
+      <Map
+        latitude={validatedAddress.latitude}
+        longitude={validatedAddress.longitude}
+        address={validatedAddress.formatted_address}
+      />
+    </Card>
   );
 }
 
@@ -1505,34 +1524,34 @@ export function Lot({ scrapID }: { scrapID: number }) {
   const { data: scrap, isLoading } = useScrapDetails(scrapID);
   const { mutate } = useUpdateScrapMutation();
 
+  if (isLoading || !scrap) {
+    return <div>Carregando...</div>;
+  }
+
   return (
-    <>
-      {isLoading && <p>Carregando...</p>}
-      {scrap && (
-        <div className="space-y-4">
-          <div className="h-56 sm:h-64 xl:h-80 2xl:h-96 mb-4 bg-gray-950 rounded-lg overflow-hidden">
-            <Carousel className="h-full">
-              {scrap.files
-                .filter((file) => file.file_type === "jpg")
-                .map((image) => (
-                  <div
-                    key={image.id}
-                    className="flex items-center justify-center h-full"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={image.url}
-                      alt={`Imagem ${image.id}`}
-                      className="max-w-full max-h-full object-contain"
-                    />
-                  </div>
-                ))}
-            </Carousel>
-          </div>
-          <DescriptionCard scrap={scrap} mutate={mutate} />
-          <PotentialProfitCard scrap={scrap} />
-        </div>
-      )}
-    </>
+    <div className="space-y-4">
+      <div className="h-56 sm:h-64 xl:h-80 2xl:h-96 mb-4 bg-gray-950 rounded-lg overflow-hidden">
+        <Carousel className="h-full">
+          {scrap.files
+            .filter((file) => file.file_type === "jpg")
+            .map((image) => (
+              <div
+                key={image.id}
+                className="flex items-center justify-center h-full"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={image.url}
+                  alt={`Imagem ${image.id}`}
+                  className="max-w-full max-h-full object-contain"
+                />
+              </div>
+            ))}
+        </Carousel>
+      </div>
+      <DescriptionCard scrap={scrap} mutate={mutate} />
+      <PotentialProfitCard scrap={scrap} />
+      <LocationSection scrap={scrap} />
+    </div>
   );
 }

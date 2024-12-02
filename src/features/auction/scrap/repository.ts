@@ -64,6 +64,7 @@ export async function findScraps(
         ],
       },
       profit: true,
+      validatedAddress: true,
     },
     where: (scraps, { and, exists }) =>
       and(
@@ -108,6 +109,7 @@ export async function findScrap(
         ],
       },
       profit: true,
+      validatedAddress: true,
     },
     where: options.scrap?.where,
     orderBy: options.scrap?.orderBy,
