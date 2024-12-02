@@ -69,7 +69,7 @@ export function LotsMap({ lots }: LotsMapProps) {
           }}
           onCloseClick={() => setSelectedLot(null)}
         >
-          <LotCardContent lot={selectedLot} mode="modal" />
+          <LotCardContent lot={selectedLot} mode="new-page" />
         </InfoWindow>
       )}
     </GoogleMap>

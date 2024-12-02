@@ -10,6 +10,8 @@ import { HiClock } from "react-icons/hi";
 
 import { formatCurrency } from "./lib/currency";
 
+type LotCardMode = "page" | "modal" | "new-page";
+
 function parsePreferredAuctionDate(lot: Scrap) {
   const date = getPreferredAuctionDate(lot);
   if (!date) {
@@ -77,13 +79,23 @@ function CardLink({
   children,
 }: {
   lot: Scrap;
-  mode: "page" | "modal";
+  mode: LotCardMode;
   children: React.ReactNode;
 }) {
   const [showModal, setShowModal] = useState(false);
-  if (mode == "page") {
+
+  if (mode === "page") {
     return <Link href={`/lot/${lot.id}`}>{children}</Link>;
   }
+
+  if (mode === "new-page") {
+    return (
+      <Link href={`/lot/${lot.id}`} target="_blank">
+        {children}
+      </Link>
+    );
+  }
+
   return (
     <>
       <div onClick={() => setShowModal(true)}>{children}</div>
@@ -103,7 +115,7 @@ export function LotCardContent({
   mode,
 }: {
   lot: Scrap;
-  mode: "page" | "modal";
+  mode: LotCardMode;
 }) {
   return (
     <div className="flex flex-col h-full">
