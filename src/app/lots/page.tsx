@@ -1,12 +1,13 @@
 "use client";
 
 import { LotsGrid } from "@/components/LotsGrid";
+import { LotsMap } from "@/components/LotsMap";
 import { usePagination, useSearchLots } from "@/hooks";
 import { SearchLotsFilters } from "@/models/scraps/actions";
 import { Button, Label, Select, Spinner, TextInput } from "flowbite-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChangeEvent, useState } from "react";
-import { FaFolderOpen } from "react-icons/fa";
+import { FaFolderOpen, FaMap, FaThLarge } from "react-icons/fa";
 
 function Filters({
   filters,
@@ -213,6 +214,7 @@ export default function Page() {
     useFilters();
   const { currentPage, setCurrentPage, itemsPerPage } = usePagination();
   const { data, isLoading } = useSearchLots(filters);
+  const [viewMode, setViewMode] = useState<"grid" | "map">("grid");
 
   let body = <></>;
   if (isLoading) {
@@ -222,18 +224,40 @@ export default function Page() {
   } else {
     body = (
       <>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
-          {data?.length == 1
-            ? `${data?.length} lote encontrado`
-            : `${data?.length} lotes encontrados`}
-        </h3>
-        <LotsGrid
-          lots={data || []}
-          openLotMode={"page"}
-          currentPage={currentPage}
-          itemsPerPage={itemsPerPage}
-          onPageChange={setCurrentPage}
-        />
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-medium text-gray-900">
+            {data?.length == 1
+              ? `${data?.length} lote encontrado`
+              : `${data?.length} lotes encontrados`}
+          </h3>
+          <div className="flex gap-2">
+            <Button
+              color={viewMode === "grid" ? "dark" : "light"}
+              onClick={() => setViewMode("grid")}
+              size="sm"
+            >
+              <FaThLarge className="mr-2" /> Grade
+            </Button>
+            <Button
+              color={viewMode === "map" ? "dark" : "light"}
+              onClick={() => setViewMode("map")}
+              size="sm"
+            >
+              <FaMap className="mr-2" /> Mapa
+            </Button>
+          </div>
+        </div>
+        {viewMode === "grid" ? (
+          <LotsGrid
+            lots={data || []}
+            openLotMode={"page"}
+            currentPage={currentPage}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+          />
+        ) : (
+          <LotsMap lots={data || []} />
+        )}
       </>
     );
   }
@@ -250,7 +274,7 @@ export default function Page() {
             clearFilters={clearFilters}
           />
         </div>
-        <div className="flex-1">{body}</div>
+        <div className="flex-grow">{body}</div>
       </div>
     </div>
   );

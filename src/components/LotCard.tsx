@@ -98,6 +98,37 @@ function CardLink({
   );
 }
 
+export function LotCardContent({
+  lot,
+  mode,
+}: {
+  lot: Scrap;
+  mode: "page" | "modal";
+}) {
+  return (
+    <div className="flex flex-col h-full">
+      <div className="h-40 mb-2">
+        <Carousel slide={false} indicators={false}>
+          {lot.files
+            .filter((file) => file.file_type === "jpg")
+            .map((image, index) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={image.id}
+                src={image.url}
+                alt={`Imagem ${index + 1} do imóvel`}
+                className="h-40 w-full object-cover"
+              />
+            ))}
+        </Carousel>
+      </div>
+      <CardLink lot={lot} mode={mode}>
+        <BottomContent lot={lot} />
+      </CardLink>
+    </div>
+  );
+}
+
 export default function LotCard({
   lot,
   mode,
@@ -106,29 +137,8 @@ export default function LotCard({
   mode: "page" | "modal";
 }) {
   return (
-    <>
-      <Card className="cursor-pointer hover:bg-gray-50">
-        <div className="flex flex-col h-full">
-          <div className="h-40 mb-2">
-            <Carousel slide={false} indicators={false}>
-              {lot.files
-                .filter((file) => file.file_type === "jpg")
-                .map((image, index) => (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    key={image.id}
-                    src={image.url}
-                    alt={`Imagem ${index + 1} do imóvel`}
-                    className="h-40 w-full object-cover"
-                  />
-                ))}
-            </Carousel>
-          </div>
-          <CardLink lot={lot} mode={mode}>
-            <BottomContent lot={lot} />
-          </CardLink>
-        </div>
-      </Card>
-    </>
+    <Card className="cursor-pointer hover:bg-gray-50">
+      <LotCardContent lot={lot} mode={mode} />
+    </Card>
   );
 }
