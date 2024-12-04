@@ -134,11 +134,12 @@ export async function fetchScrapFromSource(
     throw new Error(`Scraper ${scraperID} not found`);
   }
   const scrapID = await getScrapID(scraperID, url);
+  let scrapData: Lot | undefined = undefined;
   try {
     await login(scraper, page);
     await page.goto(url);
     await waitUntilLoaded(scraper, page);
-    const scrapData = await scrapLink(scraper, page);
+    scrapData = await scrapLink(scraper, page);
     await db
       .update(scrapsTable)
       .set({
@@ -179,7 +180,12 @@ export async function fetchScrapFromSource(
       )
       .execute();
     throw new Error(`Failed to fetch scrap ${url}`, {
-      cause: error,
+      cause: {
+        originalError: error,
+        metadata: {
+          scrapData,
+        },
+      },
     });
   }
 }
