@@ -1,7 +1,13 @@
 import {
+  IncludesFinder,
+  ReturnText,
+  ReturnTextNextSibling,
+  getBrazilianDate,
+  getFromSelector,
   getNumberFromReais,
   getTextFromSelector,
-  parseBrazilianDate,
+  matchText,
+  or,
   pipe,
 } from "@/services/scraper/parsers";
 import { Scraper } from "@/services/scraper/scraper";
@@ -136,42 +142,16 @@ export const Wspleiloes: Scraper = {
             ?.textContent?.match(/R\$([\d.,]+)/)?.[1],
       ),
     ),
-  firstAuctionDate: async (page) =>
-    parseBrazilianDate(
-      await page.evaluate(() =>
-        Array.from(document.querySelectorAll("h6"))
-          .find((elem) => elem.textContent?.includes("Data 1º Leilão:"))
-          ?.textContent?.replace("Data 1º Leilão: ", ""),
-      ),
-      "dd/MM/yyyy HH:mm",
-    ),
-  firstAuctionBid: async (page) =>
-    getNumberFromReais(
-      await page.evaluate(
-        () =>
-          Array.from(document.querySelectorAll("h6"))
-            .find((elem) => elem.textContent?.includes("Data 1º Leilão:"))
-            ?.nextElementSibling?.textContent?.match(/R\$([\d.,]+)/)?.[1],
-      ),
-    ),
-  secondAuctionDate: async (page) =>
-    parseBrazilianDate(
-      await page.evaluate(() =>
-        Array.from(document.querySelectorAll("h6"))
-          .find((elem) => elem.textContent?.includes("Data 2º Leilão:"))
-          ?.textContent?.replace("Data 2º Leilão: ", ""),
-      ),
-      "dd/MM/yyyy HH:mm",
-    ),
-  secondAuctionBid: async (page) =>
-    getNumberFromReais(
-      await page.evaluate(
-        () =>
-          Array.from(document.querySelectorAll("h6"))
-            .find((elem) => elem.textContent?.includes("Data 2º Leilão:"))
-            ?.nextElementSibling?.textContent?.match(/R\$([\d.,]+)/)?.[1],
-      ),
-    ),
+  firstAuctionDate: or(
+    getAuctionDate("Data 1º Leilão:"),
+    getAuctionDate("Data do Leilão:"),
+  ),
+  firstAuctionBid: or(
+    getAuctionBid("Data 1º Leilão:"),
+    getAuctionBid("Data do Leilão:"),
+  ),
+  secondAuctionDate: getAuctionDate("Data 2º Leilão:"),
+  secondAuctionBid: getAuctionBid("Data 2º Leilão:"),
   images: async (page) =>
     (await page.evaluate(() =>
       Array.from(document.querySelectorAll(".carousel-item > a"))
@@ -197,3 +177,22 @@ export const Wspleiloes: Scraper = {
         ?.getAttribute("href"),
     )) ?? undefined,
 };
+
+function getAuctionDate(text: string) {
+  return pipe(
+    getFromSelector("h6", IncludesFinder(text), ReturnText()),
+    matchText(
+      /(\d{2}\/\d{2}\/\d{4}) (\d{2}):(\d{2})/,
+      (_, day, hour, minute) => `${day} ${hour}:${minute}`,
+    ),
+    getBrazilianDate("dd/MM/yyyy HH:mm"),
+  );
+}
+
+function getAuctionBid(text: string) {
+  return pipe(
+    getFromSelector("h6", IncludesFinder(text), ReturnTextNextSibling()),
+    matchText(/R\$([\d.,]+)/, (_, value) => value),
+    getNumberFromReais,
+  );
+}

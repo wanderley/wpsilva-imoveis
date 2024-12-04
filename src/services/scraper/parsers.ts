@@ -1,3 +1,4 @@
+import assertNever from "@/lib/assert-never";
 import { parse } from "date-fns";
 import { fromZonedTime } from "date-fns-tz";
 import { Page } from "puppeteer";
@@ -102,9 +103,20 @@ export function AttributeIncludesFinder(
   return { type: "finder", name: "attribute", attribute, text };
 }
 
+type TextContentNextSiblingGetter = {
+  type: "getter";
+  name: "textContentNextSibling";
+};
 type TextContentGetter = { type: "getter"; name: "textContent" };
 type AttributeGetter = { type: "getter"; name: "attribute"; attribute: string };
-type Getter = TextContentGetter | AttributeGetter;
+type Getter =
+  | TextContentGetter
+  | AttributeGetter
+  | TextContentNextSiblingGetter;
+
+export function ReturnTextNextSibling(): TextContentNextSiblingGetter {
+  return { type: "getter", name: "textContentNextSibling" };
+}
 
 export function ReturnText(): TextContentGetter {
   return { type: "getter", name: "textContent" };
@@ -154,6 +166,8 @@ export function getFromSelector(
                 return elem.textContent?.includes(find.text);
               case "attribute":
                 return elem.getAttribute(find.attribute)?.includes(find.text);
+              default:
+                assertNever(find);
             }
           },
         );
@@ -165,6 +179,10 @@ export function getFromSelector(
             return elem.textContent ?? undefined;
           case "attribute":
             return elem.getAttribute(get.attribute) ?? undefined;
+          case "textContentNextSibling":
+            return elem.nextElementSibling?.textContent ?? undefined;
+          default:
+            assertNever(get);
         }
       },
       selector,
@@ -192,6 +210,8 @@ export function getFromSelectorAll(
                 return elem
                   .getAttribute(filter.attribute)
                   ?.includes(filter.text);
+              default:
+                assertNever(filter);
             }
           },
         );
@@ -202,6 +222,10 @@ export function getFromSelectorAll(
                 return elem.textContent ?? undefined;
               case "attribute":
                 return elem.getAttribute(get.attribute) ?? undefined;
+              case "textContentNextSibling":
+                return elem.nextElementSibling?.textContent ?? undefined;
+              default:
+                assertNever(get);
             }
           })
           .filter((value): value is string => value !== undefined);
