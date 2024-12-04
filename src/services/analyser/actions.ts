@@ -28,7 +28,8 @@ export async function updateAnalysis(
   }
 
   if (!scrap.edital_link) {
-    throw new Error("No edital link found");
+    console.error(`No edital link found for scrap ${scrapId}`);
+    return;
   }
 
   try {
