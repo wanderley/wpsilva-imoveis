@@ -188,20 +188,28 @@ export const schema = z.object({
       .describe("Nome do cartório de registro."),
     tax_id: z.string().optional().describe("Identificação fiscal do imóvel."),
     liens: z.array(
-      z.object({
-        type: z
-          .string()
-          .describe("Tipo de ônus (ex: hipoteca, judicial, penhora, etc.)."),
-        details: z.string().optional().describe("Detalhes do ônus."),
-        document_mentioned: z
-          .string()
-          .describe("Documento que menciona o ônus. Entre 100 e 200 palavras."),
-        excerpt_document: z
-          .string()
-          .describe(
-            "Trecho do documento que menciona o ônus. Entre 100 e 200 palavras.",
-          ),
-      }),
+      z
+        .object({
+          type: z
+            .string()
+            .describe("Tipo de ônus (ex: hipoteca, judicial, penhora, etc.)."),
+          details: z.string().optional().describe("Detalhes do ônus."),
+          document_mentioned: z
+            .string()
+            .describe(
+              "Documento que menciona o ônus. Entre 100 e 200 palavras.",
+            ),
+          excerpt_document: z
+            .string()
+            .describe(
+              "Trecho do documento que menciona o ônus. Entre 100 e 200 palavras.",
+            ),
+        })
+        .questions(
+          "Quais hipotecas existem no imóvel?",
+          "Quais penhoras existem no imóvel?",
+          "Quais outros ônus existem no imóvel?",
+        ),
     ),
   }),
   financial: z.object({
