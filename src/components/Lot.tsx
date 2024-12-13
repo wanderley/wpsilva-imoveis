@@ -20,6 +20,7 @@ import {
   useUpdateScrapMutation,
   useUpdateScrapProfitMutation,
 } from "@/hooks";
+import { formatCurrency } from "@/lib/currency";
 import {
   computeProfit,
   getPreferredAuctionDate,
@@ -63,7 +64,6 @@ import {
 } from "react-feather";
 
 import { Map } from "./Map";
-import { formatCurrency } from "./lib/currency";
 
 const getConditionBadgeVariant = (
   condition: Schema["appraisal"]["general_condition"],

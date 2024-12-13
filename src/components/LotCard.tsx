@@ -2,13 +2,12 @@ import { LotModal } from "@/components/LotModal";
 import { selectOptionBasedOnProfitBand } from "@/components/lib/scraps";
 import { Scrap } from "@/db/schema";
 import AuctionStatus from "@/features/auction/scrap/components/AuctionStatus";
+import { formatCurrency } from "@/lib/currency";
 import { getPreferredAuctionDate } from "@/models/scraps/helpers";
 import { Badge, Card, Carousel } from "flowbite-react";
 import Link from "next/link";
 import { useState } from "react";
 import { HiClock } from "react-icons/hi";
-
-import { formatCurrency } from "./lib/currency";
 
 type LotCardMode = "page" | "modal" | "new-page";
 
