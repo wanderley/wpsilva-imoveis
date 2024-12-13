@@ -1,5 +1,6 @@
 import { Badge, BadgeProps } from "@/components/ui/badge";
 import { Scrap } from "@/db/schema";
+import assertNever from "@/lib/assert-never";
 
 function getText(scrap: Scrap) {
   switch (scrap.auction_status) {
@@ -16,7 +17,10 @@ function getText(scrap: Scrap) {
     case "suspended":
       return "Suspenso";
     case "unknown":
+    case null:
       return "Desconhecido";
+    default:
+      assertNever(scrap.auction_status);
   }
 }
 
@@ -42,8 +46,11 @@ function AuctionStatusBadge({ scrap }: { scrap: Scrap }) {
       color = "destructive";
       break;
     case "unknown":
+    case null:
       color = "default";
       break;
+    default:
+      assertNever(scrap.auction_status);
   }
   return <Badge variant={color}>{getText(scrap)}</Badge>;
 }
@@ -70,8 +77,11 @@ function AuctionStatusText({ scrap }: { scrap: Scrap }) {
       color = "text-red-600";
       break;
     case "unknown":
+    case null:
       color = "text-gray-600";
       break;
+    default:
+      assertNever(scrap.auction_status);
   }
   return (
     <span className={`${color} flex items-center mr-1`}>{getText(scrap)}</span>
