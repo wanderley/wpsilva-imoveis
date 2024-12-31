@@ -1,4 +1,4 @@
-import { getScrapScreenshotPath } from "@/features/auction/scrap/helpers";
+import { getScrapScreenshotPath } from "@/features/auction/scrap/helpers.server";
 import fs from "fs";
 
 export async function GET(

@@ -1,4 +1,4 @@
-import { Scrap, ScrapProfit } from "@/db/schema";
+import { ScrapProfit } from "@/db/schema";
 
 export function computeProfit(data: ScrapProfit) {
   const total_custo_arrematacao =
@@ -64,12 +64,4 @@ export function updateProfit(profit: ScrapProfit): ScrapProfit {
     lucro,
     lucro_percentual,
   };
-}
-
-export function getPreferredAuctionDate(lot: Scrap) {
-  if (!lot.preferred_auction_date) {
-    return null;
-  }
-  // TODO: Drizzle was supposed to provide a Date object, but it's returning a string
-  return new Date(lot.preferred_auction_date + "Z");
 }

@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Scrap, ScrapProfit } from "@/db/schema";
 import AuctionStatus from "@/features/auction/scrap/components/AuctionStatus";
 import { LotStatusBadge } from "@/features/auction/scrap/components/LotStatusBadge";
+import { getPreferredAuctionDate } from "@/features/auction/scrap/helpers.client";
 import { selectOptionBasedOnProfitBand } from "@/features/auction/scrap/lib/scraps";
 import { Map } from "@/features/google/maps/components/Map";
 import {
@@ -22,10 +23,7 @@ import {
   useUpdateScrapProfitMutation,
 } from "@/hooks";
 import { formatCurrency } from "@/lib/currency";
-import {
-  computeProfit,
-  getPreferredAuctionDate,
-} from "@/models/scraps/helpers";
+import { computeProfit } from "@/models/scraps/helpers";
 import { Schema } from "@/services/analyser/schema";
 import { UseMutateFunction } from "@tanstack/react-query";
 import {

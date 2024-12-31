@@ -1,9 +1,9 @@
 import { Scrap } from "@/db/schema";
 import AuctionStatus from "@/features/auction/scrap/components/AuctionStatus";
 import { LotModal } from "@/features/auction/scrap/components/LotModal";
+import { getPreferredAuctionDate } from "@/features/auction/scrap/helpers.client";
 import { selectOptionBasedOnProfitBand } from "@/features/auction/scrap/lib/scraps";
 import { formatCurrency } from "@/lib/currency";
-import { getPreferredAuctionDate } from "@/models/scraps/helpers";
 import { Badge, Card, Carousel } from "flowbite-react";
 import Link from "next/link";
 import { useState } from "react";
