@@ -1,7 +1,5 @@
 "use client";
 
-import { LotStatusBadge } from "@/components/LotStatusBadge";
-import { selectOptionBasedOnProfitBand } from "@/components/lib/scraps";
 import { Badge } from "@/components/ui/badge";
 import { Button as UIButton } from "@/components/ui/button";
 import {
@@ -13,6 +11,9 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Scrap, ScrapProfit } from "@/db/schema";
 import AuctionStatus from "@/features/auction/scrap/components/AuctionStatus";
+import { LotStatusBadge } from "@/features/auction/scrap/components/LotStatusBadge";
+import { selectOptionBasedOnProfitBand } from "@/features/auction/scrap/lib/scraps";
+import { Map } from "@/features/google/maps/components/Map";
 import {
   useFetchScrapFromSourceMutation,
   useRequestAnalysisMutation,
@@ -62,8 +63,6 @@ import {
   ThumbsUp,
   X,
 } from "react-feather";
-
-import { Map } from "./Map";
 
 const getConditionBadgeVariant = (
   condition: Schema["appraisal"]["general_condition"],

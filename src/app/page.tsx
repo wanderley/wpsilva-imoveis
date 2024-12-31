@@ -1,8 +1,7 @@
 "use client";
 
-import { InterestingLots } from "@/components/InterestingLots";
-import { PendingReviewLots } from "@/components/PendingReviewLots";
-import React from "react";
+import { InterestingLots } from "@/features/auction/scrap/components/InterestingLots";
+import { PendingReviewLots } from "@/features/auction/scrap/components/PendingReviewLots";
 
 export default function Page() {
   return (

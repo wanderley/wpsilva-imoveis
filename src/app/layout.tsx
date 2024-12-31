@@ -1,7 +1,7 @@
 import { Navbar } from "@/components/Navbar";
-import { GoogleApiProvider } from "@/components/providers/GoogleApiProvider";
-import { QueryClientProvider } from "@/components/providers/QueryClientProvider";
-import { SessionProvider } from "@/components/providers/SessionProvider";
+import { GoogleApiProvider } from "@/features/google/components/GoogleApiProvider";
+import { SessionProvider } from "@/features/login/components/SessionProvider";
+import { QueryClientProvider } from "@/features/react-query/components/QueryClientProvider";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import type { Metadata } from "next";
 import localFont from "next/font/local";

@@ -1,7 +1,7 @@
 "use client";
 
-import { LotsGrid } from "@/components/LotsGrid";
-import { LotsMap } from "@/components/LotsMap";
+import { LotsGrid } from "@/features/auction/scrap/grid/components/LotsGrid";
+import { LotsMap } from "@/features/auction/scrap/grid/components/LotsMap";
 import { usePagination, useSearchLots } from "@/hooks";
 import { SearchLotsFilters } from "@/models/scraps/actions";
 import { Button, Label, Select, Spinner, TextInput } from "flowbite-react";

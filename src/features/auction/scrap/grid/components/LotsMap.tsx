@@ -1,5 +1,5 @@
-import { LotCardContent } from "@/components/LotCard";
 import { Scrap } from "@/db/schema";
+import { LotCardContent } from "@/features/auction/scrap/grid/card/components/LotCard";
 import {
   Map as GoogleMap,
   InfoWindow,

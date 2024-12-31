@@ -1,4 +1,4 @@
-import LotCard from "@/components/LotCard";
+import LotCard from "@/features/auction/scrap/grid/card/components/LotCard";
 import { usePendingReviewLots } from "@/hooks";
 import { Button, Pagination } from "flowbite-react";
 import Link from "next/link";

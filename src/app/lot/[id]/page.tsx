@@ -1,6 +1,6 @@
 "use client";
 
-import { Lot } from "@/components/Lot";
+import { Lot } from "@/features/auction/scrap/components/Lot";
 
 export default function Page({ params }: { params: { id: number } }) {
   return (

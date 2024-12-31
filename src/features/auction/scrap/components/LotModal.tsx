@@ -1,10 +1,9 @@
 "use client";
 
+import { Lot } from "@/features/auction/scrap/components/Lot";
 import { useScrapDetails } from "@/hooks";
 import { Modal } from "flowbite-react";
 import { useEffect } from "react";
-
-import { Lot } from "./Lot";
 
 interface Props {
   scrapID: number;

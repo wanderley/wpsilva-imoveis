@@ -1,6 +1,5 @@
 "use client";
 
-import { LotsGrid } from "@/components/LotsGrid";
 import {
   Select,
   SelectContent,
@@ -8,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { LotsGrid } from "@/features/auction/scrap/grid/components/LotsGrid";
 import { getReport } from "@/features/auction/scraper/api";
 import ReportOverview from "@/features/auction/scraper/components/ReportOverview";
 import {

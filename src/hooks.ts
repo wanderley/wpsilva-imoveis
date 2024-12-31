@@ -1,4 +1,5 @@
 import { Scrap, ScrapProfit } from "@/db/schema";
+import { updateScrapFromSource } from "@/features/auction/scrap/api";
 import {
   SearchLotsFilters,
   getPendingReviewLots,
@@ -7,11 +8,9 @@ import {
   saveScrapProfit,
   searchLots,
 } from "@/models/scraps/actions";
+import { updateAnalysis } from "@/services/analyser/actions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-
-import { updateScrapFromSource } from "./features/auction/scrap/api";
-import { updateAnalysis } from "./services/analyser/actions";
 
 export const queryKeys = {
   scrapers: ["scrapers"],

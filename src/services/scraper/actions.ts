@@ -10,13 +10,12 @@ import {
 } from "@/db/schema";
 import { findScrapByID } from "@/features/auction/scrap/repository";
 import { updateProfit } from "@/models/scraps/helpers";
+import { updateAnalysis } from "@/services/analyser/actions";
 import { validateAddress } from "@/services/google/address-validation";
 import { getScraper } from "@/services/scraper";
 import { Lot, Scraper } from "@/services/scraper/scraper";
 import { and, count, eq, inArray } from "drizzle-orm";
 import { Page } from "puppeteer";
-
-import { updateAnalysis } from "../analyser/actions";
 
 export async function refreshScraps(
   scraperID: string,

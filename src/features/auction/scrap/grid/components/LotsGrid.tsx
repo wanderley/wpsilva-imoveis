@@ -1,7 +1,6 @@
 import { Scrap } from "@/db/schema";
+import LotCard from "@/features/auction/scrap/grid/card/components/LotCard";
 import { Pagination } from "flowbite-react";
-
-import LotCard from "./LotCard";
 
 export function LotsGrid({
   lots,

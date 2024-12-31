@@ -6,9 +6,8 @@ import {
   ReportMonthlyLots,
   ReportStatusTotals,
 } from "@/features/auction/scraper/api";
-
-import MonthlyLotsChart from "./MonthlyLotsChart";
-import StatusCard from "./StatusCard";
+import MonthlyLotsChart from "@/features/auction/scraper/components/MonthlyLotsChart";
+import StatusCard from "@/features/auction/scraper/components/StatusCard";
 
 export default function ReportOverview({
   statusTotals,

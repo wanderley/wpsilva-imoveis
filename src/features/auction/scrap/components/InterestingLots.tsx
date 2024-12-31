@@ -1,12 +1,11 @@
 import { Scrap } from "@/db/schema";
+import { LotsGrid } from "@/features/auction/scrap/grid/components/LotsGrid";
 import { getInterestingLots } from "@/models/scraps/actions";
 import { useQuery } from "@tanstack/react-query";
 import { Button, Spinner } from "flowbite-react";
 import Link from "next/link";
 import { useState } from "react";
 import { FaFolderOpen } from "react-icons/fa";
-
-import { LotsGrid } from "./LotsGrid";
 
 function EmptyState() {
   return (

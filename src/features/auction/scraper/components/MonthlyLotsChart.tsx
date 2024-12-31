@@ -1,11 +1,11 @@
 "use client";
 
-import { getColors } from "@/components/lib/chart-colors";
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { getColors } from "@/features/auction/scrap/lib/chart-colors";
 import {
   ReportMetadata,
   ReportMonthlyLots,

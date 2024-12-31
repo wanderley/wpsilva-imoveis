@@ -4,9 +4,8 @@ import {
   createVerificationToken,
   hasValidVerificationToken,
 } from "@/features/login/repository";
+import { findUserByEmail } from "@/features/login/repository";
 import { Resend } from "resend";
-
-import { findUserByEmail } from "./repository";
 
 export async function requestVerificationToken(email: string) {
   if (!(await findUserByEmail(email))) {

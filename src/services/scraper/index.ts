@@ -4,9 +4,8 @@ import {
   GfLeiloes,
   VivaLeiloes,
 } from "@/services/scraper/scrapers/degrau-publicidade";
+import { PortalZuk } from "@/services/scraper/scrapers/portal-zuk";
 import { Wspleiloes } from "@/services/scraper/scrapers/wspleiloes";
-
-import { PortalZuk } from "./scrapers/portal-zuk";
 
 export const scrapers: Scraper[] = [
   Wspleiloes,
