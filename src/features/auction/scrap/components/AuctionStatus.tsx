@@ -2,8 +2,8 @@ import { Badge, BadgeProps } from "@/components/ui/badge";
 import { Scrap } from "@/db/schema";
 import assertNever from "@/lib/assert-never";
 
-function getText(scrap: Scrap) {
-  switch (scrap.auction_status) {
+function getText(status: Scrap["auction_status"]) {
+  switch (status) {
     case "waiting-to-start":
       return "Aguardando Início";
     case "open-for-bids":
@@ -20,13 +20,13 @@ function getText(scrap: Scrap) {
     case null:
       return "Desconhecido";
     default:
-      assertNever(scrap.auction_status);
+      assertNever(status);
   }
 }
 
-function AuctionStatusBadge({ scrap }: { scrap: Scrap }) {
+function AuctionStatusBadge({ status }: { status: Scrap["auction_status"] }) {
   let color: BadgeProps["variant"] = undefined;
-  switch (scrap.auction_status) {
+  switch (status) {
     case "waiting-to-start":
       color = "warning";
       break;
@@ -50,14 +50,14 @@ function AuctionStatusBadge({ scrap }: { scrap: Scrap }) {
       color = "default";
       break;
     default:
-      assertNever(scrap.auction_status);
+      assertNever(status);
   }
-  return <Badge variant={color}>{getText(scrap)}</Badge>;
+  return <Badge variant={color}>{getText(status)}</Badge>;
 }
 
-function AuctionStatusText({ scrap }: { scrap: Scrap }) {
+function AuctionStatusText({ status }: { status: Scrap["auction_status"] }) {
   let color = undefined;
-  switch (scrap.auction_status) {
+  switch (status) {
     case "waiting-to-start":
       color = "text-yellow-600";
       break;
@@ -81,10 +81,10 @@ function AuctionStatusText({ scrap }: { scrap: Scrap }) {
       color = "text-gray-600";
       break;
     default:
-      assertNever(scrap.auction_status);
+      assertNever(status);
   }
   return (
-    <span className={`${color} flex items-center mr-1`}>{getText(scrap)}</span>
+    <span className={`${color} flex items-center mr-1`}>{getText(status)}</span>
   );
 }
 
@@ -92,11 +92,11 @@ export default function AuctionStatus({
   scrap,
   as = "badge",
 }: {
-  scrap: Scrap;
+  scrap: Pick<Scrap, "auction_status">;
   as?: "badge" | "text";
 }) {
   if (as == "badge") {
-    return <AuctionStatusBadge scrap={scrap} />;
+    return <AuctionStatusBadge status={scrap.auction_status} />;
   }
-  return <AuctionStatusText scrap={scrap} />;
+  return <AuctionStatusText status={scrap.auction_status} />;
 }

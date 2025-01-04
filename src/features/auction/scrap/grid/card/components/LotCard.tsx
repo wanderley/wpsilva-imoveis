@@ -1,6 +1,7 @@
 import { Scrap } from "@/db/schema";
 import AuctionStatus from "@/features/auction/scrap/components/AuctionStatus";
 import { LotModal } from "@/features/auction/scrap/components/LotModal";
+import { Lot } from "@/features/auction/scrap/grid/api";
 import { getPreferredAuctionDate } from "@/features/auction/scrap/helpers.client";
 import { selectOptionBasedOnProfitBand } from "@/features/auction/scrap/lib/scraps";
 import { formatCurrency } from "@/lib/currency";
@@ -11,7 +12,7 @@ import { HiClock } from "react-icons/hi";
 
 type LotCardMode = "page" | "modal" | "new-page";
 
-function parsePreferredAuctionDate(lot: Scrap) {
+function parsePreferredAuctionDate(lot: Pick<Scrap, "preferred_auction_date">) {
   const date = getPreferredAuctionDate(lot);
   if (!date) {
     return "Data não definida";
@@ -19,7 +20,7 @@ function parsePreferredAuctionDate(lot: Scrap) {
   return date.toLocaleDateString("pt-BR");
 }
 
-function BottomContent({ lot }: { lot: Scrap }) {
+function BottomContent({ lot }: { lot: Lot }) {
   return (
     <>
       {" "}
@@ -77,7 +78,7 @@ function CardLink({
   mode,
   children,
 }: {
-  lot: Scrap;
+  lot: Lot;
   mode: LotCardMode;
   children: React.ReactNode;
 }) {
@@ -109,13 +110,7 @@ function CardLink({
   );
 }
 
-export function LotCardContent({
-  lot,
-  mode,
-}: {
-  lot: Scrap;
-  mode: LotCardMode;
-}) {
+export function LotCardContent({ lot, mode }: { lot: Lot; mode: LotCardMode }) {
   return (
     <div className="flex flex-col h-full">
       <div className="h-40 mb-2">
@@ -144,7 +139,7 @@ export default function LotCard({
   lot,
   mode,
 }: {
-  lot: Scrap;
+  lot: Lot;
   mode: "page" | "modal";
 }) {
   return (

@@ -2,7 +2,9 @@
 
 import { Scrap } from "@/db/schema";
 
-export function getPreferredAuctionDate(lot: Scrap) {
+export function getPreferredAuctionDate(
+  lot: Pick<Scrap, "preferred_auction_date">,
+) {
   if (!lot.preferred_auction_date) {
     return null;
   }

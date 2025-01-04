@@ -1,4 +1,4 @@
-import { Scrap } from "@/db/schema";
+import { Lot } from "@/features/auction/scrap/grid/api";
 import LotCard from "@/features/auction/scrap/grid/card/components/LotCard";
 import { Pagination } from "flowbite-react";
 
@@ -9,7 +9,7 @@ export function LotsGrid({
   itemsPerPage,
   onPageChange,
 }: {
-  lots: Scrap[];
+  lots: Lot[];
   openLotMode: "page" | "modal";
   currentPage: number;
   itemsPerPage: number;
@@ -22,7 +22,7 @@ export function LotsGrid({
   return (
     <>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-4">
-        {currentItems.map((lot: Scrap) => (
+        {currentItems.map((lot: Lot) => (
           <LotCard key={lot.id} lot={lot} mode={openLotMode} />
         ))}
       </div>

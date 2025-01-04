@@ -1,7 +1,10 @@
-import { Scrap } from "@/db/schema";
-import { LotsFilters } from "@/features/auction/scrap/grid/api";
+import {
+  Lot,
+  LotsFilters,
+  getLotsByFilter,
+} from "@/features/auction/scrap/grid/api";
 import { LotsGrid } from "@/features/auction/scrap/grid/components/LotsGrid";
-import { useSearchLots } from "@/hooks";
+import { useQuery } from "@tanstack/react-query";
 import { Spinner } from "flowbite-react";
 import { useEffect, useState } from "react";
 import { FaFolderOpen } from "react-icons/fa";
@@ -10,7 +13,7 @@ type Props = {
   openLotMode: "page" | "modal";
   itemsPerPage: number;
   filter: LotsFilters;
-  onDataChange?: (scraps: Scrap[]) => void;
+  onDataChange?: (lots: Lot[]) => void;
 };
 
 function EmptyState() {
@@ -42,7 +45,10 @@ export function LotsGridByFilter({
   onDataChange,
 }: Props) {
   const [currentPage, setCurrentPage] = useState(1);
-  const { data: lots, isLoading } = useSearchLots(filter);
+  const { data: lots, isLoading } = useQuery({
+    queryKey: ["lots", filter],
+    queryFn: async () => await getLotsByFilter(filter),
+  });
   useEffect(() => {
     if (isLoading) {
       onDataChange?.([]);
