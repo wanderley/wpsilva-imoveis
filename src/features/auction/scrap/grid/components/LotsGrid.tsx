@@ -1,5 +1,5 @@
 import { Lot } from "@/features/auction/scrap/grid/api";
-import LotCard from "@/features/auction/scrap/grid/card/components/LotCard";
+import LotCard from "@/features/auction/scrap/grid/components/LotCard";
 import { Pagination } from "flowbite-react";
 
 export function LotsGrid({
