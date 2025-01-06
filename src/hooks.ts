@@ -1,12 +1,9 @@
 import { Scrap, ScrapProfit } from "@/db/schema";
 import { updateScrapFromSource } from "@/features/auction/scrap/api";
 import {
-  SearchLotsFilters,
-  getPendingReviewLots,
   getScrapDetails,
   saveScrap,
   saveScrapProfit,
-  searchLots,
 } from "@/models/scraps/actions";
 import { updateAnalysis } from "@/services/analyser/actions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -18,21 +15,6 @@ export const queryKeys = {
   pendingReviewLots: ["pending-review-lots"],
   scrapDetails: (id: number) => ["scrapDetails", String(id)],
 };
-
-export function useSearchLots(filters: SearchLotsFilters) {
-  return useQuery<Scrap[]>({
-    queryKey: ["lots", filters],
-    queryFn: async () => await searchLots(filters),
-  });
-}
-
-export function usePendingReviewLots() {
-  return useQuery({
-    queryKey: queryKeys.pendingReviewLots,
-    queryFn: async () => await getPendingReviewLots(),
-    initialData: [],
-  });
-}
 
 export function useFetchScrapFromSourceMutation(callbacks?: {
   onSuccess?: (id: number) => unknown;

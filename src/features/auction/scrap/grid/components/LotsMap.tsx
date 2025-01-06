@@ -1,4 +1,4 @@
-import { Scrap } from "@/db/schema";
+import { Lot } from "@/features/auction/scrap/grid/api";
 import { LotCardContent } from "@/features/auction/scrap/grid/components/LotCard";
 import {
   Map as GoogleMap,
@@ -9,7 +9,7 @@ import {
 import { useState } from "react";
 
 interface LotsMapProps {
-  lots: Scrap[];
+  lots: Lot[];
 }
 
 export function LotsMap({ lots }: LotsMapProps) {
@@ -22,7 +22,7 @@ export function LotsMap({ lots }: LotsMapProps) {
     lat: validLots[0]?.validatedAddress?.latitude || -23.5505,
     lng: validLots[0]?.validatedAddress?.longitude || -46.6333,
   });
-  const [selectedLot, setSelectedLot] = useState<Scrap | null>(null);
+  const [selectedLot, setSelectedLot] = useState<Lot | null>(null);
 
   if (validLots.length === 0) {
     return (

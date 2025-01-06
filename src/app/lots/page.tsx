@@ -1,13 +1,10 @@
 "use client";
 
-import { LotsGrid } from "@/features/auction/scrap/grid/components/LotsGrid";
-import { LotsMap } from "@/features/auction/scrap/grid/components/LotsMap";
-import { usePagination, useSearchLots } from "@/hooks";
-import { SearchLotsFilters } from "@/models/scraps/actions";
-import { Button, Label, Select, Spinner, TextInput } from "flowbite-react";
+import { LotsFilters } from "@/features/auction/scrap/grid/api";
+import { LotsGridByFilter } from "@/features/auction/scrap/grid/components/LotsGridByFilter";
+import { Button, Label, Select, TextInput } from "flowbite-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChangeEvent, useState } from "react";
-import { FaFolderOpen, FaMap, FaThLarge } from "react-icons/fa";
 
 function Filters({
   filters,
@@ -15,9 +12,9 @@ function Filters({
   updateUrl,
   clearFilters,
 }: {
-  filters: SearchLotsFilters;
+  filters: LotsFilters;
   updateFilters: (
-    key: keyof SearchLotsFilters,
+    key: keyof LotsFilters,
   ) => (
     value: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLSelectElement>,
   ) => void;
@@ -135,26 +132,26 @@ function useFilters() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [newFilters, setNewFilters] = useState<SearchLotsFilters>({
+  const [newFilters, setNewFilters] = useState<LotsFilters>({
     min: searchParams.get("min") || "",
     max: searchParams.get("max") || "",
-    phase: (searchParams.get("phase") || "") as SearchLotsFilters["phase"],
-    active: (searchParams.get("active") || "1") as SearchLotsFilters["active"],
+    phase: (searchParams.get("phase") || "") as LotsFilters["phase"],
+    active: (searchParams.get("active") || "1") as LotsFilters["active"],
     auctionStatus: (searchParams.get("auctionStatus") ||
-      "available") as SearchLotsFilters["auctionStatus"],
+      "available") as LotsFilters["auctionStatus"],
     profitMin: (searchParams.get("profitMin") ||
-      "") as SearchLotsFilters["profitMin"],
+      "") as LotsFilters["profitMin"],
   });
 
-  const [filters, setFilters] = useState<SearchLotsFilters>({
+  const [filters, setFilters] = useState<LotsFilters>({
     min: searchParams.get("min") || "",
     max: searchParams.get("max") || "",
-    phase: (searchParams.get("phase") || "") as SearchLotsFilters["phase"],
-    active: (searchParams.get("active") || "1") as SearchLotsFilters["active"],
+    phase: (searchParams.get("phase") || "") as LotsFilters["phase"],
+    active: (searchParams.get("active") || "1") as LotsFilters["active"],
     auctionStatus: (searchParams.get("auctionStatus") ||
-      "available") as SearchLotsFilters["auctionStatus"],
+      "available") as LotsFilters["auctionStatus"],
     profitMin: (searchParams.get("profitMin") ||
-      "") as SearchLotsFilters["profitMin"],
+      "") as LotsFilters["profitMin"],
   });
 
   const updateFilters =
@@ -186,87 +183,14 @@ function useFilters() {
   return { newFilters, filters, updateFilters, updateUrl, clearFilters };
 }
 
-function EmptyState() {
-  return (
-    <div className="flex flex-col items-center justify-center p-8 text-center bg-gray-50 rounded-lg border border-gray-200">
-      <FaFolderOpen className="w-12 h-12 text-gray-400 mb-4" />
-      <h3 className="text-lg font-medium text-gray-900 mb-2">
-        Nenhum lote encontrado
-      </h3>
-      <p className="text-gray-500">Mude os filtros para encontrar lotes.</p>
-    </div>
-  );
-}
-
-function LoadingState() {
-  return (
-    <div className="flex flex-col items-center justify-center p-8 text-center bg-gray-50 rounded-lg border border-gray-200 min-h-[calc(100vh-200px)]">
-      <Spinner size="lg" className="mb-4" />
-      <h3 className="text-lg font-medium text-gray-900 mb-2">
-        Carregando lotes
-      </h3>
-    </div>
-  );
-}
-
 export default function Page() {
-  const { newFilters, filters, updateFilters, updateUrl, clearFilters } =
-    useFilters();
-  const { currentPage, setCurrentPage, itemsPerPage } = usePagination();
-  const { data, isLoading } = useSearchLots(filters);
-  const [viewMode, setViewMode] = useState<"grid" | "map">("grid");
+  const { newFilters, updateFilters, updateUrl, clearFilters } = useFilters();
 
-  let body = <></>;
-  if (isLoading) {
-    body = <LoadingState />;
-  } else if (data && data.length === 0) {
-    body = <EmptyState />;
-  } else {
-    body = (
-      <>
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-medium text-gray-900">
-            {data?.length == 1
-              ? `${data?.length} lote encontrado`
-              : `${data?.length} lotes encontrados`}
-          </h3>
-          <div className="flex gap-2">
-            <Button
-              color={viewMode === "grid" ? "dark" : "light"}
-              onClick={() => setViewMode("grid")}
-              size="sm"
-            >
-              <FaThLarge className="mr-2" /> Grade
-            </Button>
-            <Button
-              color={viewMode === "map" ? "dark" : "light"}
-              onClick={() => setViewMode("map")}
-              size="sm"
-            >
-              <FaMap className="mr-2" /> Mapa
-            </Button>
-          </div>
-        </div>
-        {viewMode === "grid" ? (
-          <LotsGrid
-            lots={data || []}
-            openLotMode={"page"}
-            currentPage={currentPage}
-            itemsPerPage={itemsPerPage}
-            onPageChange={setCurrentPage}
-          />
-        ) : (
-          <LotsMap lots={data || []} />
-        )}
-      </>
-    );
-  }
   return (
     <div className="container mx-auto p-4">
       <h2 className="text-2xl font-semibold mb-6">Lotes</h2>
-
-      <div className="flex flex-col md:flex-row gap-6">
-        <div className="w-full md:w-64 flex-shrink-0">
+      <div className="flex gap-6">
+        <div className="w-64 flex-shrink-0">
           <Filters
             filters={newFilters}
             updateFilters={updateFilters}
@@ -274,7 +198,14 @@ export default function Page() {
             clearFilters={clearFilters}
           />
         </div>
-        <div className="flex-grow">{body}</div>
+        <div className="flex-grow">
+          <LotsGridByFilter
+            showHeader={true}
+            itemsPerPage={9}
+            filter={newFilters}
+            openLotMode={"page"}
+          />
+        </div>
       </div>
     </div>
   );

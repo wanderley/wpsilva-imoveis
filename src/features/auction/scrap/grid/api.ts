@@ -41,6 +41,7 @@ export type Lot = Pick<
   | "files"
   | "profit"
   | "preferred_auction_date"
+  | "validatedAddress"
 >;
 
 export async function getLotsByFilter(filters: LotsFilters): Promise<Lot[]> {
@@ -115,5 +116,6 @@ export async function getLotsByFilter(filters: LotsFilters): Promise<Lot[]> {
     files: scrap.files,
     profit: scrap.profit,
     preferred_auction_date: scrap.preferred_auction_date,
+    validatedAddress: scrap.validatedAddress,
   }));
 }
