@@ -1,11 +1,11 @@
 import { db } from "@/db";
 import { scrapsTable } from "@/db/schema";
-import { scrapers } from "@/services/scraper";
 import {
   fetchScrapFromSource,
   refreshScraps,
 } from "@/services/scraper/actions";
 import { launchBrowser, newPage } from "@/services/scraper/lib/puppeteer";
+import { scrapers } from "@/services/scraper/scrapers";
 import { and, desc, eq, gte, or } from "drizzle-orm";
 
 const DAY = 1000 * 60 * 60 * 24;

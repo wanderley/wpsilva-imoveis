@@ -37,6 +37,8 @@
     "next-auth": "5.0.0-beta.25",
     "openai": "^4.68.4",
     "puppeteer": "^23.6.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
     "react": "^18",
     "react-dom": "^18",
     "react-feather": "^2.0.10",
