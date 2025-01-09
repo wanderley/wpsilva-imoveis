@@ -14,7 +14,7 @@ import {
   removeUnnecessarySpaces,
   replaceText,
 } from "@/services/scraper/parsers";
-import { Scraper, scrollToBottom } from "@/services/scraper/scraper";
+import { Scraper } from "@/services/scraper/scraper";
 
 function build(url: string, pages: string[]): Scraper {
   return {
@@ -23,20 +23,27 @@ function build(url: string, pages: string[]): Scraper {
       const links: string[] = [];
       for (const pageUrl of pages) {
         await page.goto(pageUrl);
-        await page.reload();
-        const countResults = await getTextFromSelector("#CountTotal")(page);
-        if (countResults !== "0") {
-          await page.waitForSelector(".dg-leiloes-item");
-          await scrollToBottom(page);
-        }
+        do {
+          await page.evaluate(() => {
+            const footer = document.querySelector("#footer");
+            if (footer) {
+              footer.scrollIntoView({ behavior: "instant", block: "end" });
+            }
+          });
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        } while (await page.$(".dg-loading-local"));
         links.push(
           ...(
             await page.evaluate(() =>
               Array.from(document.querySelectorAll(".dg-leiloes-acao > a"))
-                .filter(
-                  (a) =>
-                    a.textContent?.includes("Aberto para lance") ||
-                    a.textContent?.includes("Aguardando início"),
+                .filter((a) =>
+                  [
+                    "Aberto para lance",
+                    "Aguardando início",
+                    "Leilão suspenso",
+                    "Leilão arrematado",
+                    "Leilão encerrado",
+                  ].some((status) => a.textContent?.includes(status)),
                 )
                 .map((a) => a.getAttribute("href")),
             )
@@ -133,8 +140,8 @@ function build(url: string, pages: string[]): Scraper {
 }
 
 export const Agsleiloes: Scraper = build("www.agsleiloes.com.br", [
-  "https://www.agsleiloes.com.br/busca/#Engine=Start&Pagina=1&RangeValores=0&Scopo=0&OrientacaoBusca=0&Busca=&Mapa=&ID_Categoria=56&ID_Estado=35&ID_Cidade=&Bairro=&ID_Regiao=0&ValorMinSelecionado=0&ValorMaxSelecionado=0&Ordem=3&QtdPorPagina=100&ID_Leiloes_Status=&SubStatus=&PaginaIndex=1&BuscaProcesso=&NomesPartes=&CodLeilao=&TiposLeiloes=[]&CFGs=[]",
-  "https://www.agsleiloes.com.br/busca/#Engine=Start&Pagina=1&RangeValores=0&Scopo=0&OrientacaoBusca=0&Busca=&Mapa=&ID_Categoria=57&ID_Estado=35&ID_Cidade=&Bairro=&ID_Regiao=0&ValorMinSelecionado=0&ValorMaxSelecionado=0&Ordem=3&QtdPorPagina=100&ID_Leiloes_Status=&SubStatus=&PaginaIndex=1&BuscaProcesso=&NomesPartes=&CodLeilao=&TiposLeiloes=[]&CFGs=[]",
+  "https://www.agsleiloes.com.br/busca/#Engine=Start&Pagina=1&RangeValores=0&Scopo=0&OrientacaoBusca=0&Busca=&Mapa=&ID_Categoria=56&ID_Estado=35&ID_Cidade=&Bairro=&ID_Regiao=0&ValorMinSelecionado=0&ValorMaxSelecionado=0&Ordem=3&QtdPorPagina=200&ID_Leiloes_Status=&SubStatus=&PaginaIndex=1&BuscaProcesso=&NomesPartes=&CodLeilao=&TiposLeiloes=[]&CFGs=[]",
+  "https://www.agsleiloes.com.br/busca/#Engine=Start&Pagina=1&RangeValores=0&Scopo=0&OrientacaoBusca=0&Busca=&Mapa=&ID_Categoria=57&ID_Estado=35&ID_Cidade=&Bairro=&ID_Regiao=0&ValorMinSelecionado=0&ValorMaxSelecionado=0&Ordem=3&QtdPorPagina=200&ID_Leiloes_Status=&SubStatus=&PaginaIndex=1&BuscaProcesso=&NomesPartes=&CodLeilao=&TiposLeiloes=[]&CFGs=[]",
 ]);
 
 export const VivaLeiloes: Scraper = {
