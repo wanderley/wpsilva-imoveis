@@ -52,6 +52,26 @@ function build(url: string, pages: string[]): Scraper {
       }
       return links;
     },
+    waitUntilLoaded: async (page) => {
+      try {
+        await Promise.all([
+          page.waitForFunction(
+            () => document.querySelector(".BoxBtLoteLabel")?.textContent !== "",
+          ),
+          page.waitForResponse(
+            (response) => response.url().includes("GetRealTime"),
+            {
+              timeout: 10000,
+            },
+          ),
+        ]);
+      } catch (error) {
+        console.error(
+          "Error waiting for response (scrap won't be blocked)",
+          error,
+        );
+      }
+    },
     status: pipe(getTextFromSelector(".BoxBtLoteLabel"), (status) => {
       switch (status) {
         case "Aguardando início":
@@ -149,9 +169,6 @@ export const VivaLeiloes: Scraper = {
     "https://www.vivaleiloes.com.br/busca/#Engine=Start&Pagina=1&OrientacaoBusca=0&Busca=&Mapa=&ID_Categoria=56&ID_Estado=35&ID_Cidade=&Bairro=&ID_Regiao=0&ValorMinSelecionado=0&ValorMaxSelecionado=0&Ordem=0&QtdPorPagina=200&ID_Leiloes_Status=1,3&SubStatus=&PaginaIndex=1&BuscaProcesso=&NomesPartes=&CodLeilao=&TiposLeiloes=[%22Judicial%22]&CFGs=[]",
     "https://www.vivaleiloes.com.br/busca/#Engine=Start&Pagina=1&OrientacaoBusca=0&Busca=&Mapa=&ID_Categoria=57&ID_Estado=35&ID_Cidade=&Bairro=&ID_Regiao=0&ValorMinSelecionado=0&ValorMaxSelecionado=0&Ordem=0&QtdPorPagina=200&ID_Leiloes_Status=1,3&SubStatus=&PaginaIndex=1&BuscaProcesso=&NomesPartes=&CodLeilao=&TiposLeiloes=[%22Judicial%22]&CFGs=[]",
   ]),
-  waitUntilLoaded: async (_page) => {
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-  },
   name: pipe(getTextFromSelector(".dg-titulo"), removeUnnecessarySpaces),
   editalLink: getFromSelector(
     ".dg-lote-anexos li a",
@@ -174,11 +191,6 @@ export const GfLeiloes: Scraper = {
     "https://www.gfleiloes.com.br/busca/#Engine=Start&Pagina=1&RangeValores=0&OrientacaoBusca=0&Busca=&Mapa=&ID_Categoria=56&ID_Estado=35&ID_Cidade=-1&Bairro=-1&ID_Regiao=0&ValorMinSelecionado=0&ValorMaxSelecionado=0&Ordem=0&QtdPorPagina=100&ID_Leiloes_Status=&SubStatus=&PaginaIndex=1&BuscaProcesso=&NomesPartes=&CodLeilao=&TiposLeiloes=[]&CFGs=[]",
     "https://www.gfleiloes.com.br/busca/#Engine=Start&Pagina=1&RangeValores=0&OrientacaoBusca=0&Busca=&Mapa=&ID_Categoria=57&ID_Estado=35&ID_Cidade=-1&Bairro=-1&ID_Regiao=0&ValorMinSelecionado=0&ValorMaxSelecionado=0&Ordem=0&QtdPorPagina=100&ID_Leiloes_Status=&SubStatus=&PaginaIndex=1&BuscaProcesso=&NomesPartes=&CodLeilao=&TiposLeiloes=[]&CFGs=[]",
   ]),
-  waitUntilLoaded: async (page) => {
-    await page.waitForResponse((response) =>
-      response.url().includes("GetRealTime"),
-    );
-  },
   name: pipe(getTextFromSelector(".dg-lote-titulo"), removeUnnecessarySpaces),
   bid: async (page) => {
     const bid = await pipe(
