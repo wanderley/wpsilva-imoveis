@@ -12,6 +12,7 @@ import { findScrapByID } from "@/features/auction/scrap/repository";
 import { updateProfit } from "@/models/scraps/helpers";
 import { updateAnalysis } from "@/services/analyser/actions";
 import { validateAddress } from "@/services/google/address-validation";
+import { waitPageToBeReady } from "@/services/scraper/lib/puppeteer";
 import { Lot, Scraper } from "@/services/scraper/scraper";
 import { and, count, eq, inArray } from "drizzle-orm";
 import { Page } from "puppeteer";
@@ -138,6 +139,7 @@ export async function fetchScrapFromSource(
   try {
     await login(scraper, page);
     await page.goto(url);
+    await waitPageToBeReady(page);
     await waitUntilLoaded(scraper, page);
     scrapData = await scrapLink(scraper, page);
     await db

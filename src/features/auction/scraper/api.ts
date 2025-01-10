@@ -39,7 +39,7 @@ export async function getReport(): Promise<{
 }
 
 export async function checkNewScraps(scraperID: string): Promise<void> {
-  const browser = await launchBrowser();
+  const browser = await launchBrowser([scraperID]);
   const page = await newPage(browser);
   try {
     await refreshScraps(scraperID, page);

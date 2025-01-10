@@ -13,7 +13,7 @@ export async function updateScrapFromSource(scrapID: number): Promise<void> {
   if (scrap === undefined) {
     throw new Error(`Scrap ${scrapID} not found`);
   }
-  const browser = await launchBrowser();
+  const browser = await launchBrowser([scrap.scraper_id]);
   const page = await newPage(browser);
   let screencast;
   try {

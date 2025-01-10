@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "scrap": "tsx src/services/scraper/run.ts",
+    "scraper": "tsx src/services/scraper/index.ts",
     "db:local:backup": "dotenv -c local -- tsx src/db/scripts/db-backup-save.ts",
     "db:local:restore": "dotenv -c local -- tsx src/db/scripts/db-backup-restore.ts",
     "db:prod:backup": "dotenv -c prod -- tsx src/db/scripts/db-backup-save.ts"
