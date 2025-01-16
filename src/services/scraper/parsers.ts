@@ -63,6 +63,10 @@ export function pipe<T1, T2, T3, T4, T5>(
   };
 }
 
+export async function extract<T>(page: Page, extractor: Extractor<T>) {
+  return await extractor(page);
+}
+
 export function or<T>(...extractors: Extractor<T>[]): Extractor<T> {
   return async (page: Page) => {
     for (const extractor of extractors) {

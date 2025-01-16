@@ -1,8 +1,10 @@
 import { Browser, Page } from "puppeteer";
 import puppeteer from "puppeteer-extra";
+import ReplPlugin from "puppeteer-extra-plugin-repl";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 
 puppeteer.use(StealthPlugin());
+puppeteer.use(ReplPlugin());
 
 const isHeadless = (process.env.SCRAPER_HEADLESS || "true") === "true";
 

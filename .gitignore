@@ -8,6 +8,7 @@
 
 # testing
 /coverage
+scratch-buffer.ts
 
 # next.js
 /.next/

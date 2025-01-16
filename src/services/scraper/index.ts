@@ -1,5 +1,6 @@
 import { db } from "@/db";
 import { scrapsTable } from "@/db/schema";
+import ProcessoJudicial from "@/services/processo-judicial/command";
 import {
   fetchScrapFromSource,
   refreshScraps,
@@ -37,12 +38,14 @@ program
       scrapers = ensureScrapersAreValid(scrapers);
 
       for (const scraper of scrapers) {
-        await fetch(scraper, options);
+        await fetchScrap(scraper, options);
       }
     },
   );
 
-async function fetch(
+program.addCommand(ProcessoJudicial());
+
+async function fetchScrap(
   scraper: string,
   options: { onlyRefresh: boolean; all: boolean },
 ) {

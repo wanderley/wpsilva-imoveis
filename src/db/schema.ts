@@ -1,4 +1,8 @@
 import { Schema } from "@/services/analyser/schema";
+import {
+  DadosPrincipais,
+  ParteInteressada,
+} from "@/services/processo-judicial/tjsp/types";
 import { relations, sql } from "drizzle-orm";
 import {
   datetime,
@@ -7,6 +11,7 @@ import {
   json,
   mysqlEnum,
   mysqlTable,
+  primaryKey,
   text,
   timestamp,
   uniqueIndex,
@@ -216,3 +221,87 @@ export type Scrap = typeof scrapsTable.$inferSelect & {
 
 export type ScrapAuctionStatus =
   (typeof scrapsTable.auction_status.enumValues)[number];
+
+export const processoJudicialTjspTable = mysqlTable("processo_judicial_tjsp", {
+  numeroProcesso: varchar("numero_processo", { length: 255 })
+    .primaryKey()
+    .notNull(),
+  classe: varchar("classe", { length: 255 }),
+  assunto: varchar("assunto", { length: 255 }),
+  foro: varchar("foro", { length: 255 }),
+  vara: varchar("vara", { length: 255 }),
+  juiz: varchar("juiz", { length: 255 }),
+  distribuicao: datetime("distribuicao"),
+  numeroControle: varchar("numero_controle", { length: 255 }),
+  area: varchar("area", { length: 255 }),
+  valorAcao: float("valor_acao"),
+  situacao: varchar("situacao", { length: 255 }),
+  processoPrincipal: varchar("processo_principal", { length: 255 }),
+  partes: json("partes").$type<ParteInteressada[]>().notNull(),
+  apensos: json("apensos").$type<DadosPrincipais["apensos"]>().notNull(),
+  createdAt: createdAt,
+  updatedAt: updatedAt,
+});
+
+export const processoJudicialTjspRelations = relations(
+  processoJudicialTjspTable,
+  ({ one, many }) => ({
+    documentos: many(processoJudicialTjspDocumentosTable),
+    processoPrincipal: one(processoJudicialTjspTable, {
+      fields: [processoJudicialTjspTable.processoPrincipal],
+      references: [processoJudicialTjspTable.numeroProcesso],
+    }),
+  }),
+);
+
+export const processoJudicialTjspDocumentosTable = mysqlTable(
+  "processo_judicial_tjsp_documentos",
+  {
+    numeroProcesso: varchar("numero_processo", { length: 255 }).notNull(),
+    codigoDocumento: varchar("codigo_documento", { length: 255 }).notNull(),
+    incluidoEm: datetime("incluido_em").notNull(),
+    primeiraPagina: int("primeira_pagina").notNull(),
+    ultimaPagina: int("ultima_pagina").notNull(),
+    arquivo: varchar("arquivo", { length: 1024 }).notNull(),
+    tipoDocumentoDigital: varchar("tipo_documento_digital", {
+      length: 255,
+    }).notNull(),
+    folhaPeticaoInicial: int("folha_peticao_inicial").notNull(),
+    codigoProcessoOrigem: varchar("codigo_processo_origem", { length: 255 }),
+    partesProcessoOrigem: json("partes_processo_origem").$type<
+      ParteInteressada[]
+    >(),
+    createdAt,
+    updatedAt,
+  },
+  (table) => ({
+    pk: primaryKey({
+      name: "processo_judicial_tjsp_documentos_pk",
+      columns: [table.numeroProcesso, table.primeiraPagina],
+    }),
+  }),
+);
+
+export const processoJudicialTjspDocumentosRelations = relations(
+  processoJudicialTjspDocumentosTable,
+  ({ one }) => ({
+    processoJudicialTjsp: one(processoJudicialTjspTable, {
+      fields: [processoJudicialTjspDocumentosTable.numeroProcesso],
+      references: [processoJudicialTjspTable.numeroProcesso],
+    }),
+    systemFile: one(systemFilesTable, {
+      fields: [processoJudicialTjspDocumentosTable.arquivo],
+      references: [systemFilesTable.path],
+    }),
+  }),
+);
+
+export const systemFilesTable = mysqlTable("system_files", {
+  path: varchar("path", { length: 512 }).primaryKey().notNull(),
+  extension: varchar("extension", { length: 255 }).notNull(),
+  size: int("size").notNull(),
+  checksum: varchar("checksum", { length: 64 }).notNull(),
+  lastAccessed: timestamp("last_accessed").notNull(),
+  createdAt,
+  updatedAt,
+});
