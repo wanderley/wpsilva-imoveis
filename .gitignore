@@ -21,6 +21,7 @@ drizzle.prod.config.ts
 # misc
 .DS_Store
 *.pem
+/src/playground
 
 # debug
 npm-debug.log*
