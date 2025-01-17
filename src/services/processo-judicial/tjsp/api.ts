@@ -1,5 +1,6 @@
 import { getProcessoJudicialTjspSettings } from "@/lib/env";
 import { SystemError, stringifyError } from "@/lib/error";
+import { SystemFilePath } from "@/services/file/system-file";
 import {
   carregarDocumento,
   salvarDadosPrincipais,
@@ -15,7 +16,6 @@ import {
   getNumberFromReais,
   parseBrazilianDate,
 } from "@/services/scraper/parsers";
-import { SystemFilePath } from "@/services/system-file";
 import { PDFDocument } from "pdf-lib";
 import { Browser, Cookie, Page } from "puppeteer";
 
@@ -139,7 +139,7 @@ async function extrairDados(
 
 async function extrairDadosPrincipais(
   browser: Browser,
-  numeroProcesso: string,
+  _numeroProcesso: string,
   linkProcesso: string,
 ): Promise<DadosPrincipais> {
   let page: Page | undefined;

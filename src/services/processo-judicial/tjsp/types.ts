@@ -1,4 +1,4 @@
-import { SystemFile } from "@/services/system-file";
+import { SystemFile } from "@/services/file/system-file";
 import { Cookie } from "puppeteer";
 
 export type Subdocumento = {

@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { systemFilesTable } from "@/db/schema";
 import { getGoogleCloudStorageSettings } from "@/lib/env";
 import { SystemError } from "@/lib/error";
+import { IFile } from "@/services/file/types";
 import { Storage } from "@google-cloud/storage";
 import crypto from "crypto";
 import { eq } from "drizzle-orm";
@@ -22,7 +23,7 @@ export const SystemFilePath = {
   },
 };
 
-export class SystemFile {
+export class SystemFile implements IFile {
   constructor(private readonly filePath: string) {}
 
   async exists(): Promise<boolean> {
