@@ -1,6 +1,7 @@
 import { getProcessoJudicialTjspSettings } from "@/lib/env";
 import { SystemError, stringifyError } from "@/lib/error";
 import { SystemFilePath } from "@/services/file/system-file";
+import { mergePdfs } from "@/services/pdf";
 import {
   carregarDocumento,
   salvarDadosPrincipais,
@@ -16,7 +17,6 @@ import {
   getNumberFromReais,
   parseBrazilianDate,
 } from "@/services/scraper/parsers";
-import { PDFDocument } from "pdf-lib";
 import { Browser, Cookie, Page } from "puppeteer";
 
 export async function atualizarProcessoJudicialTjsp(
@@ -272,20 +272,6 @@ async function listarDocumentos(
   } finally {
     await page?.close();
   }
-}
-
-async function mergePdfs(pdfBuffers: ArrayBuffer[]) {
-  const mergedPdf = await PDFDocument.create();
-  const pdfs = await Promise.all(
-    pdfBuffers.map((pdfBuffer) => PDFDocument.load(pdfBuffer)),
-  );
-  for (const pdf of pdfs) {
-    const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
-    for (const page of copiedPages) {
-      mergedPdf.addPage(page);
-    }
-  }
-  return await mergedPdf.save();
 }
 
 type DocumentoExtraido = Omit<Documento, "numeroProcesso" | "file" | "cookies">;
