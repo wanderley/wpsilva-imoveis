@@ -1,3 +1,4 @@
+import { regularFetch } from "@/services/scraper/lib/fetch";
 import {
   IncludesFinder,
   NoFilters,
@@ -76,6 +77,7 @@ export const PortalZuk: Scraper = {
     )(page);
     return links;
   },
+  fetch: regularFetch,
   status: async (page) => {
     // when the auction is closed without any bids, the page is redirected to the
     // auction search page, so we need to check if the page has a auction data

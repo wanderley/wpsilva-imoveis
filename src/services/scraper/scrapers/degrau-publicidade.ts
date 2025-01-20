@@ -16,6 +16,8 @@ import {
 } from "@/services/scraper/parsers";
 import { Scraper } from "@/services/scraper/scraper";
 
+import { fetchFromPageContext } from "../lib/fetch";
+
 function build(url: string, pages: string[]): Scraper {
   return {
     url,
@@ -52,6 +54,7 @@ function build(url: string, pages: string[]): Scraper {
       }
       return links;
     },
+    fetch: fetchFromPageContext,
     waitUntilLoaded: async (page) => {
       try {
         await Promise.all([

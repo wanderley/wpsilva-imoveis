@@ -25,6 +25,7 @@ export type Scraper = {
   login?: (page: Page) => Promise<void>;
   waitUntilLoaded?: (page: Page) => Promise<void>;
   search: (page: Page) => Promise<Array<string>>;
+  fetch: (page: Page, url: string) => Promise<Uint8Array>;
   status: (page: Page) => Promise<ScrapAuctionStatus | undefined>;
   name: (page: Page) => Promise<string | undefined>;
   address: (page: Page) => Promise<string | undefined>;

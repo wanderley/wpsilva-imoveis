@@ -1,3 +1,4 @@
+import { regularFetch } from "@/services/scraper/lib/fetch";
 import {
   IncludesFinder,
   ReturnText,
@@ -60,6 +61,7 @@ export const Wspleiloes: Scraper = {
     }
     return links;
   },
+  fetch: regularFetch,
   status: pipe(getTextFromSelector("#status_lote .label_lote"), (status) => {
     switch (status) {
       case "Aguarde Abertura":

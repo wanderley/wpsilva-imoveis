@@ -1,3 +1,4 @@
+import { regularFetch } from "@/services/scraper/lib/fetch";
 import {
   IncludesFilter,
   IncludesFinder,
@@ -46,6 +47,7 @@ export const VallandLeiloes: Scraper = {
 
     return links;
   },
+  fetch: regularFetch,
   status: notFound,
   name: pipe(getTextFromSelector(".pageLote h4"), removeUnnecessarySpaces),
   address: pipe(
