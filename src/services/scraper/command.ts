@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { scrapsTable } from "@/db/schema";
-import { fetchScrapFromSource } from "@/services/scraper/actions";
+import { fetchScrapFromSource } from "@/services/scraper/fetch-scrap-from-source";
 import { launchBrowser, newPage } from "@/services/scraper/lib/puppeteer";
 import { refreshScraps } from "@/services/scraper/refresh-scraps";
 import { scrapers as scrapersList } from "@/services/scraper/scrapers";

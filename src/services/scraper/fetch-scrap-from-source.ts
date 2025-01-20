@@ -18,68 +18,6 @@ import { getScraper } from "@/services/scraper/scrapers";
 import { and, count, eq, inArray } from "drizzle-orm";
 import { Page } from "puppeteer";
 
-async function scrapLink(scraper: Scraper, page: Page): Promise<Lot> {
-  async function tryFetchField<T>(
-    fieldName: string,
-    field: (page: Page) => Promise<T>,
-  ): Promise<T | undefined> {
-    try {
-      return await field(page);
-    } catch (error) {
-      console.error(
-        `Error fetching field ${fieldName}: ${(error as Error).message}`,
-      );
-      return undefined;
-    }
-  }
-  const lot = {
-    name: await tryFetchField("name", scraper.name),
-    address: await tryFetchField("address", scraper.address),
-    status: await tryFetchField("status", scraper.status),
-    description: await tryFetchField("description", scraper.description),
-    caseNumber: await tryFetchField("caseNumber", scraper.caseNumber),
-    caseLink: await tryFetchField("caseLink", scraper.caseLink),
-    bid: await tryFetchField("bid", scraper.bid),
-    appraisal: await tryFetchField("appraisal", scraper.appraisal),
-    firstAuctionDate: await tryFetchField(
-      "firstAuctionDate",
-      scraper.firstAuctionDate,
-    ),
-    firstAuctionBid: await tryFetchField(
-      "firstAuctionBid",
-      scraper.firstAuctionBid,
-    ),
-    secondAuctionDate: await tryFetchField(
-      "secondAuctionDate",
-      scraper.secondAuctionDate,
-    ),
-    secondAuctionBid: await tryFetchField(
-      "secondAuctionBid",
-      scraper.secondAuctionBid,
-    ),
-    images: (await tryFetchField("images", scraper.images)) || [],
-    laudoLink: await tryFetchField("laudoLink", scraper.laudoLink),
-    matriculaLink: await tryFetchField("matriculaLink", scraper.matriculaLink),
-    editalLink: await tryFetchField("editalLink", scraper.editalLink),
-  };
-  if (lot.bid === undefined) {
-    if (
-      lot.firstAuctionBid !== undefined &&
-      lot.firstAuctionDate !== undefined &&
-      lot.firstAuctionDate >= new Date()
-    ) {
-      lot.bid = lot.firstAuctionBid;
-    } else if (
-      lot.secondAuctionBid !== undefined &&
-      lot.secondAuctionDate !== undefined &&
-      lot.secondAuctionDate >= new Date()
-    ) {
-      lot.bid = lot.secondAuctionBid || lot.firstAuctionBid;
-    }
-  }
-  return lot;
-}
-
 export async function fetchScrapFromSource(
   scraperID: string,
   url: string,
@@ -145,6 +83,68 @@ export async function fetchScrapFromSource(
       },
     });
   }
+}
+
+async function scrapLink(scraper: Scraper, page: Page): Promise<Lot> {
+  async function tryFetchField<T>(
+    fieldName: string,
+    field: (page: Page) => Promise<T>,
+  ): Promise<T | undefined> {
+    try {
+      return await field(page);
+    } catch (error) {
+      console.error(
+        `Error fetching field ${fieldName}: ${(error as Error).message}`,
+      );
+      return undefined;
+    }
+  }
+  const lot = {
+    name: await tryFetchField("name", scraper.name),
+    address: await tryFetchField("address", scraper.address),
+    status: await tryFetchField("status", scraper.status),
+    description: await tryFetchField("description", scraper.description),
+    caseNumber: await tryFetchField("caseNumber", scraper.caseNumber),
+    caseLink: await tryFetchField("caseLink", scraper.caseLink),
+    bid: await tryFetchField("bid", scraper.bid),
+    appraisal: await tryFetchField("appraisal", scraper.appraisal),
+    firstAuctionDate: await tryFetchField(
+      "firstAuctionDate",
+      scraper.firstAuctionDate,
+    ),
+    firstAuctionBid: await tryFetchField(
+      "firstAuctionBid",
+      scraper.firstAuctionBid,
+    ),
+    secondAuctionDate: await tryFetchField(
+      "secondAuctionDate",
+      scraper.secondAuctionDate,
+    ),
+    secondAuctionBid: await tryFetchField(
+      "secondAuctionBid",
+      scraper.secondAuctionBid,
+    ),
+    images: (await tryFetchField("images", scraper.images)) || [],
+    laudoLink: await tryFetchField("laudoLink", scraper.laudoLink),
+    matriculaLink: await tryFetchField("matriculaLink", scraper.matriculaLink),
+    editalLink: await tryFetchField("editalLink", scraper.editalLink),
+  };
+  if (lot.bid === undefined) {
+    if (
+      lot.firstAuctionBid !== undefined &&
+      lot.firstAuctionDate !== undefined &&
+      lot.firstAuctionDate >= new Date()
+    ) {
+      lot.bid = lot.firstAuctionBid;
+    } else if (
+      lot.secondAuctionBid !== undefined &&
+      lot.secondAuctionDate !== undefined &&
+      lot.secondAuctionDate >= new Date()
+    ) {
+      lot.bid = lot.secondAuctionBid || lot.firstAuctionBid;
+    }
+  }
+  return lot;
 }
 
 async function getScrapID(scraperID: string, url: string): Promise<number> {

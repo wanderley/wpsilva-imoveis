@@ -5,7 +5,7 @@ import {
   getScrapScreenshotPath,
 } from "@/features/auction/scrap/helpers.server";
 import { findScrapByID } from "@/features/auction/scrap/repository";
-import { fetchScrapFromSource } from "@/services/scraper/actions";
+import { fetchScrapFromSource } from "@/services/scraper/fetch-scrap-from-source";
 import { launchBrowser, newPage } from "@/services/scraper/lib/puppeteer";
 
 export async function updateScrapFromSource(scrapID: number): Promise<void> {
