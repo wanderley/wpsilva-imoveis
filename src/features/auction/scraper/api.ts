@@ -6,8 +6,8 @@ import {
   fetchScrapersMetrics,
   fetchScrapsByStatus,
 } from "@/features/auction/scraper/repository";
-import { refreshScraps } from "@/services/scraper/actions";
 import { launchBrowser, newPage } from "@/services/scraper/lib/puppeteer";
+import { refreshScraps } from "@/services/scraper/refresh-scraps";
 
 export async function getAllScrapsByScrapperID(
   scraperID: string,
