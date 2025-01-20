@@ -14,10 +14,9 @@ import { updateAnalysis } from "@/services/analyser/actions";
 import { validateAddress } from "@/services/google/address-validation";
 import { waitPageToBeReady } from "@/services/scraper/lib/puppeteer";
 import { Lot, Scraper } from "@/services/scraper/scraper";
+import { getScraper } from "@/services/scraper/scrapers";
 import { and, count, eq, inArray } from "drizzle-orm";
 import { Page } from "puppeteer";
-
-import { scrapers } from "./scrapers";
 
 export async function refreshScraps(
   scraperID: string,
@@ -391,8 +390,4 @@ async function waitUntilLoaded(scraper: Scraper, page: Page): Promise<void> {
       }`,
     );
   }
-}
-
-function getScraper(scraperID: string): Scraper | undefined {
-  return scrapers.find((scraper) => scraper.url === scraperID);
 }

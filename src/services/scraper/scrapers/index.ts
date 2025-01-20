@@ -14,3 +14,7 @@ export const scrapers: Scraper[] = [
   GfLeiloes,
   PortalZuk,
 ];
+
+export function getScraper(url: string): Scraper | undefined {
+  return scrapers.find((scraper) => scraper.url === url);
+}
