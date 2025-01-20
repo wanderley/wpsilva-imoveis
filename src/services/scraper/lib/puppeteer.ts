@@ -57,6 +57,25 @@ export async function waitPageToBeReady(page: Page) {
   }
 }
 
+export async function scrollToBottom(page: Page) {
+  await page.evaluate(async () => {
+    await new Promise((resolve) => {
+      let totalHeight = 0;
+      const distance = 100;
+      const timer = setInterval(() => {
+        const scrollHeight = document.body.scrollHeight;
+        window.scrollBy(0, distance);
+        totalHeight += distance;
+
+        if (totalHeight >= scrollHeight - window.innerHeight) {
+          clearInterval(timer);
+          resolve(void 0);
+        }
+      }, 100);
+    });
+  });
+}
+
 async function waitBrowserToBeReady(browser: Browser, scrapers: string[]) {
   if (scrapers.length === 0) {
     return;
