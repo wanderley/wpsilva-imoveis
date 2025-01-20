@@ -4,11 +4,18 @@ import {
   processoJudicialTjspTable,
 } from "@/db/schema";
 import { SystemError } from "@/lib/error";
-import {
-  DadosPrincipais,
-  Documento,
-} from "@/services/processo-judicial/tjsp/types";
+import { DadosPrincipais } from "@/services/processo-judicial/tjsp/types";
 import { and, eq } from "drizzle-orm";
+
+type ProcessoJudicialTjspDocumentoInsert = Omit<
+  typeof processoJudicialTjspDocumentosTable.$inferInsert,
+  "createdAt" | "updatedAt"
+>;
+
+export type ProcessoJudicialTjspDocumentoSelect = Omit<
+  typeof processoJudicialTjspDocumentosTable.$inferSelect,
+  "createdAt" | "updatedAt"
+>;
 
 export async function salvarDadosPrincipais(
   numeroProcesso: string,
@@ -23,7 +30,27 @@ export async function salvarDadosPrincipais(
     .onDuplicateKeyUpdate({ set: dadosPrincipais });
 }
 
-export async function carregarDocumento(documento: Documento) {
+export async function salvarDocumento(
+  documento: ProcessoJudicialTjspDocumentoInsert,
+) {
+  const saved = await carregarDocumento(documento);
+  if (saved && saved.ultimaPagina !== documento.ultimaPagina) {
+    throw new SystemError(
+      "Documento com páginas diferentes.  Isso é muito raro porque significa que um documento antigo do processo foi alterado.",
+    );
+  }
+  await db
+    .insert(processoJudicialTjspDocumentosTable)
+    .values(documento)
+    .onDuplicateKeyUpdate({ set: documento });
+}
+
+export async function carregarDocumento(
+  documento: Pick<
+    ProcessoJudicialTjspDocumentoSelect,
+    "numeroProcesso" | "primeiraPagina"
+  >,
+) {
   return await db.query.processoJudicialTjspDocumentosTable.findFirst({
     where: and(
       eq(
@@ -38,27 +65,11 @@ export async function carregarDocumento(documento: Documento) {
   });
 }
 
-export async function salvarDocumento(documento: Documento) {
-  const saved = await carregarDocumento(documento);
-  if (saved && saved.ultimaPagina !== documento.ultimaPagina) {
-    throw new SystemError(
-      "Documento com páginas diferentes.  Isso é muito raro porque significa que um documento antigo do processo foi alterado.",
-    );
-  }
-  const data = {
-    numeroProcesso: documento.numeroProcesso,
-    codigoDocumento: documento.codigoDocumento,
-    incluidoEm: documento.dataInclusao,
-    primeiraPagina: documento.primeiraPagina,
-    ultimaPagina: documento.ultimaPagina,
-    tipoDocumentoDigital: documento.tipoDocumentoDigital,
-    folhaPeticaoInicial: documento.folhaPeticaoInicial ? 1 : 0,
-    codigoProcessoOrigem: documento.codigoProcessoOrigem,
-    partesProcessoOrigem: documento.partesProcessoOrigem,
-    arquivo: documento.file.path(),
-  };
-  await db
-    .insert(processoJudicialTjspDocumentosTable)
-    .values(data)
-    .onDuplicateKeyUpdate({ set: data });
+export async function carregarProcesso(numeroProcesso: string) {
+  return await db.query.processoJudicialTjspTable.findFirst({
+    with: {
+      documentos: true,
+    },
+    where: eq(processoJudicialTjspTable.numeroProcesso, numeroProcesso),
+  });
 }

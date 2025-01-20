@@ -1,6 +1,8 @@
 import { SystemFile } from "@/services/file/system-file";
 import { Cookie } from "puppeteer";
 
+import { TextoExtraido } from "../types";
+
 export type Subdocumento = {
   primeiraPagina: number;
   ultimaPagina: number;
@@ -21,6 +23,7 @@ export type Documento = {
   subdocumentos: Subdocumento[];
   file: SystemFile;
   cookies: Cookie[];
+  textoExtraido?: TextoExtraido;
 };
 
 export type ParteInteressada = {

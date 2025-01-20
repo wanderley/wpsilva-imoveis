@@ -1,9 +1,11 @@
-import { TempFile } from "@/services/file/temp-file";
+import assertNever from "@/lib/assert-never";
+import { LocalDir } from "@/services/file/local-file";
 import { IFile } from "@/services/file/types";
 import { exec } from "child_process";
-import path from "path";
 import { PDFDocument } from "pdf-lib";
 import { promisify } from "util";
+
+const execPromise = promisify(exec);
 
 export async function mergePdfs(pdfBuffers: ArrayBuffer[]) {
   const mergedPdf = await PDFDocument.create();
@@ -19,23 +21,26 @@ export async function mergePdfs(pdfBuffers: ArrayBuffer[]) {
   return await mergedPdf.save();
 }
 
-export async function convertPdfToImages(pdfFile: IFile): Promise<IFile[]> {
-  const pdfContent = await pdfFile.read();
-  const pdfDoc = await PDFDocument.load(pdfContent);
-  const pages = pdfDoc.getPages();
-
-  async function extractPage(index: number): Promise<IFile> {
-    const tempFile = new TempFile(
-      path.join(pdfFile.path(), `${index + 1}.jpg`),
-    );
-    if (await tempFile.exists()) {
-      return tempFile;
-    }
-    await tempFile.touch();
-    const command = `magick -density 300 ${pdfFile.fullPath()}[${index}] -quality 100 ${tempFile.fullPath()}`;
-    await promisify(exec)(command);
-    return tempFile;
+export async function convertPdfToImages(
+  pdfFile: IFile,
+  format: "webp" | "jpg" = "webp",
+): Promise<IFile[]> {
+  const localDir = new LocalDir(pdfFile.path());
+  await localDir.create();
+  await pdfFile.download();
+  switch (format) {
+    case "webp":
+      await execPromise(
+        `magick -density 300 ${pdfFile.localPath()} -quality 100 -background white -alpha remove -alpha off ${localDir.localPath()}/image-%04d.webp`,
+      );
+      break;
+    case "jpg":
+      await execPromise(
+        `magick -density 300 ${pdfFile.localPath()} -quality 100 ${localDir.localPath()}/image-%04d.jpg`,
+      );
+      break;
+    default:
+      assertNever(format);
   }
-
-  return await Promise.all(pages.map((_, index) => extractPage(index)));
+  return await localDir.listFiles();
 }

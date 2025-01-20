@@ -84,8 +84,18 @@ async function baixarSalvarDocumento(
       documento,
     );
     await salvarDocumento({
-      ...documento,
-      partesProcessoOrigem,
+      numeroProcesso: documento.numeroProcesso,
+      codigoDocumento: documento.codigoDocumento,
+      titulo: documento.titulo,
+      incluidoEm: documento.dataInclusao,
+      primeiraPagina: documento.primeiraPagina,
+      ultimaPagina: documento.ultimaPagina,
+      arquivo: documento.file.path(),
+      tipoDocumentoDigital: documento.tipoDocumentoDigital,
+      folhaPeticaoInicial: documento.folhaPeticaoInicial ? 1 : 0,
+      codigoProcessoOrigem: documento.codigoProcessoOrigem ?? null,
+      partesProcessoOrigem: partesProcessoOrigem,
+      textoExtraido: documentoSalvo ? undefined : { state: "pending" }, // if the document is already saved, we don't need to re-extract the text
     });
   } catch (error) {
     console.error(
@@ -395,6 +405,7 @@ async function baixarDocumentoDaPastaDigital(documento: Documento) {
     );
     const mergedPdfBuffer = await mergePdfs(pdfBuffers);
     await documento.file.write(mergedPdfBuffer);
+    return;
   } catch (error) {
     throw new Error("Erro ao baixar documento do processo judicial", {
       cause: error,

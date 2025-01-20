@@ -1,4 +1,4 @@
-import { atualizarProcessoJudicialTjsp } from "@/services/processo-judicial/tjsp/api";
+import { atualizarProcessoJudicialTjsp } from "@/services/processo-judicial/tjsp/atualizar-processo";
 
 export async function atualizarProcessoJudicial(
   numeroProcesso: string,

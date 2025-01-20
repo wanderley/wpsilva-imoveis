@@ -7,6 +7,10 @@ export async function generateText(
   model: Model,
   images: IFile[],
   prompt: string,
+  options?: {
+    store?: boolean;
+    metadata?: Record<string, string>;
+  },
 ): Promise<string | null> {
   const client = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
@@ -23,6 +27,8 @@ export async function generateText(
       },
     ],
     response_format: { type: "text" },
+    store: options?.store,
+    metadata: options?.metadata,
   });
   return response.choices[0].message.content;
 }
@@ -32,8 +38,24 @@ export async function generateChatCompletionContentPartImageFromFile(
 ): Promise<ChatCompletionContentPartImage> {
   const data = await file.read();
   const buffer = Buffer.from(data);
+  let type;
+  switch (file.extension()) {
+    case ".jpg":
+      type = "jpeg";
+      break;
+    case ".png":
+      type = "png";
+      break;
+    case ".webp":
+      type = "webp";
+      break;
+    default:
+      throw new Error("Unsupported file type: " + file.extension());
+  }
   return {
     type: "image_url",
-    image_url: { url: "data:image/jpeg;base64," + buffer.toString("base64") },
+    image_url: {
+      url: `data:image/${type};base64,${buffer.toString("base64")}`,
+    },
   };
 }

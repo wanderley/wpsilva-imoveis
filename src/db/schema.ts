@@ -3,6 +3,7 @@ import {
   DadosPrincipais,
   ParteInteressada,
 } from "@/services/processo-judicial/tjsp/types";
+import { TextoExtraido } from "@/services/processo-judicial/types";
 import { relations, sql } from "drizzle-orm";
 import {
   datetime,
@@ -259,6 +260,7 @@ export const processoJudicialTjspDocumentosTable = mysqlTable(
   {
     numeroProcesso: varchar("numero_processo", { length: 255 }).notNull(),
     codigoDocumento: varchar("codigo_documento", { length: 255 }).notNull(),
+    titulo: varchar("titulo", { length: 255 }).notNull(),
     incluidoEm: datetime("incluido_em").notNull(),
     primeiraPagina: int("primeira_pagina").notNull(),
     ultimaPagina: int("ultima_pagina").notNull(),
@@ -271,6 +273,10 @@ export const processoJudicialTjspDocumentosTable = mysqlTable(
     partesProcessoOrigem: json("partes_processo_origem").$type<
       ParteInteressada[]
     >(),
+    textoExtraido: json("texto_extraido")
+      .$type<TextoExtraido>()
+      .default({ state: "pending" })
+      .notNull(),
     createdAt,
     updatedAt,
   },

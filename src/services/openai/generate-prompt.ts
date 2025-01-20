@@ -31,13 +31,14 @@ export async function generatePrompt({
     }
 
     const assistantPrompt = `# Instructions
-You are an agent that is responsible for improving the quality of instructions that are provided to a LLM agent. 
-Your task is to refine the instructions given to the LLM agent to enhance the accuracy and relevance of the output as expected by the user.
+You are an agent that is responsible for improving the quality of a prompt that is provided to a LLM agent. 
+Your task is to refine the prompt given to the LLM agent to enhance the accuracy and relevance of the output as expected by the user.
 
 ## Criteria
-- Analyze the existing instructions and the results of the eval.  Understand which behaviors lead to failures.
+- Analyze the existing instructions and the results of the eval.  Understand which behaviors lead to failures mentioned in the feedback.
 - If a comment is provided, understand the user's feedback and improve the prompt.
 - If a suggestion for a new prompt is provided, understand the user's feedback and improve the prompt.
+- Improve the part of the prompt that is related to the user's feedback, leaving the rest of the prompt unchanged.
 - Try changing the format if this formatting doesn't work well - consider basic XML (e.g. <step> <substep> <if> <case>) or markdown as alternatives.
 
 # Data

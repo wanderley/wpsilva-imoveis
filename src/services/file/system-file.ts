@@ -37,13 +37,17 @@ export class SystemFile implements IFile {
     return this.filePath;
   }
 
-  fullPath(): string {
+  extension(): string {
+    return path.extname(this.filePath);
+  }
+
+  localPath(): string {
     return path.join("/tmp/wpsilva-imoveis/", this.filePath);
   }
 
   async write(content: Uint8Array): Promise<void> {
     // save file to local and upload to Google Cloud Storage
-    await fsWriteFile(this.fullPath(), content);
+    await fsWriteFile(this.localPath(), content);
     const ourMd5 = crypto.createHash("md5").update(content).digest("base64");
     const gcsMd5 = await uploadGoogleCloudStorage(this.path(), content);
     if (ourMd5 !== gcsMd5) {
@@ -52,14 +56,14 @@ export class SystemFile implements IFile {
         undefined,
         {
           path: this.path(),
-          fullPath: this.fullPath(),
+          fullPath: this.localPath(),
           ourMd5,
           gcsMd5,
         },
       );
     }
     // save file to database
-    const size = fs.statSync(this.fullPath()).size;
+    const size = fs.statSync(this.localPath()).size;
     await db
       .insert(systemFilesTable)
       .values({
@@ -79,14 +83,18 @@ export class SystemFile implements IFile {
   }
 
   async read(): Promise<Uint8Array> {
-    if (!fs.existsSync(this.fullPath())) {
-      await readFromGoogleCloudStorage(this.path(), this.fullPath());
-    }
+    await this.download();
     await db
       .update(systemFilesTable)
       .set({ lastAccessed: new Date() })
       .where(eq(systemFilesTable.path, this.path()));
-    return await fs.promises.readFile(this.fullPath());
+    return await fs.promises.readFile(this.localPath());
+  }
+
+  async download(): Promise<void> {
+    if (!fs.existsSync(this.localPath())) {
+      await readFromGoogleCloudStorage(this.path(), this.localPath());
+    }
   }
 }
 
