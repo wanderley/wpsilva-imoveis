@@ -158,11 +158,17 @@ async function getScrapID(scraperID: string, url: string): Promise<number> {
 }
 
 function fetchStatus(scrapData: Lot): "fetched" | "failed" {
-  if (scrapData.name === undefined || scrapData.address === undefined) {
+  if (
+    scrapData.name === undefined ||
+    scrapData.address === undefined ||
+    scrapData.caseNumber === undefined
+  ) {
     return "failed";
   }
   return "fetched";
 }
+
+async function maybeDownloadFiles(scrapData: Lot): Promise<void> {}
 
 async function maybeUpdateImages(
   scrapID: number,
