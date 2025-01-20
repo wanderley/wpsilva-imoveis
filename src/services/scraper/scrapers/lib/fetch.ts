@@ -10,7 +10,7 @@ export async function fetchFromPageContext(
     const u8a = new Uint8Array(buffer);
     const CHUNK_SZ = 0x8000;
     const chunks = [];
-    for (var i = 0; i < u8a.length; i += CHUNK_SZ) {
+    for (let i = 0; i < u8a.length; i += CHUNK_SZ) {
       chunks.push(
         String.fromCharCode.apply(
           null,

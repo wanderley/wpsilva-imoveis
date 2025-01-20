@@ -1,4 +1,4 @@
-import { regularFetch } from "@/services/scraper/lib/fetch";
+import { Scraper } from "@/services/scraper/scraper";
 import {
   IncludesFinder,
   NoFilters,
@@ -13,8 +13,8 @@ import {
   or,
   pipe,
   removeUnnecessarySpaces,
-} from "@/services/scraper/parsers";
-import { Scraper } from "@/services/scraper/scraper";
+} from "@/services/scraper/scrapers/lib/extractors";
+import { regularFetch } from "@/services/scraper/scrapers/lib/fetch";
 
 export const PortalZuk: Scraper = {
   url: "www.portalzuk.com.br",

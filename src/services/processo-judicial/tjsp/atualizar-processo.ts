@@ -16,7 +16,7 @@ import { launchBrowser, newPage } from "@/services/scraper/lib/puppeteer";
 import {
   getNumberFromReais,
   parseBrazilianDate,
-} from "@/services/scraper/parsers";
+} from "@/services/scraper/scrapers/lib/extractors";
 import { Browser, Cookie, Page } from "puppeteer";
 
 export async function atualizarProcessoJudicialTjsp(

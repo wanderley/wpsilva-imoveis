@@ -1,4 +1,4 @@
-import { regularFetch } from "@/services/scraper/lib/fetch";
+import { Scraper } from "@/services/scraper/scraper";
 import {
   IncludesFinder,
   ReturnText,
@@ -10,8 +10,8 @@ import {
   matchText,
   or,
   pipe,
-} from "@/services/scraper/parsers";
-import { Scraper } from "@/services/scraper/scraper";
+} from "@/services/scraper/scrapers/lib/extractors";
+import { regularFetch } from "@/services/scraper/scrapers/lib/fetch";
 
 export const Wspleiloes: Scraper = {
   url: "www.wspleiloes.com.br",

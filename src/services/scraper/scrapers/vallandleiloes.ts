@@ -1,4 +1,4 @@
-import { regularFetch } from "@/services/scraper/lib/fetch";
+import { Scraper, notFound } from "@/services/scraper/scraper";
 import {
   IncludesFilter,
   IncludesFinder,
@@ -13,8 +13,8 @@ import {
   matchCaseNumber,
   pipe,
   removeUnnecessarySpaces,
-} from "@/services/scraper/parsers";
-import { Scraper, notFound } from "@/services/scraper/scraper";
+} from "@/services/scraper/scrapers/lib/extractors";
+import { regularFetch } from "@/services/scraper/scrapers/lib/fetch";
 
 // ATENÇÃO: NÃO ESTÁ FUNCIONANDO
 // TODO: Não deixa acessar imagens fora do domínio do site

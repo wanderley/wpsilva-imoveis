@@ -1,3 +1,4 @@
+import { Scraper } from "@/services/scraper/scraper";
 import {
   AttributeIncludesFinder,
   IncludesFinder,
@@ -13,10 +14,9 @@ import {
   pipe,
   removeUnnecessarySpaces,
   replaceText,
-} from "@/services/scraper/parsers";
-import { Scraper } from "@/services/scraper/scraper";
+} from "@/services/scraper/scrapers/lib/extractors";
 
-import { fetchFromPageContext } from "../lib/fetch";
+import { fetchFromPageContext } from "./lib/fetch";
 
 const baseScraper: Omit<Scraper, "url" | "search"> = {
   fetch: fetchFromPageContext,
