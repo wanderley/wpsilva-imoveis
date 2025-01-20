@@ -1,49 +1,58 @@
 import { db } from "@/db";
 import { scrapsTable } from "@/db/schema";
-import ProcessoJudicial from "@/services/processo-judicial/command";
 import {
   fetchScrapFromSource,
   refreshScraps,
 } from "@/services/scraper/actions";
 import { launchBrowser, newPage } from "@/services/scraper/lib/puppeteer";
 import { scrapers as scrapersList } from "@/services/scraper/scrapers";
-import { program } from "commander";
+import { Command } from "commander";
 import { and, desc, eq, gte, or } from "drizzle-orm";
 
 const DAY = 1000 * 60 * 60 * 24;
 
-program
-  .command("list")
-  .description("List scrappers")
-  .action(async () => {
-    console.log("Scrapers:");
-    console.log(scrapersList.map((scraper) => `- ${scraper.url}`).join("\n"));
-    console.log();
-  });
-
-program
-  .command("fetch")
-  .description("Fetch scraps from auctioner website")
-  .argument(
-    "[scrapers...]",
-    "Scrapers to be updated. If not provided, all scrapers will be updated",
-  )
-  .option("-o, --only-refresh", "Only refresh list of scraps", false)
-  .option("--all", "Update all scraps regardless of their fetch status", false)
-  .action(
-    async (
-      scrapers: string[],
-      options: { onlyRefresh: boolean; all: boolean },
-    ) => {
-      scrapers = ensureScrapersAreValid(scrapers);
-
-      for (const scraper of scrapers) {
-        await fetchScrap(scraper, options);
-      }
-    },
+export default function ScraperCommand() {
+  const program = new Command("scraper").description(
+    "Comandos para manipular scrapers",
   );
 
-program.addCommand(ProcessoJudicial());
+  program
+    .command("list")
+    .description("List scrappers")
+    .action(async () => {
+      console.log("Scrapers:");
+      console.log(scrapersList.map((scraper) => `- ${scraper.url}`).join("\n"));
+      console.log();
+    });
+
+  program
+    .command("fetch")
+    .description("Fetch scraps from auctioner website")
+    .argument(
+      "[scrapers...]",
+      "Scrapers to be updated. If not provided, all scrapers will be updated",
+    )
+    .option("-o, --only-refresh", "Only refresh list of scraps", false)
+    .option(
+      "--all",
+      "Update all scraps regardless of their fetch status",
+      false,
+    )
+    .action(
+      async (
+        scrapers: string[],
+        options: { onlyRefresh: boolean; all: boolean },
+      ) => {
+        scrapers = ensureScrapersAreValid(scrapers);
+
+        for (const scraper of scrapers) {
+          await fetchScrap(scraper, options);
+        }
+      },
+    );
+
+  return program;
+}
 
 async function fetchScrap(
   scraper: string,
@@ -125,15 +134,3 @@ function scrapUrl(scrapID: number): string {
   const prefix = process.env.AUTH_URL ?? `http://localhost:3000`;
   return `${prefix}/lot/${scrapID}`;
 }
-
-program
-  .parseAsync()
-  .catch((error) => {
-    console.error("Error running scraper:", error);
-    process.exit(1);
-  })
-  .finally(async () => {
-    console.log("Closing database connection.");
-    await db.$client.end();
-    process.exit(0);
-  });

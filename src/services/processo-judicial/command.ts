@@ -1,7 +1,7 @@
 import { atualizarProcessoJudicial } from "@/services/processo-judicial/api";
 import { Command } from "commander";
 
-export default function ProcessoJudicial() {
+export default function ProcessoJudicialCommand() {
   const program = new Command("processo-judicial").description(
     "Comandos para baixar processos",
   );
