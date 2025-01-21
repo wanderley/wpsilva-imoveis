@@ -82,6 +82,9 @@ export class LocalDir {
   }
 
   public async listFiles(): Promise<LocalFile[]> {
+    if (!(await this.exists())) {
+      return [];
+    }
     const files = await fs.promises.readdir(this.localPath());
     return files
       .map((file) => new LocalFile(path.join(this.dirPath, file)))

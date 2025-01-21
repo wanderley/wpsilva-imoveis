@@ -21,6 +21,33 @@ export const SystemFilePath = {
       `external/processo-judicial/${numeroProcesso}/${primeiraPaginaFormatada}-${ultimaPaginaFormatada}.pdf`,
     );
   },
+  scrapLaudo: (scraperID: string, scrapUrl: string): SystemFile => {
+    const scrapUrlHash = crypto
+      .createHash("md5")
+      .update(scrapUrl)
+      .digest("hex");
+    return new SystemFile(
+      `external/scraper/${scraperID}/${scrapUrlHash}/laudo.pdf`,
+    );
+  },
+  scrapMatricula: (scraperID: string, scrapUrl: string): SystemFile => {
+    const scrapUrlHash = crypto
+      .createHash("md5")
+      .update(scrapUrl)
+      .digest("hex");
+    return new SystemFile(
+      `external/scraper/${scraperID}/${scrapUrlHash}/matricula.pdf`,
+    );
+  },
+  scrapEdital: (scraperID: string, scrapUrl: string): SystemFile => {
+    const scrapUrlHash = crypto
+      .createHash("md5")
+      .update(scrapUrl)
+      .digest("hex");
+    return new SystemFile(
+      `external/scraper/${scraperID}/${scrapUrlHash}/edital.pdf`,
+    );
+  },
 };
 
 export class SystemFile implements IFile {

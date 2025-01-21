@@ -80,8 +80,11 @@ export const scrapsTable = mysqlTable("scraps", {
   second_auction_date: datetime(),
   second_auction_bid: float(),
   laudo_link: varchar({ length: 767 }),
+  laudo_file: varchar({ length: 512 }),
   matricula_link: varchar({ length: 767 }),
+  matricula_file: varchar({ length: 512 }),
   edital_link: varchar({ length: 767 }),
+  edital_file: varchar({ length: 512 }),
   fetch_status: mysqlEnum(["not-fetched", "fetched", "failed"]).default(
     "not-fetched",
   ),

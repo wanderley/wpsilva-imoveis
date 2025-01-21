@@ -9,8 +9,10 @@ import {
   validatedAddressTable,
 } from "@/db/schema";
 import { findScrapByID } from "@/features/auction/scrap/repository";
+import { SystemError } from "@/lib/error";
 import { updateProfit } from "@/models/scraps/helpers";
 import { updateAnalysis } from "@/services/analyser/actions";
+import { SystemFilePath } from "@/services/file/system-file";
 import { validateAddress } from "@/services/google/address-validation";
 import { waitPageToBeReady } from "@/services/scraper/lib/puppeteer";
 import { Lot, Scraper } from "@/services/scraper/scraper";
@@ -27,7 +29,7 @@ export async function fetchScrapFromSource(
   if (!scraper) {
     throw new Error(`Scraper ${scraperID} not found`);
   }
-  const scrapID = await getScrapID(scraperID, url);
+  const previousScrap = await getScrap(scraperID, url);
   let scrapData: Lot | undefined = undefined;
   try {
     await login(scraper, page);
@@ -52,18 +54,36 @@ export async function fetchScrapFromSource(
         second_auction_date: scrapData.secondAuctionDate,
         second_auction_bid: scrapData.secondAuctionBid,
         laudo_link: scrapData.laudoLink,
+        laudo_file: await genLaudoFile(
+          page,
+          scraper,
+          previousScrap,
+          scrapData.laudoLink,
+        ),
         matricula_link: scrapData.matriculaLink,
+        matricula_file: await genMatriculaFile(
+          page,
+          scraper,
+          previousScrap,
+          scrapData.matriculaLink,
+        ),
         edital_link: scrapData.editalLink,
+        edital_file: await genEditalFile(
+          page,
+          scraper,
+          previousScrap,
+          scrapData.editalLink,
+        ),
       })
       .where(
         and(eq(scrapsTable.scraper_id, scraperID), eq(scrapsTable.url, url)),
       )
       .execute();
 
-    await maybeUpdateImages(scrapID, scrapData.images);
+    await maybeUpdateImages(previousScrap.id, scrapData.images);
     await maybeValidateAndSaveAddress(scrapData.address);
-    await maybeUpdateAnalysis(scrapID);
-    await maybeUpdateProfit(scrapID);
+    await maybeUpdateAnalysis(previousScrap.id);
+    await maybeUpdateProfit(previousScrap.id);
   } catch (error) {
     await db
       .update(scrapsTable)
@@ -147,14 +167,16 @@ async function scrapLink(scraper: Scraper, page: Page): Promise<Lot> {
   return lot;
 }
 
-async function getScrapID(scraperID: string, url: string): Promise<number> {
+type Scrap = Awaited<ReturnType<typeof getScrap>>;
+
+async function getScrap(scraperID: string, url: string) {
   const scrap = await db.query.scrapsTable.findFirst({
     where: and(eq(scrapsTable.scraper_id, scraperID), eq(scrapsTable.url, url)),
   });
   if (!scrap) {
     throw new Error(`Scrap ${url} not found`);
   }
-  return scrap.id;
+  return scrap;
 }
 
 function fetchStatus(scrapData: Lot): "fetched" | "failed" {
@@ -167,8 +189,6 @@ function fetchStatus(scrapData: Lot): "fetched" | "failed" {
   }
   return "fetched";
 }
-
-async function maybeDownloadFiles(scrapData: Lot): Promise<void> {}
 
 async function maybeUpdateImages(
   scrapID: number,
@@ -326,6 +346,81 @@ async function maybeValidateAndSaveAddress(
   };
 
   await db.insert(validatedAddressTable).values(addressData).execute();
+}
+
+async function genLaudoFile(
+  page: Page,
+  scraper: Scraper,
+  scrap: Scrap,
+  laudoLink: string | undefined,
+): Promise<string | undefined> {
+  try {
+    if (!laudoLink || (!!scrap.laudo_file && laudoLink === scrap.laudo_link)) {
+      return scrap.laudo_file ?? undefined;
+    }
+    const laudoFile = SystemFilePath.scrapLaudo(scrap.scraper_id, scrap.url);
+    await laudoFile.write(await scraper.fetch(page, laudoLink));
+    return laudoFile.path();
+  } catch (error) {
+    throw new SystemError(`Não pode baixar o arquivo= do laudo`, error, {
+      scraperID: scrap.scraper_id,
+      url: scrap.url,
+      laudoLink,
+    });
+  }
+}
+
+async function genMatriculaFile(
+  page: Page,
+  scraper: Scraper,
+  scrap: Scrap,
+  matriculaLink: string | undefined,
+): Promise<string | undefined> {
+  try {
+    if (
+      !matriculaLink ||
+      (!!scrap.matricula_file && matriculaLink === scrap.matricula_link)
+    ) {
+      return scrap.matricula_file ?? undefined;
+    }
+    const matriculaFile = SystemFilePath.scrapMatricula(
+      scrap.scraper_id,
+      scrap.url,
+    );
+    await matriculaFile.write(await scraper.fetch(page, matriculaLink));
+    return matriculaFile.path();
+  } catch (error) {
+    throw new SystemError(`Não pode baixar o arquivo= do laudo`, error, {
+      scraperID: scrap.scraper_id,
+      url: scrap.url,
+      matriculaLink,
+    });
+  }
+}
+
+async function genEditalFile(
+  page: Page,
+  scraper: Scraper,
+  scrap: Scrap,
+  editalLink: string | undefined,
+): Promise<string | undefined> {
+  try {
+    if (
+      !editalLink ||
+      (!!scrap.edital_file && editalLink === scrap.edital_link)
+    ) {
+      return scrap.edital_file ?? undefined;
+    }
+    const editalFile = SystemFilePath.scrapEdital(scrap.scraper_id, scrap.url);
+    await editalFile.write(await scraper.fetch(page, editalLink));
+    return editalFile.path();
+  } catch (error) {
+    throw new SystemError(`Não pode baixar o arquivo= do laudo`, error, {
+      scraperID: scrap.scraper_id,
+      url: scrap.url,
+      editalLink,
+    });
+  }
 }
 
 async function login(scraper: Scraper, page: Page): Promise<void> {

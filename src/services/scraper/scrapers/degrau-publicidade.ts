@@ -35,7 +35,7 @@ const baseScraper: Omit<Scraper, "url" | "search"> = {
       ]);
     } catch (error) {
       console.error(
-        "Error waiting for response (scrap won't be blocked)",
+        "Error waiting for response (scraper won't be blocked)",
         error,
       );
     }

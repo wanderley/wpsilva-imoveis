@@ -2,11 +2,14 @@ import { Model } from "@/services/openai/types";
 import { execSync } from "child_process";
 import fs from "fs";
 import OpenAI from "openai";
-import { ChatCompletionContentPart } from "openai/resources/chat/completions.mjs";
+import {
+  ChatCompletionContentPartImage,
+  ChatCompletionContentPartText,
+} from "openai/resources/index.mjs";
 
 type Input = {
   name: string;
-  append: ChatCompletionContentPart[];
+  append: (ChatCompletionContentPartImage | ChatCompletionContentPartText)[];
 };
 
 export async function generatePrompt({
@@ -43,7 +46,7 @@ Your task is to refine the prompt given to the LLM agent to enhance the accuracy
 
 # Data
 <current_prompt>${prompt}</current_prompt>
-${convertOutputsToXml(inputs, outputs)}
+${convertRunToXml(inputs, outputs)}
 ${feedback.comments ? `<comments>${feedback.comments}</comments>\n` : ""}${feedback.newPrompt ? `<user_suggested_prompt>${feedback.newPrompt}</user_suggested_prompt>\n` : ""}
 
 # Conclusion
@@ -117,7 +120,7 @@ function readInput(message: string, content?: string) {
 
 function readFeedback(inputs: Input[], outputs: string[], prompt: string) {
   let content = "";
-  content += convertOutputsToXml(inputs, outputs);
+  content += convertRunToXml(inputs, outputs);
   content += "\n\n";
   content += "<prompt>\n";
   content += prompt.trim();
@@ -143,14 +146,26 @@ function readFeedback(inputs: Input[], outputs: string[], prompt: string) {
   return { comments, newPrompt };
 }
 
-function convertOutputsToXml(inputs: Input[], outputs: string[]) {
-  let content = "<outputs>\n";
+function convertRunToXml(inputs: Input[], outputs: string[]) {
+  let content = "<runs>\n";
   for (let i = 0; i < inputs.length; i++) {
-    content += `  <output name="${inputs[i].name}">\n`;
+    const hasTextInput = inputs[i].append.some((item) => item.type === "text");
+    content += `  <run name="${inputs[i].name}">\n`;
+    if (hasTextInput) {
+      content += `    <input>\n`;
+      content += inputs[i].append
+        .filter((item) => item.type === "text")
+        .map((item) => item.text)
+        .join("\n");
+      content += "\n";
+      content += "    </input>\n";
+    }
+    content += `    <output>\n`;
     content += outputs[i];
     content += "\n";
-    content += "  </output>\n";
+    content += "    </output>\n";
+    content += "  </run>\n";
   }
-  content += "</outputs>\n";
+  content += "</runs>\n";
   return content;
 }

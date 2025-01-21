@@ -26,6 +26,10 @@ export async function convertPdfToImages(
   format: "webp" | "jpg" = "webp",
 ): Promise<IFile[]> {
   const localDir = new LocalDir(pdfFile.path());
+  const existingImages = await localDir.listFiles();
+  if (existingImages.length > 0) {
+    return existingImages;
+  }
   await localDir.create();
   await pdfFile.download();
   switch (format) {
