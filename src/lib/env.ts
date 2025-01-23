@@ -23,6 +23,10 @@ export function getGoogleCloudStorageSettings() {
   };
 }
 
+export function getFilesPath() {
+  return getEnvOrThrow("FILES_PATH");
+}
+
 function getEnvOrThrow(key: string) {
   const value = process.env[key];
   if (!value) {

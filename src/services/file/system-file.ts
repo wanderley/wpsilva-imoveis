@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { systemFilesTable } from "@/db/schema";
-import { getGoogleCloudStorageSettings } from "@/lib/env";
+import { getFilesPath, getGoogleCloudStorageSettings } from "@/lib/env";
 import { SystemError } from "@/lib/error";
 import { IFile } from "@/services/file/types";
 import { Storage } from "@google-cloud/storage";
@@ -69,7 +69,7 @@ export class SystemFile implements IFile {
   }
 
   localPath(): string {
-    return path.join("/tmp/wpsilva-imoveis/", this.filePath);
+    return path.join(getFilesPath(), this.filePath);
   }
 
   async write(content: Uint8Array): Promise<void> {

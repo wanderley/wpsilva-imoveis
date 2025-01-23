@@ -1,3 +1,4 @@
+import { getFilesPath } from "@/lib/env";
 import { SystemError } from "@/lib/error";
 import { IFile } from "@/services/file/types";
 import fs from "fs";
@@ -19,7 +20,7 @@ export class LocalFile implements IFile {
   }
 
   localPath(): string {
-    return path.join("/tmp/wpsilva-imoveis/local/", this.filePath);
+    return path.join(getFilesPath(), "local", this.filePath);
   }
 
   async touch(): Promise<void> {
@@ -66,7 +67,7 @@ export class LocalDir {
   constructor(private readonly dirPath: string) {}
 
   public localPath(): string {
-    return path.join("/tmp/wpsilva-imoveis/local/", this.dirPath);
+    return path.join(getFilesPath(), "local", this.dirPath);
   }
 
   public async exists(): Promise<boolean> {
