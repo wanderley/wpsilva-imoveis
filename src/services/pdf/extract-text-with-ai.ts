@@ -4,6 +4,7 @@ import path from "path";
 import { LocalFile } from "../file/local-file";
 import { IFile } from "../file/types";
 import { generateText } from "../openai/generate-text";
+import { Model } from "../openai/types";
 import { convertPdfToImages } from "../pdf";
 
 const PROMPT_EXTRACAO_TEXTO_DOCUMENTO = `**Objetivo**
@@ -37,13 +38,15 @@ type ExtractedText = {
   texto: string;
 };
 
-export async function extractTextWithAi(file: IFile): Promise<ExtractedText[]> {
+export async function extractTextWithAi(
+  file: IFile,
+  model: Model = "gpt-4o-mini",
+): Promise<ExtractedText[]> {
   const cache = await getCache(file);
   if (cache) {
     return cache;
   }
   const images = await convertPdfToImages(file, "webp");
-  const model = "gpt-4o-mini";
 
   const paginas = await Promise.all(
     images.map(async (image, index) => {
