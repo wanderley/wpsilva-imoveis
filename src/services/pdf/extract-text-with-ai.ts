@@ -1,3 +1,7 @@
+import crypto from "crypto";
+import path from "path";
+
+import { LocalFile } from "../file/local-file";
 import { IFile } from "../file/types";
 import { generateText } from "../openai/generate-text";
 import { convertPdfToImages } from "../pdf";
@@ -23,7 +27,21 @@ Você é um agente LLM especializado em extrair texto e descrever imagens de doc
 - Retorne **apenas o texto final** em Markdown, sem incluir marcações de blocos de código ou textos adicionais.
 - Se não houver imagens não institucionais no documento, **não** mencione a ausência delas nem inclua qualquer nota ou comentário sobre isso.`;
 
-export async function extractTextWithAi(file: IFile) {
+const PROMPT_EXTRACAO_TEXTO_DOCUMENTO_HASH = crypto
+  .createHash("md5")
+  .update(PROMPT_EXTRACAO_TEXTO_DOCUMENTO)
+  .digest("hex");
+
+type ExtractedText = {
+  pagina: number;
+  texto: string;
+};
+
+export async function extractTextWithAi(file: IFile): Promise<ExtractedText[]> {
+  const cache = await getCache(file);
+  if (cache) {
+    return cache;
+  }
   const images = await convertPdfToImages(file, "webp");
   const model = "gpt-4o-mini";
 
@@ -43,11 +61,39 @@ export async function extractTextWithAi(file: IFile) {
       };
     }),
   );
-  return paginas.sort((a, b) => a.pagina - b.pagina);
+  const res = paginas.sort((a, b) => a.pagina - b.pagina);
+  await setCache(file, res);
+  return res;
 }
 
 function fixText(text: string) {
   text = text.replace(/^```markdown\n/, "");
   text = text.replace(/\n```\n?$/, "");
   return text;
+}
+
+async function getCache(file: IFile): Promise<ExtractedText[] | undefined> {
+  const cacheFile = await getCacheFile(file);
+  if (await cacheFile.exists()) {
+    return JSON.parse(
+      (await cacheFile.read()).toString("utf-8"),
+    ) as ExtractedText[];
+  }
+  return undefined;
+}
+
+async function setCache(file: IFile, extractedText: ExtractedText[]) {
+  const cacheFile = await getCacheFile(file);
+  await cacheFile.write(Buffer.from(JSON.stringify(extractedText, null, 2)));
+}
+
+async function getCacheFile(file: IFile) {
+  const cacheFile = new LocalFile(
+    path.join(
+      "pdf/extracted-text/",
+      PROMPT_EXTRACAO_TEXTO_DOCUMENTO_HASH,
+      file.path() + ".json",
+    ),
+  );
+  return cacheFile;
 }
