@@ -40,7 +40,9 @@ export default function RootLayout({
             <GoogleApiProvider apiKey={process.env.GOOGLE_MAPS_API_KEY!}>
               <div className="p-4">{children}</div>
             </GoogleApiProvider>
-            {process.env.NODE_ENV === "development" && <ReactQueryDevtools />}
+            {process.env.NODE_ENV === "development" && (
+              <ReactQueryDevtools buttonPosition="bottom-left" />
+            )}
           </QueryClientProvider>
         </SessionProvider>
       </body>

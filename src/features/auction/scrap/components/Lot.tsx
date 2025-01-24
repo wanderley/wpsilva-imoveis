@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Scrap, ScrapProfit } from "@/db/schema";
 import AuctionStatus from "@/features/auction/scrap/components/AuctionStatus";
+import Chat from "@/features/auction/scrap/components/Chat";
 import { LotStatusBadge } from "@/features/auction/scrap/components/LotStatusBadge";
 import { getPreferredAuctionDate } from "@/features/auction/scrap/helpers.client";
 import { selectOptionBasedOnProfitBand } from "@/features/auction/scrap/lib/scraps";
@@ -1549,6 +1550,7 @@ export function Lot({ scrapID }: { scrapID: number }) {
       <DescriptionCard scrap={scrap} mutate={mutate} />
       <PotentialProfitCard scrap={scrap} />
       <LocationSection scrap={scrap} />
+      <Chat scrapId={scrap.id} />
     </div>
   );
 }
