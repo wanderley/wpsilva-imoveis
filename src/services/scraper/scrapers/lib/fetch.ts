@@ -3,7 +3,7 @@ import { Page } from "puppeteer";
 export async function fetchFromPageContext(
   page: Page,
   url: string,
-): Promise<Uint8Array> {
+): Promise<Buffer> {
   const encoded = await page.evaluate(async (url) => {
     const response = await fetch(url);
     const buffer = await response.arrayBuffer();
@@ -21,14 +21,11 @@ export async function fetchFromPageContext(
     return btoa(chunks.join(""));
   }, url);
 
-  return Uint8Array.from(atob(encoded), (c) => c.charCodeAt(0));
+  return Buffer.from(Uint8Array.from(atob(encoded), (c) => c.charCodeAt(0)));
 }
 
-export async function regularFetch(
-  _page: Page,
-  url: string,
-): Promise<Uint8Array> {
+export async function regularFetch(_page: Page, url: string): Promise<Buffer> {
   const response = await fetch(url);
   const buffer = await response.arrayBuffer();
-  return new Uint8Array(buffer);
+  return Buffer.from(buffer);
 }

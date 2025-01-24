@@ -33,7 +33,7 @@ export class LocalFile implements IFile {
     await fs.promises.utimes(this.localPath(), new Date(), new Date());
   }
 
-  async write(content: Uint8Array): Promise<void> {
+  async write(content: Buffer | string): Promise<void> {
     try {
       await fs.promises.mkdir(path.dirname(this.localPath()), {
         recursive: true,
@@ -48,7 +48,7 @@ export class LocalFile implements IFile {
     }
   }
 
-  async read(): Promise<Uint8Array> {
+  async read(): Promise<Buffer> {
     try {
       return await fs.promises.readFile(this.localPath());
     } catch (error) {

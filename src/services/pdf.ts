@@ -18,7 +18,7 @@ export async function mergePdfs(pdfBuffers: ArrayBuffer[]) {
       mergedPdf.addPage(page);
     }
   }
-  return await mergedPdf.save();
+  return Buffer.from(await mergedPdf.save());
 }
 
 export async function convertPdfToImages(

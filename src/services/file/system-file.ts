@@ -72,7 +72,7 @@ export class SystemFile implements IFile {
     return path.join(getFilesPath(), this.filePath);
   }
 
-  async write(content: Uint8Array): Promise<void> {
+  async write(content: Buffer): Promise<void> {
     // save file to local and upload to Google Cloud Storage
     await fsWriteFile(this.localPath(), content);
     const ourMd5 = crypto.createHash("md5").update(content).digest("base64");
@@ -109,7 +109,7 @@ export class SystemFile implements IFile {
       });
   }
 
-  async read(): Promise<Uint8Array> {
+  async read(): Promise<Buffer> {
     await this.download();
     await db
       .update(systemFilesTable)
@@ -125,10 +125,7 @@ export class SystemFile implements IFile {
   }
 }
 
-async function fsWriteFile(
-  filePath: string,
-  content: Uint8Array,
-): Promise<void> {
+async function fsWriteFile(filePath: string, content: Buffer): Promise<void> {
   return await new Promise((resolve, reject) => {
     fs.mkdir(path.dirname(filePath), { recursive: true }, (mkdirErr) => {
       if (mkdirErr) {

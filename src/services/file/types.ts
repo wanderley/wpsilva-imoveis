@@ -3,7 +3,7 @@ export interface IFile {
   extension(): string;
   path(): string;
   localPath(): string;
-  write(content: Uint8Array): Promise<void>;
-  read(): Promise<Uint8Array>;
+  write(content: Buffer): Promise<void>;
+  read(): Promise<Buffer>;
   download(): Promise<void>;
 }
