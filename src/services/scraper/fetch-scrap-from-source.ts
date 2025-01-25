@@ -47,7 +47,7 @@ export async function fetchScrapFromSource(
         address: scrapData.address,
         description: scrapData.description,
         description_markdown: await genDescriptionMarkdown(
-          previousScrap,
+          previousScrap.description ?? undefined,
           scrapData.description,
         ),
         case_number: scrapData.caseNumber,
@@ -428,13 +428,13 @@ async function genEditalFile(
   }
 }
 export async function genDescriptionMarkdown(
-  scrap: { description: string | null | undefined },
-  description: string | undefined,
+  oldDescription: string | undefined,
+  newDescription: string | undefined,
 ): Promise<string | undefined> {
-  if (description == null || description === scrap.description) {
-    return description;
+  if (newDescription == null || newDescription === oldDescription) {
+    return newDescription;
   }
-  return formatTextAsMarkdown(description ?? "");
+  return formatTextAsMarkdown(newDescription);
 }
 
 async function login(scraper: Scraper, page: Page): Promise<void> {
