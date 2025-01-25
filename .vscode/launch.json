@@ -32,7 +32,7 @@
       "name": "debug scraper",
       "type": "node-terminal",
       "request": "launch",
-      "command": "pnpm dotenv -c local pnpm scrap ${input:scraper}"
+      "command": "pnpm dotenv -c local --no-expand -- pnpm cli scraper fetch ${input:scraper}"
     }
   ],
   "inputs": [
