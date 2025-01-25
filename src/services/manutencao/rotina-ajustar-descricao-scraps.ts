@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { scrapsTable } from "@/db/schema";
 import { mapAsync } from "@/lib/promise";
-import { formatTextAsMarkdown } from "@/services/openai/format-text-as-markdown";
+import { formatTextAsMarkdown } from "@/services/ai/format-text-as-markdown";
 import chalk from "chalk";
 import { and, eq, isNotNull, isNull } from "drizzle-orm";
 

@@ -1,4 +1,4 @@
-import { Model } from "@/services/openai/types";
+import { Model } from "@/services/ai/types";
 import { execSync } from "child_process";
 import fs from "fs";
 import OpenAI from "openai";

@@ -11,10 +11,10 @@ import {
 import { findScrapByID } from "@/features/auction/scrap/repository";
 import { SystemError } from "@/lib/error";
 import { updateProfit } from "@/models/scraps/helpers";
+import { formatTextAsMarkdown } from "@/services/ai/format-text-as-markdown";
 import { updateAnalysis } from "@/services/analyser/actions";
 import { SystemFilePath } from "@/services/file/system-file";
 import { validateAddress } from "@/services/google/address-validation";
-import { formatTextAsMarkdown } from "@/services/openai/format-text-as-markdown";
 import { waitPageToBeReady } from "@/services/scraper/lib/puppeteer";
 import { Lot, Scraper } from "@/services/scraper/scraper";
 import { getScraper } from "@/services/scraper/scrapers";

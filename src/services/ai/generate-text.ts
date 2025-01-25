@@ -1,5 +1,5 @@
+import { Model } from "@/services/ai/types";
 import { IFile } from "@/services/file/types";
-import { Model } from "@/services/openai/types";
 import OpenAI from "openai";
 import { ChatCompletionContentPartImage } from "openai/resources/chat/completions.mjs";
 

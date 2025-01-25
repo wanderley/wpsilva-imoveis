@@ -1,11 +1,10 @@
+import { generateText } from "@/services/ai/generate-text";
+import { Model } from "@/services/ai/types";
+import { LocalFile } from "@/services/file/local-file";
+import { IFile } from "@/services/file/types";
+import { convertPdfToImages } from "@/services/pdf";
 import crypto from "crypto";
 import path from "path";
-
-import { LocalFile } from "../file/local-file";
-import { IFile } from "../file/types";
-import { generateText } from "../openai/generate-text";
-import { Model } from "../openai/types";
-import { convertPdfToImages } from "../pdf";
 
 const PROMPT_EXTRACAO_TEXTO_DOCUMENTO = `**Objetivo**
 

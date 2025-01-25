@@ -1,4 +1,4 @@
-import { Model } from "../openai/types";
+import { Model } from "@/services/ai/types";
 
 export type TextoExtraido =
   | { state: "pending" }
