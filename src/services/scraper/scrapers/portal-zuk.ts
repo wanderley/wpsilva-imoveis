@@ -14,7 +14,6 @@ import {
   pipe,
   removeUnnecessarySpaces,
 } from "@/services/scraper/scrapers/lib/extractors";
-import { regularFetch } from "@/services/scraper/scrapers/lib/fetch";
 
 export const PortalZuk: Scraper = {
   url: "www.portalzuk.com.br",
@@ -86,7 +85,37 @@ export const PortalZuk: Scraper = {
     )(page);
     return links;
   },
-  fetch: regularFetch,
+  fetch: async (page, url) => {
+    const cookies = await page.cookies();
+    const response = await fetch(url, {
+      headers: {
+        accept:
+          "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+        "accept-language": "en-US,en;q=0.9,pt-BR;q=0.8,pt;q=0.7",
+        "cache-control": "no-cache",
+        pragma: "no-cache",
+        priority: "u=0, i",
+        "sec-ch-ua":
+          '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": '"macOS"',
+        "sec-fetch-dest": "document",
+        "sec-fetch-mode": "navigate",
+        "sec-fetch-site": "same-site",
+        "sec-fetch-user": "?1",
+        "upgrade-insecure-requests": "1",
+        cookie: cookies
+          .map((cookie) => `${cookie.name}=${cookie.value}`)
+          .join("; "),
+        Referer: "https://www.portalzuk.com.br/",
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+      },
+      body: null,
+      method: "GET",
+    });
+    const buffer = await response.arrayBuffer();
+    return Buffer.from(buffer);
+  },
   status: async (page) => {
     // when the auction is closed without any bids, the page is redirected to the
     // auction search page, so we need to check if the page has a auction data
