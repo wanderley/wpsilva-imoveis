@@ -43,7 +43,7 @@ export async function fetchScrapFromSource(
       .set({
         auction_status: scrapData.status,
         name: scrapData.name,
-        fetch_status: fetchStatus(scrapData),
+        fetch_status: fetchStatus(previousScrap, scrapData),
         address: scrapData.address,
         description: scrapData.description,
         description_markdown: await genDescriptionMarkdown(
@@ -184,12 +184,19 @@ async function getScrap(scraperID: string, url: string) {
   return scrap;
 }
 
-function fetchStatus(scrapData: Lot): "fetched" | "failed" {
-  if (
-    scrapData.name === undefined ||
-    scrapData.address === undefined ||
-    scrapData.caseNumber === undefined
-  ) {
+// Update rotina-ajustar-fetch-status if this function changes
+function fetchStatus(
+  previousScrap: Scrap,
+  scrapData: Lot,
+): "fetched" | "failed" {
+  const requiredFields = [
+    scrapData.name || previousScrap.name,
+    scrapData.address || previousScrap.address,
+    scrapData.caseNumber || previousScrap.case_number,
+    scrapData.editalLink || previousScrap.edital_link,
+    scrapData.matriculaLink || previousScrap.matricula_link,
+  ];
+  if (requiredFields.some((field) => field == null)) {
     return "failed";
   }
   return "fetched";

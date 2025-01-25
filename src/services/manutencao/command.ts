@@ -2,9 +2,11 @@ import chalk from "chalk";
 import { Command } from "commander";
 
 import * as ajustarDescricaoScraps from "./rotina-ajustar-descricao-scraps";
+import * as ajustarFetchStatus from "./rotina-ajustar-fetch-status";
 
 const rotinas: { descricao: string; rotina: () => Promise<void> }[] = [
   ajustarDescricaoScraps,
+  ajustarFetchStatus,
 ];
 
 export default function ManutencaoCommand() {
