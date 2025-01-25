@@ -116,6 +116,19 @@ export const PortalZuk: Scraper = {
     const buffer = await response.arrayBuffer();
     return Buffer.from(buffer);
   },
+  waitUntilLoaded: async (page) => {
+    if (await page.$("#box-redirect-encerrado a")) {
+      const link = await page.evaluate(() =>
+        document
+          .querySelector("#box-redirect-encerrado a")
+          ?.getAttribute("href"),
+      );
+      if (link) {
+        await Promise.all([page.goto(link), page.waitForNavigation()]);
+      }
+    }
+    await page.waitForSelector("nav.menu-nav a.logo");
+  },
   status: async (page) => {
     // when the auction is closed without any bids, the page is redirected to the
     // auction search page, so we need to check if the page has a auction data
