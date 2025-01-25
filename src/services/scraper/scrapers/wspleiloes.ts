@@ -163,19 +163,25 @@ export const Wspleiloes: Scraper = {
   laudoLink: async (page) =>
     (await page.evaluate(() =>
       Array.from(document.querySelectorAll("a"))
-        .find((elem) => elem.textContent?.includes("LAUDO"))
+        .find((elem) => {
+          const text = elem.textContent?.toLowerCase();
+          return text?.includes("laudo") || text?.includes("auto de avaliação");
+        })
         ?.getAttribute("href"),
     )) ?? undefined,
   matriculaLink: async (page) =>
     (await page.evaluate(() =>
       Array.from(document.querySelectorAll("a"))
-        .find((elem) => elem.textContent?.includes("MATRÍCULA"))
+        .find((elem) => {
+          const text = elem.textContent?.toLowerCase();
+          return text?.includes("matrícula") || text?.includes("matricula");
+        })
         ?.getAttribute("href"),
     )) ?? undefined,
   editalLink: async (page) =>
     (await page.evaluate(() =>
       Array.from(document.querySelectorAll("a"))
-        .find((elem) => elem.textContent?.includes("EDITAL"))
+        .find((elem) => elem.textContent?.toLowerCase().includes("edital"))
         ?.getAttribute("href"),
     )) ?? undefined,
 };
