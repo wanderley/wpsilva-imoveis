@@ -81,7 +81,9 @@ export const Wspleiloes: Scraper = {
   name: async (page) =>
     await page.evaluate(() =>
       document
-        .querySelector(".detalhes-lote > div > h4:nth-child(2)")
+        .querySelector(
+          "div.detalhes-lote > div.px-1.text-center > h1:nth-child(2)",
+        )
         ?.textContent?.trim(),
     ),
   address: async (page) =>
