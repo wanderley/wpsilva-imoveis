@@ -1,5 +1,6 @@
 "use client";
 
+import StyledMarkdown from "@/components/StyledMarkdown";
 import { Badge } from "@/components/ui/badge";
 import { Button as UIButton } from "@/components/ui/button";
 import {
@@ -132,7 +133,9 @@ function Analysis({ scrap }: { scrap: Scrap }) {
           </TabsContent>
           <TabsContent value="auction">
             <p className="text-muted-foreground">
-              {scrap.description || "Não disponível"}
+              <StyledMarkdown>
+                {scrap.description_markdown || scrap.description || ""}
+              </StyledMarkdown>
             </p>
           </TabsContent>
         </Tabs>

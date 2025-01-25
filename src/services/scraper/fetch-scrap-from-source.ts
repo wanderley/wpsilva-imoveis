@@ -14,6 +14,7 @@ import { updateProfit } from "@/models/scraps/helpers";
 import { updateAnalysis } from "@/services/analyser/actions";
 import { SystemFilePath } from "@/services/file/system-file";
 import { validateAddress } from "@/services/google/address-validation";
+import { formatTextAsMarkdown } from "@/services/openai/format-text-as-markdown";
 import { waitPageToBeReady } from "@/services/scraper/lib/puppeteer";
 import { Lot, Scraper } from "@/services/scraper/scraper";
 import { getScraper } from "@/services/scraper/scrapers";
@@ -45,6 +46,10 @@ export async function fetchScrapFromSource(
         fetch_status: fetchStatus(scrapData),
         address: scrapData.address,
         description: scrapData.description,
+        description_markdown: await genDescriptionMarkdown(
+          previousScrap,
+          scrapData.description,
+        ),
         case_number: scrapData.caseNumber,
         case_link: scrapData.caseLink,
         bid: scrapData.bid,
@@ -421,6 +426,15 @@ async function genEditalFile(
       editalLink,
     });
   }
+}
+export async function genDescriptionMarkdown(
+  scrap: { description: string | null | undefined },
+  description: string | undefined,
+): Promise<string | undefined> {
+  if (description == null || description === scrap.description) {
+    return description;
+  }
+  return formatTextAsMarkdown(description ?? "");
 }
 
 async function login(scraper: Scraper, page: Page): Promise<void> {

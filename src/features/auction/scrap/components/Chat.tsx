@@ -1,5 +1,6 @@
 "use client";
 
+import StyledMarkdown from "@/components/StyledMarkdown";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,7 +15,6 @@ import {
   X,
 } from "lucide-react";
 import { type KeyboardEvent, useEffect, useRef, useState } from "react";
-import Markdown from "react-markdown";
 
 export default function Chat({ scrapId }: { scrapId: number }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -185,27 +185,9 @@ function Message({
             message.role === "user" ? "bg-blue-100" : "bg-gray-100"
           }`}
         >
-          <MessageMarkdown message={message} />
+          <StyledMarkdown>{message.content}</StyledMarkdown>
         </div>
       </div>
     </div>
-  );
-}
-
-function MessageMarkdown({ message }: { message: Message }) {
-  return (
-    <Markdown
-      components={{
-        h3: ({ children }) => (
-          <h3 className="pt-4 pb-2 text-lg font-semibold">{children}</h3>
-        ),
-        ul: ({ children }) => <ul className="list-disc pl-4">{children}</ul>,
-        ol: ({ children }) => <ol className="list-decimal pl-4">{children}</ol>,
-        li: ({ children }) => <li className="p-1">{children}</li>,
-        p: ({ children }) => <p className="p-1">{children}</p>,
-      }}
-    >
-      {message.content}
-    </Markdown>
   );
 }

@@ -1,11 +1,12 @@
 import { db } from "@/db";
+import ManutencaoCommand from "@/services/manutencao/command";
 import ProcessoJudicialCommand from "@/services/processo-judicial/command";
+import ScraperCommand from "@/services/scraper/command";
 import { program } from "commander";
-
-import ScraperCommand from "./services/scraper/command";
 
 program.addCommand(ScraperCommand());
 program.addCommand(ProcessoJudicialCommand());
+program.addCommand(ManutencaoCommand());
 
 program
   .parseAsync()

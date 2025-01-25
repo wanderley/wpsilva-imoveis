@@ -33,7 +33,8 @@ async function getSystemMessage(scrapId: number) {
       "# Dados do Leilao\n```json\n" +
       JSON.stringify(
         {
-          descricao_leiloeiro: scrap.description,
+          descricao_leiloeiro:
+            scrap.description_markdown || scrap.description || undefined,
           endereco:
             scrap.validatedAddress?.formatted_address ??
             scrap.address ??

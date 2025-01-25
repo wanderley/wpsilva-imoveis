@@ -62,6 +62,7 @@ export const scrapsTable = mysqlTable("scraps", {
   url: varchar({ length: 767 }).notNull(),
   address: varchar({ length: 767 }),
   description: text(),
+  description_markdown: text(),
   case_number: varchar({ length: 255 }),
   case_link: varchar({ length: 767 }),
   bid: float(),
