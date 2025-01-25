@@ -34,16 +34,25 @@ export const PortalZuk: Scraper = {
     //   path: "/",
     //   domain: "www.portalzuk.com.br",
     // });
-    await page.goto("https://www.portalzuk.com.br/");
+    await page.goto("https://www.portalzuk.com.br/", {
+      waitUntil: "domcontentloaded",
+    });
+    await page.waitForSelector("nav.menu-nav a.logo");
     if (await page.$("a[href='https://www.portalzuk.com.br/login']")) {
       console.info("[PortalZuk] Logging in");
-      await page.goto("https://www.portalzuk.com.br/login");
+      await page.goto("https://www.portalzuk.com.br/login", {
+        waitUntil: "domcontentloaded",
+      });
+      await page.waitForSelector("[name=email]");
       await page.type("[name=email]", username);
       await page.type("[name=password]", password);
       await Promise.all([
         page.click(".login-buttons button[type=submit]"),
         page.waitForNavigation(),
       ]);
+      if (await page.$(".card-status-warning")) {
+        throw new Error("Login failed");
+      }
     }
     if (await page.$(".modal.show #close-modal-virada")) {
       await page.click(".modal.show #close-modal-virada");
