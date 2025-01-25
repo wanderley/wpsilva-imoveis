@@ -55,4 +55,7 @@ function logProgress(success: number, fail: number, total: number) {
       success,
     )} ok, ${chalk.red(fail)} fail)`,
   );
+  if (success + fail === total) {
+    console.log("");
+  }
 }
