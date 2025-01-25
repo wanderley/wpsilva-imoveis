@@ -367,7 +367,7 @@ async function genLaudoFile(
     await laudoFile.write(await scraper.fetch(page, laudoLink));
     return laudoFile.path();
   } catch (error) {
-    throw new SystemError(`Não pode baixar o arquivo= do laudo`, error, {
+    throw new SystemError(`Não pode baixar o arquivo do laudo`, error, {
       scraperID: scrap.scraper_id,
       url: scrap.url,
       laudoLink,
