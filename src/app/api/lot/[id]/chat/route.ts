@@ -1,8 +1,8 @@
 import { db } from "@/db";
 import { scrapsTable } from "@/db/schema";
+import { openaiCached } from "@/services/ai/openai-cached";
 import { SystemFile } from "@/services/file/system-file";
 import { extractTextWithAi } from "@/services/pdf/extract-text-with-ai";
-import { openai } from "@ai-sdk/openai";
 import { streamText } from "ai";
 import { eq } from "drizzle-orm";
 
@@ -15,7 +15,7 @@ export async function POST(req: Request) {
   const { messages, scrapId } = await req.json();
   const system = await getSystemMessage(scrapId);
   const result = streamText({
-    model: openai("gpt-4o-mini"),
+    model: openaiCached("gpt-4o-mini"),
     messages,
     system,
   });

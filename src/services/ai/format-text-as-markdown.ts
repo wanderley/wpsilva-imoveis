@@ -1,9 +1,10 @@
-import { openai } from "@ai-sdk/openai";
 import { generateText } from "ai";
+
+import { openaiCached } from "./openai-cached";
 
 export async function formatTextAsMarkdown(text: string): Promise<string> {
   const result = await generateText({
-    model: openai("gpt-4o-mini"),
+    model: openaiCached("gpt-4o-mini"),
     system: `Formatar o texto fornecido em Markdown sem alterar seu conteúdo.
         
   - Apenas formate o texto recebido e devolva-o em Markdown.
