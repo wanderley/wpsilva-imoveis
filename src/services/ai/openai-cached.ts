@@ -1,4 +1,5 @@
 import { md5 } from "@/lib/md5";
+import { LocalFile } from "@/services/file/local-file";
 import { openai } from "@ai-sdk/openai";
 import {
   LanguageModelV1,
@@ -7,8 +8,6 @@ import {
   simulateReadableStream,
   experimental_wrapLanguageModel as wrapLanguageModel,
 } from "ai";
-
-import { LocalFile } from "../file/local-file";
 
 export const openaiCached = (model: Parameters<typeof openai>[0]) =>
   wrapLanguageModel({

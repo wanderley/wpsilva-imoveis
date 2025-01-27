@@ -15,8 +15,7 @@ import {
   removeUnnecessarySpaces,
   replaceText,
 } from "@/services/scraper/scrapers/lib/extractors";
-
-import { fetchFromPageContext } from "./lib/fetch";
+import { fetchFromPageContext } from "@/services/scraper/scrapers/lib/fetch";
 
 const baseScraper: Omit<Scraper, "url" | "search"> = {
   fetch: fetchFromPageContext,

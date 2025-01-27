@@ -1,7 +1,6 @@
 import { SystemFile } from "@/services/file/system-file";
+import { TextoExtraido } from "@/services/processo-judicial/types";
 import { Cookie } from "puppeteer";
-
-import { TextoExtraido } from "../types";
 
 export type Subdocumento = {
   primeiraPagina: number;
