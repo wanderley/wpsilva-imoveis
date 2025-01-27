@@ -677,19 +677,6 @@ function DescriptionCard({
   scrap: Scrap;
   mutate: UseMutateFunction<void, Error, Scrap, unknown>;
 }) {
-  const isPastDate = (date: Date | null) => {
-    if (!date) {
-      return false;
-    }
-    const preferredAuctionDate = getPreferredAuctionDate(scrap);
-    if (preferredAuctionDate && date < preferredAuctionDate) {
-      return true;
-    }
-    return date < new Date();
-  };
-  const { isPending, mutate: fetchScrapFromSource } =
-    useFetchScrapFromSourceMutation();
-
   return (
     <Card>
       <h2 className="text-2xl font-bold mb-4">Descrição do Lote</h2>
@@ -700,177 +687,10 @@ function DescriptionCard({
           <Analysis scrap={scrap} />
         )}
 
+        {/* Vertical separator */}
         <div className="w-px bg-gray-200 dark:bg-gray-700 self-stretch hidden lg:block"></div>
-        <div className="lg:w-1/3 lg:sticky lg:top-4 lg:h-fit">
-          <dl className="space-y-2">
-            <div>
-              <dt className="font-semibold">Tipo de Direito:</dt>
-              <dd>{scrap.analise_tipo_direito}</dd>
-            </div>
-            <div>
-              <dt className="font-semibold">Avaliação:</dt>
-              <dd>{formatCurrency(scrap.appraisal)}</dd>
-            </div>
-            <div>
-              <dt className="font-semibold">Lance Atual:</dt>
-              <dd className="text-2xl font-bold text-green-600">
-                {formatCurrency(scrap.bid)}
-              </dd>
-            </div>
-            {scrap.profit && (
-              <div>
-                <dt className="font-semibold">
-                  {selectOptionBasedOnProfitBand(scrap.profit, {
-                    else: "Lucro Esperado:",
-                    loss: "Prejuízo Esperado:",
-                  })}
-                </dt>
-                <dd
-                  className={selectOptionBasedOnProfitBand(scrap.profit, {
-                    loss: "text-2xl font-bold text-red-600",
-                    low_profit: "text-2xl font-bold text-gray-600",
-                    moderate_profit: "text-2xl font-bold text-yellow-400",
-                    high_profit: "text-2xl font-bold text-green-600",
-                  })}
-                >
-                  {formatCurrency(Math.abs(scrap.profit.lucro))} (
-                  {Math.abs(scrap.profit.lucro_percentual).toFixed(0)}%)
-                </dd>
-              </div>
-            )}
-            <div>
-              <dt className="font-semibold">1º Leilão:</dt>
-              <dd
-                className={
-                  isPastDate(scrap.first_auction_date) ? "line-through" : ""
-                }
-              >
-                {scrap.first_auction_date
-                  ? `${new Date(scrap.first_auction_date).toLocaleString()} - ${formatCurrency(scrap.first_auction_bid)}`
-                  : "Não definido"}
-              </dd>
-            </div>
-            <div>
-              <dt className="font-semibold">2º Leilão:</dt>
-              <dd
-                className={
-                  isPastDate(scrap.second_auction_date) ? "line-through" : ""
-                }
-              >
-                {scrap.second_auction_date
-                  ? `${new Date(scrap.second_auction_date).toLocaleString()} - ${formatCurrency(scrap.second_auction_bid)}`
-                  : "Não definido"}
-              </dd>
-            </div>
-            <div>
-              <dt className="font-semibold">Status:</dt>
-              <dd>
-                <AuctionStatus scrap={scrap} /> <LotStatusBadge scrap={scrap} />
-              </dd>
-            </div>
-            <div>
-              <dt className="font-semibold">Última Atualização:</dt>
-              <dd className="flex items-center gap-2">
-                {new Date(scrap.updated_at).toLocaleString()}{" "}
-                <RefreshCw
-                  className={`w-4 h-4 cursor-pointer ${
-                    isPending ? "animate-spin" : ""
-                  }`}
-                  onClick={() => !isPending && fetchScrapFromSource({ scrap })}
-                />
-              </dd>
-            </div>
-          </dl>
-          <div className="mt-6">
-            <div className="pb-2">
-              <div className="grid grid-cols-2 gap-2">
-                <Button
-                  color={scrap.is_interesting === 1 ? "dark" : "light"}
-                  className="flex items-center justify-center gap-2"
-                  onClick={() => {
-                    mutate({
-                      ...scrap,
-                      is_interesting: scrap.is_interesting === 1 ? null : 1,
-                    });
-                  }}
-                >
-                  <ThumbsUp className="w-4 h-4 mr-1" />
-                  Interessante
-                </Button>
-                <Button
-                  color={scrap.is_interesting === 0 ? "dark" : "light"}
-                  className="flex items-center justify-center gap-2"
-                  onClick={() => {
-                    mutate({
-                      ...scrap,
-                      is_interesting: scrap.is_interesting === 0 ? null : 0,
-                    });
-                  }}
-                >
-                  <ThumbsDown className="w-4 h-4 mr-1" />
-                  Não interessante
-                </Button>
-              </div>
-            </div>
-            <div className="pb-2">
-              <Button
-                color="light"
-                className="flex items-center justify-center gap-2"
-                href={scrap.url}
-                target="_blank"
-              >
-                <ExternalLink className="w-4 h-4" />
-                Site do Leilão
-              </Button>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              {scrap.edital_link && (
-                <Button
-                  color="light"
-                  className="flex items-center justify-center gap-2"
-                  href={scrap.edital_link}
-                  target="_blank"
-                >
-                  <FileText className="w-4 h-4" />
-                  Edital
-                </Button>
-              )}
-              {scrap.matricula_link && (
-                <Button
-                  color="light"
-                  className="flex items-center justify-center gap-2"
-                  href={scrap.matricula_link}
-                  target="_blank"
-                >
-                  <FileText className="w-4 h-4" />
-                  Matrícula
-                </Button>
-              )}
-              {scrap.laudo_link && (
-                <Button
-                  color="light"
-                  className="flex items-center justify-center gap-2"
-                  href={scrap.laudo_link}
-                  target="_blank"
-                >
-                  <CheckSquare className="w-4 h-4" />
-                  Laudo
-                </Button>
-              )}
-              {scrap.case_link && (
-                <Button
-                  color="light"
-                  className="flex items-center justify-center gap-2"
-                  href={scrap.case_link}
-                  target="_blank"
-                >
-                  <FileText className="w-4 h-4" />
-                  Processo
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
+
+        <BarraLateral scrap={scrap} mutate={mutate} />
       </div>
     </Card>
   );
@@ -1571,6 +1391,199 @@ export function Lot({ scrapID }: { scrapID: number }) {
       <PotentialProfitCard scrap={scrap} />
       <LocationSection scrap={scrap} />
       <Chat scrapId={scrap.id} />
+    </div>
+  );
+}
+
+function BarraLateral({
+  scrap,
+  mutate,
+}: {
+  scrap: Scrap;
+  mutate: UseMutateFunction<void, Error, Scrap, unknown>;
+}) {
+  const isPastDate = (date: Date | null) => {
+    if (!date) {
+      return false;
+    }
+    const preferredAuctionDate = getPreferredAuctionDate(scrap);
+    if (preferredAuctionDate && date < preferredAuctionDate) {
+      return true;
+    }
+    return date < new Date();
+  };
+  const { isPending, mutate: fetchScrapFromSource } =
+    useFetchScrapFromSourceMutation();
+  return (
+    <div className="lg:w-1/3 lg:sticky lg:top-4 lg:h-fit">
+      <dl className="space-y-2">
+        <div>
+          <dt className="font-semibold">Tipo de Direito:</dt>
+          <dd>{scrap.analise_tipo_direito}</dd>
+        </div>
+        <div>
+          <dt className="font-semibold">Avaliação:</dt>
+          <dd>{formatCurrency(scrap.appraisal)}</dd>
+        </div>
+        <div>
+          <dt className="font-semibold">Lance Atual:</dt>
+          <dd className="text-2xl font-bold text-green-600">
+            {formatCurrency(scrap.bid)}
+          </dd>
+        </div>
+        {scrap.profit && (
+          <div>
+            <dt className="font-semibold">
+              {selectOptionBasedOnProfitBand(scrap.profit, {
+                else: "Lucro Esperado:",
+                loss: "Prejuízo Esperado:",
+              })}
+            </dt>
+            <dd
+              className={selectOptionBasedOnProfitBand(scrap.profit, {
+                loss: "text-2xl font-bold text-red-600",
+                low_profit: "text-2xl font-bold text-gray-600",
+                moderate_profit: "text-2xl font-bold text-yellow-400",
+                high_profit: "text-2xl font-bold text-green-600",
+              })}
+            >
+              {formatCurrency(Math.abs(scrap.profit.lucro))} (
+              {Math.abs(scrap.profit.lucro_percentual).toFixed(0)}%)
+            </dd>
+          </div>
+        )}
+        <div>
+          <dt className="font-semibold">1º Leilão:</dt>
+          <dd
+            className={
+              isPastDate(scrap.first_auction_date) ? "line-through" : ""
+            }
+          >
+            {scrap.first_auction_date
+              ? `${new Date(scrap.first_auction_date).toLocaleString()} - ${formatCurrency(scrap.first_auction_bid)}`
+              : "Não definido"}
+          </dd>
+        </div>
+        <div>
+          <dt className="font-semibold">2º Leilão:</dt>
+          <dd
+            className={
+              isPastDate(scrap.second_auction_date) ? "line-through" : ""
+            }
+          >
+            {scrap.second_auction_date
+              ? `${new Date(scrap.second_auction_date).toLocaleString()} - ${formatCurrency(scrap.second_auction_bid)}`
+              : "Não definido"}
+          </dd>
+        </div>
+        <div>
+          <dt className="font-semibold">Status:</dt>
+          <dd>
+            <AuctionStatus scrap={scrap} /> <LotStatusBadge scrap={scrap} />
+          </dd>
+        </div>
+        <div>
+          <dt className="font-semibold">Última Atualização:</dt>
+          <dd className="flex items-center gap-2">
+            {new Date(scrap.updated_at).toLocaleString()}{" "}
+            <RefreshCw
+              className={`w-4 h-4 cursor-pointer ${
+                isPending ? "animate-spin" : ""
+              }`}
+              onClick={() => !isPending && fetchScrapFromSource({ scrap })}
+            />
+          </dd>
+        </div>
+      </dl>
+      <div className="mt-6">
+        <div className="pb-2">
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              color={scrap.is_interesting === 1 ? "dark" : "light"}
+              className="flex items-center justify-center gap-2"
+              onClick={() => {
+                mutate({
+                  ...scrap,
+                  is_interesting: scrap.is_interesting === 1 ? null : 1,
+                });
+              }}
+            >
+              <ThumbsUp className="w-4 h-4 mr-1" />
+              Interessante
+            </Button>
+            <Button
+              color={scrap.is_interesting === 0 ? "dark" : "light"}
+              className="flex items-center justify-center gap-2"
+              onClick={() => {
+                mutate({
+                  ...scrap,
+                  is_interesting: scrap.is_interesting === 0 ? null : 0,
+                });
+              }}
+            >
+              <ThumbsDown className="w-4 h-4 mr-1" />
+              Não interessante
+            </Button>
+          </div>
+        </div>
+        <div className="pb-2">
+          <Button
+            color="light"
+            className="flex items-center justify-center gap-2"
+            href={scrap.url}
+            target="_blank"
+          >
+            <ExternalLink className="w-4 h-4" />
+            Site do Leilão
+          </Button>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {scrap.edital_link && (
+            <Button
+              color="light"
+              className="flex items-center justify-center gap-2"
+              href={scrap.edital_link}
+              target="_blank"
+            >
+              <FileText className="w-4 h-4" />
+              Edital
+            </Button>
+          )}
+          {scrap.matricula_link && (
+            <Button
+              color="light"
+              className="flex items-center justify-center gap-2"
+              href={scrap.matricula_link}
+              target="_blank"
+            >
+              <FileText className="w-4 h-4" />
+              Matrícula
+            </Button>
+          )}
+          {scrap.laudo_link && (
+            <Button
+              color="light"
+              className="flex items-center justify-center gap-2"
+              href={scrap.laudo_link}
+              target="_blank"
+            >
+              <CheckSquare className="w-4 h-4" />
+              Laudo
+            </Button>
+          )}
+          {scrap.case_link && (
+            <Button
+              color="light"
+              className="flex items-center justify-center gap-2"
+              href={scrap.case_link}
+              target="_blank"
+            >
+              <FileText className="w-4 h-4" />
+              Processo
+            </Button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
