@@ -84,6 +84,7 @@ export async function fetchScrapFromSource(
           scrapData.editalLink,
         ),
         analise_tipo_direito: await genTipoDireito(
+          previousScrap.id,
           previousScrap.description,
           scrapData.description,
         ),
@@ -454,13 +455,22 @@ export async function genDescriptionMarkdown(
 }
 
 async function genTipoDireito(
+  scrapID: number,
   oldDescription: string | null | undefined,
   newDescription: string | null | undefined,
-): Promise<TipoDireito | undefined> {
+): Promise<TipoDireito | null> {
   if (newDescription == null || newDescription === oldDescription) {
     return (oldDescription as TipoDireito) ?? undefined;
   }
-  return await deriveTipoDireito(newDescription);
+  const tipoDireito = await deriveTipoDireito(newDescription);
+  if (tipoDireito == null) {
+    console.error("Não pode derivar o tipo de direito", {
+      scrapID,
+      newDescription,
+    });
+    return null;
+  }
+  return tipoDireito;
 }
 
 async function login(scraper: Scraper, page: Page): Promise<void> {

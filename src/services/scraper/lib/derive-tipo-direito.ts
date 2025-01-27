@@ -2,15 +2,6 @@ import { openaiCached } from "@/services/ai/openai-cached";
 import { generateObject } from "ai";
 import { z } from "zod";
 
-export async function deriveTipoDireito(
-  description: string,
-  model: string = "gpt-4o-mini",
-): Promise<z.infer<typeof TIPO_DIREITO> | undefined> {
-  const res = await deriveTipoDireito_INTERNAL(description, model);
-  // In the last test, the revision improves error rate from 25% to 4%.
-  return res.revisao.tipo_direito;
-}
-
 const TIPO_DIREITO = z.enum([
   "Propriedade plena",
   "Nua-propriedade",
@@ -18,6 +9,18 @@ const TIPO_DIREITO = z.enum([
   "Direitos possessórios",
   "Direitos do compromissário comprador",
 ]);
+
+export async function deriveTipoDireito(
+  description: string,
+  model: string = "gpt-4o-mini",
+): Promise<z.infer<typeof TIPO_DIREITO> | undefined> {
+  const res = await deriveTipoDireito_INTERNAL(description, model);
+  // In the last test, the revision improves error rate from 25% to 4%.
+  if (TIPO_DIREITO.safeParse(res.revisao.tipo_direito).success) {
+    return res.revisao.tipo_direito;
+  }
+  return undefined;
+}
 
 export type TipoDireito = z.infer<typeof TIPO_DIREITO>;
 
