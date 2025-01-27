@@ -1,5 +1,6 @@
 [phases.setup]
     aptPkgs = [
+        "...",
         # ffmpeg
         "ffmpeg",
         "imagemagick",
@@ -29,4 +30,9 @@
         "libxss1",
         "libxtst6",
         "xdg-utils",
+    ]
+
+    nixPkgs = [
+        "...",
+        "imagemagick"
     ]
