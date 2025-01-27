@@ -9,7 +9,7 @@ import { eq } from "drizzle-orm";
 // Allow streaming responses up to 5 minutes
 // since it can take a while to generate the
 // system message for the first time
-export const maxDuration = 60 * 5;
+export const maxDuration = 300;
 
 export async function POST(req: Request) {
   const { messages, scrapId } = await req.json();
