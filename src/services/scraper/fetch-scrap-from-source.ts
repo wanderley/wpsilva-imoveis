@@ -86,6 +86,7 @@ export async function fetchScrapFromSource(
         analise_tipo_direito: await genTipoDireito(
           previousScrap.id,
           previousScrap.description,
+          previousScrap.analise_tipo_direito,
           scrapData.description,
         ),
       })
@@ -457,10 +458,11 @@ export async function genDescriptionMarkdown(
 async function genTipoDireito(
   scrapID: number,
   oldDescription: string | null | undefined,
+  oldTipoDireito: TipoDireito | null | undefined,
   newDescription: string | null | undefined,
-): Promise<TipoDireito | null> {
+): Promise<TipoDireito | null | undefined> {
   if (newDescription == null || newDescription === oldDescription) {
-    return (oldDescription as TipoDireito) ?? undefined;
+    return oldTipoDireito;
   }
   const tipoDireito = await deriveTipoDireito(newDescription);
   if (tipoDireito == null) {
