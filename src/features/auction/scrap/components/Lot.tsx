@@ -9,7 +9,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Scrap, ScrapProfit } from "@/db/schema";
 import AuctionStatus from "@/features/auction/scrap/components/AuctionStatus";
 import Chat from "@/features/auction/scrap/components/Chat";
@@ -38,6 +37,7 @@ import {
 } from "flowbite-react";
 import {
   AlertTriangle,
+  ArrowLeftRight,
   Banknote,
   BarChart,
   Bath,
@@ -105,6 +105,40 @@ const getReformTypeBadgeVariant = (
   }
 };
 
+function DescricaoAnalise({ scrap }: { scrap: Scrap }) {
+  const [mostrarResumo, setMostrarResumo] = useState(true);
+  const [isHovered, setIsHovered] = useState(false);
+  return (
+    <div
+      className="relative"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <div className="text-muted-foreground h-full">
+        {mostrarResumo ? (
+          scrap.analyses[0].response.description
+        ) : (
+          <StyledMarkdown>
+            {scrap.description_markdown || scrap.description || ""}
+          </StyledMarkdown>
+        )}
+      </div>
+      {isHovered && (
+        <div className="absolute top-0 right-4 translate-y-1/2">
+          <UIButton
+            variant="secondary"
+            size="icon"
+            className="rounded-full shadow-lg"
+            onClick={() => setMostrarResumo(!mostrarResumo)}
+          >
+            <ArrowLeftRight className="h-4 w-4" />
+          </UIButton>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Analysis({ scrap }: { scrap: Scrap }) {
   const { isPending, mutate: requestAnalysisMutation } =
     useRequestAnalysisMutation(scrap.id);
@@ -117,28 +151,7 @@ function Analysis({ scrap }: { scrap: Scrap }) {
   return (
     <div className="lg:w-2/3 grid grid-cols-1 gap-8">
       <section className="space-y-4">
-        <Tabs defaultValue="analysis" className="w-full">
-          <TabsList className="w-full">
-            <TabsTrigger value="analysis" className="flex-1">
-              Resumo
-            </TabsTrigger>
-            <TabsTrigger value="auction" className="flex-1">
-              Descrição do Leiloeiro
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="analysis">
-            <p className="text-muted-foreground">
-              {analysis.response.description}
-            </p>
-          </TabsContent>
-          <TabsContent value="auction">
-            <p className="text-muted-foreground">
-              <StyledMarkdown>
-                {scrap.description_markdown || scrap.description || ""}
-              </StyledMarkdown>
-            </p>
-          </TabsContent>
-        </Tabs>
+        <DescricaoAnalise scrap={scrap} />
       </section>
 
       <Separator />
