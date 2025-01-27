@@ -90,6 +90,15 @@ export const scrapsTable = mysqlTable("scraps", {
     "not-fetched",
   ),
   is_interesting: int(),
+  // campos de análise
+  analise_tipo_direito: mysqlEnum([
+    "Propriedade plena",
+    "Nua-propriedade",
+    "Direitos fiduciários",
+    "Direitos possessórios",
+    "Direitos do compromissário comprador",
+  ]),
+  analise_tipo_direito_verificada: int().default(0),
   created_at: createdAt,
   updated_at: updatedAt,
 });

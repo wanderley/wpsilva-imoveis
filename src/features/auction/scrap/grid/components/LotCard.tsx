@@ -4,6 +4,7 @@ import { LotModal } from "@/features/auction/scrap/components/LotModal";
 import { Lot } from "@/features/auction/scrap/grid/api";
 import { getPreferredAuctionDate } from "@/features/auction/scrap/helpers.client";
 import { selectOptionBasedOnProfitBand } from "@/features/auction/scrap/lib/scraps";
+import assertNever from "@/lib/assert-never";
 import { formatCurrency } from "@/lib/currency";
 import { Badge, Card, Carousel } from "flowbite-react";
 import Link from "next/link";
@@ -20,16 +21,34 @@ function parsePreferredAuctionDate(lot: Pick<Scrap, "preferred_auction_date">) {
   return date.toLocaleDateString("pt-BR");
 }
 
+function getLotType(lot: Lot) {
+  switch (lot.analise_tipo_direito) {
+    case null:
+    case "Propriedade plena":
+      return "";
+    case "Nua-propriedade":
+      return "Nua-propriedade:";
+    case "Direitos fiduciários":
+      return "Direitos fiduciários:";
+    case "Direitos possessórios":
+      return "Direitos de posse:";
+    case "Direitos do compromissário comprador":
+      return "Direitos de compra:";
+    default:
+      assertNever(lot.analise_tipo_direito);
+  }
+}
+
 function BottomContent({ lot }: { lot: Lot }) {
   return (
     <>
       {" "}
       <div className="flex-grow">
         <h5
-          className="text-sm font-semibold tracking-tight text-gray-900 dark:text-white mb-1 line-clamp-1"
+          className="text-sm font-semibold tracking-tight text-gray-900 dark:text-white mb-0 line-clamp-1"
           title={lot.name || "N/A"}
         >
-          {lot.name || "N/A"}
+          {getLotType(lot)} {lot.name || "N/A"}
         </h5>
         <p className="text-xs text-gray-600 dark:text-gray-400 mb-1 line-clamp-1">
           Endereço: {lot.address || "Endereço não disponível"}

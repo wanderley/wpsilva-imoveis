@@ -15,6 +15,10 @@ import { formatTextAsMarkdown } from "@/services/ai/format-text-as-markdown";
 import { updateAnalysis } from "@/services/analyser/actions";
 import { SystemFilePath } from "@/services/file/system-file";
 import { validateAddress } from "@/services/google/address-validation";
+import {
+  type TipoDireito,
+  deriveTipoDireito,
+} from "@/services/scraper/lib/derive-tipo-direito";
 import { waitPageToBeReady } from "@/services/scraper/lib/puppeteer";
 import { Lot, Scraper } from "@/services/scraper/scraper";
 import { getScraper } from "@/services/scraper/scrapers";
@@ -78,6 +82,10 @@ export async function fetchScrapFromSource(
           scraper,
           previousScrap,
           scrapData.editalLink,
+        ),
+        analise_tipo_direito: await genTipoDireito(
+          previousScrap.description,
+          scrapData.description,
         ),
       })
       .where(
@@ -442,6 +450,16 @@ export async function genDescriptionMarkdown(
     return newDescription;
   }
   return formatTextAsMarkdown(newDescription);
+}
+
+async function genTipoDireito(
+  oldDescription: string | null | undefined,
+  newDescription: string | null | undefined,
+): Promise<TipoDireito | undefined> {
+  if (newDescription == null || newDescription === oldDescription) {
+    return (oldDescription as TipoDireito) ?? undefined;
+  }
+  return await deriveTipoDireito(newDescription);
 }
 
 async function login(scraper: Scraper, page: Page): Promise<void> {

@@ -691,6 +691,10 @@ function DescriptionCard({
         <div className="lg:w-1/3 lg:sticky lg:top-4 lg:h-fit">
           <dl className="space-y-2">
             <div>
+              <dt className="font-semibold">Tipo de Direito:</dt>
+              <dd>{scrap.analise_tipo_direito}</dd>
+            </div>
+            <div>
               <dt className="font-semibold">Avaliação:</dt>
               <dd>{formatCurrency(scrap.appraisal)}</dd>
             </div>
