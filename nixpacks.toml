@@ -34,5 +34,6 @@
 
     nixPkgs = [
         "...",
-        "imagemagick"
+        "imagemagick",
+        "xvfb-run",
     ]
