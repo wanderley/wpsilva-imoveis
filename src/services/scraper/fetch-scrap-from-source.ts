@@ -111,6 +111,7 @@ export async function fetchScrapFromSource(
       cause: {
         originalError: error,
         metadata: {
+          scrapId: previousScrap.id,
           scrapData,
         },
       },
