@@ -73,6 +73,8 @@ export const Wspleiloes: Scraper = {
       case "Sem Licitante":
       case "Fechado para Lances":
         return "closed";
+      case "Cancelado":
+        return "suspended";
       default:
         console.error(`[www.wspleiloes.com.br] Unknown status: ${status}`);
         return "unknown";
