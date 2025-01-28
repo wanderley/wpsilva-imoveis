@@ -55,15 +55,18 @@ export function useScrapDetails(id: number) {
 export function useUpdateScrapMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (scrap: Scrap) => await saveScrap(scrap),
+    mutationFn: async (scrap: Partial<Scrap> & { id: number }) =>
+      await saveScrap(scrap),
     onSuccess: (_, scrap) => {
-      queryClient.invalidateQueries({
+      queryClient.refetchQueries({
         queryKey: queryKeys.scrapDetails(scrap.id),
       });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.scraps(scrap.scraper_id),
-      });
-      queryClient.invalidateQueries({
+      if (scrap.scraper_id) {
+        queryClient.refetchQueries({
+          queryKey: queryKeys.scraps(scrap.scraper_id),
+        });
+      }
+      queryClient.refetchQueries({
         queryKey: queryKeys.pendingReviewLots,
       });
     },

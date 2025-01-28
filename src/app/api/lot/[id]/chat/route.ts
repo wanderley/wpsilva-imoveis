@@ -47,7 +47,7 @@ async function getSystemMessage(scrapId: number) {
           lance_minimo_primeira_praca: scrap.first_auction_bid ?? undefined,
           data_segunda_praca: scrap.second_auction_date ?? undefined,
           lance_minimo_segunda_praca: scrap.second_auction_bid ?? undefined,
-          numero_processo: scrap.case_number ?? undefined,
+          numero_processo_judicial: scrap.case_number ?? undefined,
         },
         null,
         2,

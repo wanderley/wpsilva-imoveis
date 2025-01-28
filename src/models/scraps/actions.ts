@@ -11,7 +11,9 @@ export async function getScrapDetails(
   return await findScrapByID(scrapId);
 }
 
-export async function saveScrap(scrap: Scrap): Promise<void> {
+export async function saveScrap(
+  scrap: Partial<Scrap> & { id: number },
+): Promise<void> {
   await db.update(scrapsTable).set(scrap).where(eq(scrapsTable.id, scrap.id));
 }
 

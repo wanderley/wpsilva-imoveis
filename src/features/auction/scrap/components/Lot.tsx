@@ -1,6 +1,5 @@
 "use client";
 
-import StyledMarkdown from "@/components/StyledMarkdown";
 import { Badge } from "@/components/ui/badge";
 import { Button as UIButton } from "@/components/ui/button";
 import {
@@ -12,6 +11,8 @@ import { Separator } from "@/components/ui/separator";
 import { Scrap, ScrapProfit } from "@/db/schema";
 import AuctionStatus from "@/features/auction/scrap/components/AuctionStatus";
 import Chat from "@/features/auction/scrap/components/Chat";
+import { DescricaoAnalise } from "@/features/auction/scrap/components/DescricaoAnalise";
+import { LoteImagens } from "@/features/auction/scrap/components/LotCarousel";
 import { LotStatusBadge } from "@/features/auction/scrap/components/LotStatusBadge";
 import { getPreferredAuctionDate } from "@/features/auction/scrap/helpers.client";
 import { selectOptionBasedOnProfitBand } from "@/features/auction/scrap/lib/scraps";
@@ -27,17 +28,9 @@ import { formatCurrency } from "@/lib/currency";
 import { computeProfit } from "@/models/scraps/helpers";
 import { Schema } from "@/services/analyser/schema";
 import { UseMutateFunction } from "@tanstack/react-query";
-import {
-  Button,
-  Card,
-  Carousel,
-  Label,
-  Progress,
-  TextInput,
-} from "flowbite-react";
+import { Button, Card, Label, Progress, TextInput } from "flowbite-react";
 import {
   AlertTriangle,
-  ArrowLeftRight,
   Banknote,
   BarChart,
   Bath,
@@ -51,7 +44,9 @@ import {
   Scale,
   Sofa,
   StickyNote,
+  UserPen,
 } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
   Check,
@@ -105,40 +100,6 @@ const getReformTypeBadgeVariant = (
   }
 };
 
-function DescricaoAnalise({ scrap }: { scrap: Scrap }) {
-  const [mostrarResumo, setMostrarResumo] = useState(true);
-  const [isHovered, setIsHovered] = useState(false);
-  return (
-    <div
-      className="relative"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <div className="text-muted-foreground h-full">
-        {mostrarResumo ? (
-          scrap.analyses[0].response.description
-        ) : (
-          <StyledMarkdown>
-            {scrap.description_markdown || scrap.description || ""}
-          </StyledMarkdown>
-        )}
-      </div>
-      {isHovered && (
-        <div className="absolute top-0 right-4 translate-y-1/2">
-          <UIButton
-            variant="secondary"
-            size="icon"
-            className="rounded-full shadow-lg"
-            onClick={() => setMostrarResumo(!mostrarResumo)}
-          >
-            <ArrowLeftRight className="h-4 w-4" />
-          </UIButton>
-        </div>
-      )}
-    </div>
-  );
-}
-
 function Analysis({ scrap }: { scrap: Scrap }) {
   const { isPending, mutate: requestAnalysisMutation } =
     useRequestAnalysisMutation(scrap.id);
@@ -170,6 +131,13 @@ function Analysis({ scrap }: { scrap: Scrap }) {
               }`}
             />
           </button>
+          <Link
+            href={`/lot/${scrap.id}/review`}
+            className="p-2 rounded-full hover:bg-muted/50 transition-colors"
+            aria-label="Revisar dados"
+          >
+            <UserPen className={"w-4 h-4 cursor-pointer"} />
+          </Link>
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2 p-4 bg-muted rounded-lg">
           <div>
@@ -675,7 +643,12 @@ function DescriptionCard({
   mutate,
 }: {
   scrap: Scrap;
-  mutate: UseMutateFunction<void, Error, Scrap, unknown>;
+  mutate: UseMutateFunction<
+    void,
+    Error,
+    Partial<Scrap> & { id: number },
+    unknown
+  >;
 }) {
   return (
     <Card>
@@ -1369,23 +1342,7 @@ export function Lot({ scrapID }: { scrapID: number }) {
   return (
     <div className="space-y-4">
       <div className="h-56 sm:h-64 xl:h-80 2xl:h-96 mb-4 bg-gray-950 rounded-lg overflow-hidden">
-        <Carousel className="h-full">
-          {scrap.files
-            .filter((file) => file.file_type === "jpg")
-            .map((image) => (
-              <div
-                key={image.id}
-                className="flex items-center justify-center h-full"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={image.url}
-                  alt={`Imagem ${image.id}`}
-                  className="max-w-full max-h-full object-contain"
-                />
-              </div>
-            ))}
-        </Carousel>
+        <LoteImagens className="w-full" scrap={scrap} />
       </div>
       <DescriptionCard scrap={scrap} mutate={mutate} />
       <PotentialProfitCard scrap={scrap} />
@@ -1400,7 +1357,12 @@ function BarraLateral({
   mutate,
 }: {
   scrap: Scrap;
-  mutate: UseMutateFunction<void, Error, Scrap, unknown>;
+  mutate: UseMutateFunction<
+    void,
+    Error,
+    Partial<Scrap> & { id: number },
+    unknown
+  >;
 }) {
   const isPastDate = (date: Date | null) => {
     if (!date) {

@@ -1,4 +1,5 @@
 import { Navbar } from "@/components/Navbar";
+import { Toaster } from "@/components/ui/toaster";
 import { GoogleApiProvider } from "@/features/google/components/GoogleApiProvider";
 import { SessionProvider } from "@/features/login/components/SessionProvider";
 import { QueryClientProvider } from "@/features/react-query/components/QueryClientProvider";
@@ -46,6 +47,7 @@ export default function RootLayout({
             )}
           </QueryClientProvider>
         </SessionProvider>
+        <Toaster />
       </body>
     </html>
   );
