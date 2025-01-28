@@ -22,10 +22,8 @@ export async function deriveTipoDireito(
   return undefined;
 }
 
-export type TipoDireito = z.infer<typeof TIPO_DIREITO>;
-
 type Schema = {
-  tipo_direito: TipoDireito;
+  tipo_direito: z.infer<typeof TIPO_DIREITO>;
   justificativa: string;
 };
 
