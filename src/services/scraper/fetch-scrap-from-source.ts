@@ -25,6 +25,8 @@ import { getScraper } from "@/services/scraper/scrapers";
 import { and, count, eq, inArray } from "drizzle-orm";
 import { Page } from "puppeteer";
 
+import { deriveTipoImovel } from "./lib/derive-tipo-imovel";
+
 export async function fetchScrapFromSource(
   scraperID: string,
   url: string,
@@ -84,6 +86,10 @@ export async function fetchScrapFromSource(
           scrapData.editalLink,
         ),
         analise_tipo_direito: await genTipoDireito(
+          previousScrap,
+          scrapData.description,
+        ),
+        analise_tipo_imovel: await genTipoImovel(
           previousScrap,
           scrapData.description,
         ),
@@ -473,6 +479,20 @@ async function genTipoDireito(
     return null;
   }
   return tipoDireito;
+}
+
+async function genTipoImovel(
+  scrap: Scrap,
+  newDescription: string | null | undefined,
+): Promise<Scrap["analise_tipo_imovel"] | null | undefined> {
+  if (
+    newDescription == null ||
+    newDescription === scrap.description ||
+    scrap.analise_tipo_imovel_verificada === 1
+  ) {
+    return scrap.analise_tipo_imovel;
+  }
+  return await deriveTipoImovel(newDescription);
 }
 
 async function login(scraper: Scraper, page: Page): Promise<void> {

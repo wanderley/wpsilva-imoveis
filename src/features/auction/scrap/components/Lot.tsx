@@ -652,7 +652,9 @@ function DescriptionCard({
 }) {
   return (
     <Card>
-      <h2 className="text-2xl font-bold mb-4">Descrição do Lote</h2>
+      <h2 className="text-2xl font-bold mb-4">
+        Descrição do Lote: {scrap.analise_tipo_imovel}
+      </h2>
       <div className="flex flex-col lg:flex-row gap-6">
         {scrap.analyses.length === 0 ? (
           <OriginalDescription scrap={scrap} />

@@ -99,6 +99,14 @@ export const scrapsTable = mysqlTable("scraps", {
     "Direitos do compromissário comprador",
   ]),
   analise_tipo_direito_verificada: int().default(0),
+  analise_tipo_imovel: mysqlEnum([
+    "Casa",
+    "Apartamento",
+    "Terreno",
+    "Vaga de garagem",
+    "Imóvel comercial",
+  ]),
+  analise_tipo_imovel_verificada: int().default(0),
   created_at: createdAt,
   updated_at: updatedAt,
 });

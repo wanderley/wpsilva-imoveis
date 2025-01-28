@@ -1,6 +1,7 @@
 import * as ajustarDescricaoScraps from "@/services/manutencao/rotina-ajustar-descricao-scraps";
 import * as ajustarFetchStatus from "@/services/manutencao/rotina-ajustar-fetch-status";
 import * as ajustarTipoDireito from "@/services/manutencao/rotina-ajustar-tipo-direito";
+import * as ajustarTipoImovel from "@/services/manutencao/rotina-ajustar-tipo-imovel";
 import chalk from "chalk";
 import { Command } from "commander";
 
@@ -8,6 +9,7 @@ const rotinas: { descricao: string; rotina: () => Promise<void> }[] = [
   ajustarDescricaoScraps,
   ajustarFetchStatus,
   ajustarTipoDireito,
+  ajustarTipoImovel,
 ];
 
 export default function ManutencaoCommand() {

@@ -78,6 +78,14 @@ const Schema = z.object({
     "Direitos do compromissário comprador",
   ]),
   analise_tipo_direito_verificada: z.boolean(),
+  analise_tipo_imovel: z.enum([
+    "Casa",
+    "Apartamento",
+    "Terreno",
+    "Vaga de garagem",
+    "Imóvel comercial",
+  ]),
+  analise_tipo_imovel_verificada: z.boolean(),
 });
 
 function Formulario({ scrap }: { scrap: Scrap }) {
@@ -87,6 +95,8 @@ function Formulario({ scrap }: { scrap: Scrap }) {
     defaultValues: {
       analise_tipo_direito: scrap.analise_tipo_direito ?? undefined,
       analise_tipo_direito_verificada: !!scrap.analise_tipo_direito_verificada,
+      analise_tipo_imovel: scrap.analise_tipo_imovel ?? undefined,
+      analise_tipo_imovel_verificada: !!scrap.analise_tipo_imovel_verificada,
     },
   });
 
@@ -94,12 +104,18 @@ function Formulario({ scrap }: { scrap: Scrap }) {
     data.analise_tipo_direito_verificada =
       data.analise_tipo_direito_verificada ||
       data.analise_tipo_direito !== scrap.analise_tipo_direito;
-
+    data.analise_tipo_imovel_verificada =
+      data.analise_tipo_imovel_verificada ||
+      data.analise_tipo_imovel !== scrap.analise_tipo_imovel;
     mutate(
       {
         id: scrap.id,
         analise_tipo_direito: data.analise_tipo_direito,
         analise_tipo_direito_verificada: data.analise_tipo_direito_verificada
+          ? 1
+          : 0,
+        analise_tipo_imovel: data.analise_tipo_imovel,
+        analise_tipo_imovel_verificada: data.analise_tipo_imovel_verificada
           ? 1
           : 0,
       },
@@ -111,6 +127,7 @@ function Formulario({ scrap }: { scrap: Scrap }) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6">
         <CampoTipoDireito />
+        <CampoTipoImovel />
         <div className="flex items-center gap-2">
           <Button type="submit">Salvar</Button>
           <Button type="button" variant="outline" onClick={() => form.reset()}>
@@ -167,6 +184,47 @@ function CampoTipoDireito() {
           </Select>
           <FormDescription>
             Escolha a opção que melhor descreve o tipo de direito.
+          </FormDescription>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
+}
+
+function CampoTipoImovel() {
+  const form = useFormContext<z.infer<typeof Schema>>();
+  return (
+    <FormField
+      control={form.control}
+      name="analise_tipo_imovel"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>
+            <div className="flex items-center gap-2">
+              <span>Tipo de imóvel</span>
+              <StatusVerificado
+                campo="analise_tipo_imovel"
+                campoVerificacao="analise_tipo_imovel_verificada"
+              />
+            </div>
+          </FormLabel>
+          <Select onValueChange={field.onChange} value={field.value as string}>
+            <FormControl>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o tipo de imóvel" />
+              </SelectTrigger>
+            </FormControl>
+            <SelectContent>
+              <SelectItem value="Casa">Casa</SelectItem>
+              <SelectItem value="Apartamento">Apartamento</SelectItem>
+              <SelectItem value="Terreno">Terreno</SelectItem>
+              <SelectItem value="Vaga de garagem">Vaga de garagem</SelectItem>
+              <SelectItem value="Imóvel comercial">Imóvel comercial</SelectItem>
+            </SelectContent>
+          </Select>
+          <FormDescription>
+            Escolha a opção que melhor descreve o tipo de imóvel.
           </FormDescription>
           <FormMessage />
         </FormItem>
