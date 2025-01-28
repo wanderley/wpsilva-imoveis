@@ -126,8 +126,8 @@ function Formulario({ scrap }: { scrap: Scrap }) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6">
-        <CampoTipoDireito />
         <CampoTipoImovel />
+        <CampoTipoDireito />
         <div className="flex items-center gap-2">
           <Button type="submit">Salvar</Button>
           <Button type="button" variant="outline" onClick={() => form.reset()}>
