@@ -16,13 +16,12 @@ import { updateAnalysis } from "@/services/analyser/actions";
 import { SystemFilePath } from "@/services/file/system-file";
 import { validateAddress } from "@/services/google/address-validation";
 import { deriveTipoDireito } from "@/services/scraper/lib/derive-tipo-direito";
+import { deriveTipoImovel } from "@/services/scraper/lib/derive-tipo-imovel";
 import { waitPageToBeReady } from "@/services/scraper/lib/puppeteer";
 import { Lot, Scraper } from "@/services/scraper/scraper";
 import { getScraper } from "@/services/scraper/scrapers";
 import { and, count, eq, inArray } from "drizzle-orm";
 import { Page } from "puppeteer";
-
-import { deriveTipoImovel } from "./lib/derive-tipo-imovel";
 
 export async function fetchScrapFromSource(
   scraperID: string,
