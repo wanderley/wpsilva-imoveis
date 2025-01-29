@@ -107,6 +107,8 @@ export const scrapsTable = mysqlTable("scraps", {
     "Imóvel comercial",
   ]),
   analise_tipo_imovel_verificada: int().default(0),
+  analise_porcentagem_titularidade: int(),
+  analise_porcentagem_titularidade_verificada: int().default(0),
   created_at: createdAt,
   updated_at: updatedAt,
 });

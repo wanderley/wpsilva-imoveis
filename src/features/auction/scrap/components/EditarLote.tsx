@@ -10,6 +10,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -86,6 +87,8 @@ const Schema = z.object({
     "Imóvel comercial",
   ]),
   analise_tipo_imovel_verificada: z.boolean(),
+  analise_porcentagem_titularidade: z.number().min(0).max(10000),
+  analise_porcentagem_titularidade_verificada: z.boolean(),
 });
 
 function Formulario({ scrap }: { scrap: Scrap }) {
@@ -97,6 +100,10 @@ function Formulario({ scrap }: { scrap: Scrap }) {
       analise_tipo_direito_verificada: !!scrap.analise_tipo_direito_verificada,
       analise_tipo_imovel: scrap.analise_tipo_imovel ?? undefined,
       analise_tipo_imovel_verificada: !!scrap.analise_tipo_imovel_verificada,
+      analise_porcentagem_titularidade:
+        scrap.analise_porcentagem_titularidade ?? undefined,
+      analise_porcentagem_titularidade_verificada:
+        !!scrap.analise_porcentagem_titularidade_verificada,
     },
   });
 
@@ -107,6 +114,10 @@ function Formulario({ scrap }: { scrap: Scrap }) {
     data.analise_tipo_imovel_verificada =
       data.analise_tipo_imovel_verificada ||
       data.analise_tipo_imovel !== scrap.analise_tipo_imovel;
+    data.analise_porcentagem_titularidade_verificada =
+      data.analise_porcentagem_titularidade_verificada ||
+      data.analise_porcentagem_titularidade !==
+        scrap.analise_porcentagem_titularidade;
     mutate(
       {
         id: scrap.id,
@@ -118,6 +129,9 @@ function Formulario({ scrap }: { scrap: Scrap }) {
         analise_tipo_imovel_verificada: data.analise_tipo_imovel_verificada
           ? 1
           : 0,
+        analise_porcentagem_titularidade: data.analise_porcentagem_titularidade,
+        analise_porcentagem_titularidade_verificada:
+          data.analise_porcentagem_titularidade_verificada ? 1 : 0,
       },
       { onSuccess: (_) => toast({ title: "Dados atualizados com sucesso!" }) },
     );
@@ -128,6 +142,7 @@ function Formulario({ scrap }: { scrap: Scrap }) {
       <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6">
         <CampoTipoImovel />
         <CampoTipoDireito />
+        <CampoPorcentagemTitularidade />
         <div className="flex items-center gap-2">
           <Button type="submit">Salvar</Button>
           <Button type="button" variant="outline" onClick={() => form.reset()}>
@@ -225,6 +240,55 @@ function CampoTipoImovel() {
           </Select>
           <FormDescription>
             Escolha a opção que melhor descreve o tipo de imóvel.
+          </FormDescription>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
+}
+
+function CampoPorcentagemTitularidade() {
+  const form = useFormContext<z.infer<typeof Schema>>();
+  return (
+    <FormField
+      control={form.control}
+      name="analise_porcentagem_titularidade"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>
+            <div className="flex items-center gap-2">
+              <span>Porcentagem de titularidade</span>
+              <StatusVerificado
+                campo="analise_porcentagem_titularidade"
+                campoVerificacao="analise_porcentagem_titularidade_verificada"
+              />
+            </div>
+          </FormLabel>
+          <FormControl>
+            <div className="flex items-center gap-2">
+              <Input
+                {...field}
+                className="w-15"
+                type="number"
+                step={0.01}
+                value={field.value ? field.value / 100 : ""}
+                onChange={(e) =>
+                  field.onChange(
+                    Math.max(
+                      0,
+                      Math.min(Number(Number(e.target.value).toFixed(2)), 100),
+                    ) * 100,
+                  )
+                }
+                min={0}
+                max={100}
+              />
+              <span>%</span>
+            </div>
+          </FormControl>
+          <FormDescription>
+            100% significa que o lote é inteiramente titularidade do comprador.
           </FormDescription>
           <FormMessage />
         </FormItem>

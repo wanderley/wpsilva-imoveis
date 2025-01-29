@@ -15,6 +15,7 @@ import { formatTextAsMarkdown } from "@/services/ai/format-text-as-markdown";
 import { updateAnalysis } from "@/services/analyser/actions";
 import { SystemFilePath } from "@/services/file/system-file";
 import { validateAddress } from "@/services/google/address-validation";
+import { derivePorcentagemTitularidade } from "@/services/scraper/lib/derive-porcentagem-titularidade";
 import { deriveTipoDireito } from "@/services/scraper/lib/derive-tipo-direito";
 import { deriveTipoImovel } from "@/services/scraper/lib/derive-tipo-imovel";
 import { waitPageToBeReady } from "@/services/scraper/lib/puppeteer";
@@ -86,6 +87,10 @@ export async function fetchScrapFromSource(
           scrapData.description,
         ),
         analise_tipo_imovel: await genTipoImovel(
+          previousScrap,
+          scrapData.description,
+        ),
+        analise_porcentagem_titularidade: await genPorcentagemTitularidade(
           previousScrap,
           scrapData.description,
         ),
@@ -489,6 +494,20 @@ async function genTipoImovel(
     return scrap.analise_tipo_imovel;
   }
   return await deriveTipoImovel(newDescription);
+}
+
+async function genPorcentagemTitularidade(
+  scrap: Scrap,
+  newDescription: string | null | undefined,
+): Promise<Scrap["analise_porcentagem_titularidade"] | undefined> {
+  if (
+    newDescription == null ||
+    newDescription === scrap.description ||
+    scrap.analise_porcentagem_titularidade_verificada === 1
+  ) {
+    return scrap.analise_porcentagem_titularidade;
+  }
+  return await derivePorcentagemTitularidade(newDescription);
 }
 
 async function login(scraper: Scraper, page: Page): Promise<void> {

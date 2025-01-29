@@ -653,7 +653,7 @@ function DescriptionCard({
   return (
     <Card>
       <h2 className="text-2xl font-bold mb-4">
-        Descrição do Lote: {scrap.analise_tipo_imovel}
+        Descrição do Lote: {descriptionTitle({ scrap })}
       </h2>
       <div className="flex flex-col lg:flex-row gap-6">
         {scrap.analyses.length === 0 ? (
@@ -669,6 +669,16 @@ function DescriptionCard({
       </div>
     </Card>
   );
+}
+
+function descriptionTitle({ scrap }: { scrap: Scrap }) {
+  switch (scrap.analise_porcentagem_titularidade) {
+    case 10000:
+    case null:
+      return scrap.analise_tipo_imovel;
+    default:
+      return `${(scrap.analise_porcentagem_titularidade / 100).toFixed(0)}% ${scrap.analise_tipo_imovel}`;
+  }
 }
 
 function PotentialProfitEmptyCard() {
