@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { scrapsTable } from "@/db/schema";
-import { openaiCached } from "@/services/ai/openai-cached";
+import { openaiCached } from "@/services/ai/providers";
 import { SystemFile } from "@/services/file/system-file";
 import { extractTextWithAi } from "@/services/pdf/extract-text-with-ai";
 import { streamText } from "ai";

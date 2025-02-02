@@ -13,6 +13,7 @@
     "db:prod:backup": "dotenv -c prod -- tsx src/db/scripts/db-backup-save.ts"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^1.1.5",
     "@ai-sdk/openai": "^1.1.2",
     "@auth/drizzle-adapter": "^1.7.3",
     "@google-cloud/storage": "^7.15.0",

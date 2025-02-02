@@ -1,4 +1,4 @@
-import { openaiCached } from "@/services/ai/openai-cached";
+import { openaiCached } from "@/services/ai/providers";
 import { generateObject } from "ai";
 import { z } from "zod";
 

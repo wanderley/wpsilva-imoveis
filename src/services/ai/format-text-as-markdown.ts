@@ -1,4 +1,4 @@
-import { openaiCached } from "@/services/ai/openai-cached";
+import { openaiCached } from "@/services/ai/providers";
 import { generateText } from "ai";
 
 export async function formatTextAsMarkdown(text: string): Promise<string> {
