@@ -1,5 +1,7 @@
 import { getFilesPath } from "@/lib/env";
 import { IFile } from "@/services/file/types";
+import crypto from "crypto";
+import fs from "fs";
 import path from "path";
 
 export abstract class AbstractFile implements IFile {
@@ -19,5 +21,15 @@ export abstract class AbstractFile implements IFile {
 
   extension(): string {
     return path.extname(this.filePath);
+  }
+
+  async md5(encoding: "hex" | "base64" = "hex"): Promise<string> {
+    await this.download();
+    const hash = crypto.createHash("md5");
+    const stream = fs.createReadStream(this.localPath());
+    for await (const chunk of stream) {
+      hash.update(chunk);
+    }
+    return hash.digest(encoding);
   }
 }

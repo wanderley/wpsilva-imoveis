@@ -6,4 +6,5 @@ export interface IFile {
   write(content: Buffer): Promise<void>;
   read(): Promise<Buffer>;
   download(): Promise<void>;
+  md5(encoding: "hex" | "base64"): Promise<string>;
 }
