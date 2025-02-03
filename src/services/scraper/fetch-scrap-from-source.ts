@@ -50,7 +50,7 @@ export async function fetchScrapFromSource(
         address: scrapData.address,
         description: scrapData.description,
         description_markdown: await genDescriptionMarkdown(
-          previousScrap.description ?? undefined,
+          previousScrap,
           scrapData.description,
         ),
         case_number: scrapData.caseNumber,
@@ -450,64 +450,52 @@ async function genEditalFile(
     });
   }
 }
+
 export async function genDescriptionMarkdown(
-  oldDescription: string | undefined,
+  scrap: Scrap,
   newDescription: string | undefined,
 ): Promise<string | undefined> {
-  if (newDescription == null || newDescription === oldDescription) {
-    return newDescription;
+  if (newDescription === undefined) {
+    return undefined;
   }
-  return formatTextAsMarkdown(newDescription);
+  return (
+    scrap.description_markdown ?? (await formatTextAsMarkdown(newDescription))
+  );
 }
 
 async function genTipoDireito(
   scrap: Scrap,
   newDescription: string | null | undefined,
 ): Promise<Scrap["analise_tipo_direito"] | undefined> {
-  if (
-    newDescription == null ||
-    newDescription === scrap.description ||
-    scrap.analise_tipo_direito_verificada === 1
-  ) {
+  if (newDescription == null) {
     return scrap.analise_tipo_direito;
   }
-  const tipoDireito = await deriveTipoDireito(newDescription);
-  if (tipoDireito == null) {
-    console.error("Não pode derivar o tipo de direito", {
-      scrapID: scrap.id,
-      newDescription,
-    });
-    return null;
-  }
-  return tipoDireito;
+  return (
+    scrap.analise_tipo_direito ?? (await deriveTipoDireito(newDescription))
+  );
 }
 
 async function genTipoImovel(
   scrap: Scrap,
   newDescription: string | null | undefined,
 ): Promise<Scrap["analise_tipo_imovel"] | undefined> {
-  if (
-    newDescription == null ||
-    newDescription === scrap.description ||
-    scrap.analise_tipo_imovel_verificada === 1
-  ) {
+  if (newDescription == null) {
     return scrap.analise_tipo_imovel;
   }
-  return await deriveTipoImovel(newDescription);
+  return scrap.analise_tipo_imovel ?? (await deriveTipoImovel(newDescription));
 }
 
 async function genPorcentagemTitularidade(
   scrap: Scrap,
   newDescription: string | null | undefined,
 ): Promise<Scrap["analise_porcentagem_titularidade"] | undefined> {
-  if (
-    newDescription == null ||
-    newDescription === scrap.description ||
-    scrap.analise_porcentagem_titularidade_verificada === 1
-  ) {
+  if (newDescription == null) {
     return scrap.analise_porcentagem_titularidade;
   }
-  return await derivePorcentagemTitularidade(newDescription);
+  return (
+    scrap.analise_porcentagem_titularidade ??
+    (await derivePorcentagemTitularidade(newDescription))
+  );
 }
 
 async function login(scraper: Scraper, page: Page): Promise<void> {
