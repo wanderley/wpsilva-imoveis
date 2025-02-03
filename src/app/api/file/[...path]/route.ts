@@ -7,6 +7,7 @@ export async function GET(
 ) {
   const filePath = params.path.join("/");
   const file = new SystemFile(filePath);
+  await file.download();
   const fileSize = fs.statSync(file.localPath()).size;
 
   let contentType;
