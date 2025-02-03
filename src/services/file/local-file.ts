@@ -1,11 +1,13 @@
 import { getFilesPath } from "@/lib/env";
 import { SystemError } from "@/lib/error";
-import { IFile } from "@/services/file/types";
+import { AbstractFile } from "@/services/file/abstract-file";
 import fs from "fs";
 import path from "path";
 
-export class LocalFile implements IFile {
-  constructor(private readonly filePath: string) {}
+export class LocalFile extends AbstractFile {
+  constructor(filePath: string) {
+    super(filePath);
+  }
 
   async exists(): Promise<boolean> {
     return fs.existsSync(this.localPath());

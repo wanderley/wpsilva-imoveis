@@ -2,7 +2,7 @@ import { db } from "@/db";
 import { systemFilesTable } from "@/db/schema";
 import { getFilesPath, getGoogleCloudStorageSettings } from "@/lib/env";
 import { SystemError } from "@/lib/error";
-import { IFile } from "@/services/file/types";
+import { AbstractFile } from "@/services/file/abstract-file";
 import { Storage } from "@google-cloud/storage";
 import crypto from "crypto";
 import { eq } from "drizzle-orm";
@@ -50,8 +50,10 @@ export const SystemFilePath = {
   },
 };
 
-export class SystemFile implements IFile {
-  constructor(private readonly filePath: string) {}
+export class SystemFile extends AbstractFile {
+  constructor(filePath: string) {
+    super(filePath);
+  }
 
   async exists(): Promise<boolean> {
     const systemFile = await db.query.systemFilesTable.findFirst({
