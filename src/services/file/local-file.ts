@@ -13,14 +13,6 @@ export class LocalFile extends AbstractFile {
     return fs.existsSync(this.localPath());
   }
 
-  path(): string {
-    return this.filePath;
-  }
-
-  extension(): string {
-    return path.extname(this.filePath);
-  }
-
   localPath(): string {
     return path.join(getFilesPath(), "local", this.filePath);
   }

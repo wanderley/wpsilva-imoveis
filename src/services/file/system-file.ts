@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { systemFilesTable } from "@/db/schema";
-import { getFilesPath, getGoogleCloudStorageSettings } from "@/lib/env";
+import { getGoogleCloudStorageSettings } from "@/lib/env";
 import { SystemError } from "@/lib/error";
 import { AbstractFile } from "@/services/file/abstract-file";
 import { Storage } from "@google-cloud/storage";
@@ -60,18 +60,6 @@ export class SystemFile extends AbstractFile {
       where: eq(systemFilesTable.path, this.filePath),
     });
     return systemFile !== undefined;
-  }
-
-  path(): string {
-    return this.filePath;
-  }
-
-  extension(): string {
-    return path.extname(this.filePath);
-  }
-
-  localPath(): string {
-    return path.join(getFilesPath(), this.filePath);
   }
 
   async write(content: Buffer): Promise<void> {
