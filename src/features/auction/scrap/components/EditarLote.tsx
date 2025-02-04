@@ -221,7 +221,7 @@ function Formulario({ scrap }: { scrap: Scrap }) {
   useEffect(() => {
     const values = form.getValues();
     if (values) {
-      const total = Object.entries(values).filter(([key, value]) =>
+      const total = Object.keys(values).filter((key) =>
         key.includes("_verificada"),
       ).length;
       const verificados = Object.entries(values).filter(
@@ -229,7 +229,7 @@ function Formulario({ scrap }: { scrap: Scrap }) {
       ).length;
       setProgress((verificados / total) * 100);
     }
-  }, [form.watch()]);
+  }, [form, form.watch()]);
 
   return (
     <Form {...form}>
