@@ -183,6 +183,12 @@ function Formulario({ scrap }: { scrap: Scrap }) {
     data.analise_hipoteca_verificada =
       data.analise_hipoteca_verificada ||
       data.analise_hipoteca !== scrap.analise_hipoteca;
+    data.analise_alienacao_fiduciaria_verificada =
+      data.analise_alienacao_fiduciaria_verificada ||
+      data.analise_alienacao_fiduciaria !== scrap.analise_alienacao_fiduciaria;
+    data.analise_debito_exequendo_verificada =
+      data.analise_debito_exequendo_verificada ||
+      data.analise_debito_exequendo !== scrap.analise_debito_exequendo;
 
     mutate(
       {
@@ -200,6 +206,12 @@ function Formulario({ scrap }: { scrap: Scrap }) {
           data.analise_porcentagem_titularidade_verificada ? 1 : 0,
         analise_hipoteca: data.analise_hipoteca,
         analise_hipoteca_verificada: data.analise_hipoteca_verificada ? 1 : 0,
+        analise_alienacao_fiduciaria: data.analise_alienacao_fiduciaria,
+        analise_alienacao_fiduciaria_verificada:
+          data.analise_alienacao_fiduciaria_verificada ? 1 : 0,
+        analise_debito_exequendo: data.analise_debito_exequendo,
+        analise_debito_exequendo_verificada:
+          data.analise_debito_exequendo_verificada ? 1 : 0,
       },
       { onSuccess: (_) => toast({ title: "Dados atualizados com sucesso!" }) },
     );
