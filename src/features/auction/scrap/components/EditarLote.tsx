@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -91,17 +92,53 @@ const Schema = z.object({
   analise_tipo_imovel_verificada: z.boolean(),
   analise_porcentagem_titularidade: z.number().min(0).max(10000),
   analise_porcentagem_titularidade_verificada: z.boolean(),
-  analise_hipoteca: z.object({
-    data_constituicao: z.string().nullable(),
-    credor: z.string(),
-    valor: z.number().nullable(),
-    ativo: z.boolean(),
-    justificativa: z.string(),
-  }),
+  analise_hipoteca: z
+    .object({
+      data_constituicao: z.string().nullable(),
+      credor: z.string(),
+      valor: z.number().nullable(),
+      ativo: z.boolean(),
+      justificativa: z.string(),
+    })
+    .nullable(),
   analise_hipoteca_verificada: z.boolean(),
+  analise_alienacao_fiduciaria: z
+    .object({
+      data_constituicao: z.string().nullable(),
+      credor: z.string(),
+      valor: z.number().nullable(),
+      ativo: z.boolean(),
+      justificativa: z.string(),
+    })
+    .nullable(),
+  analise_alienacao_fiduciaria_verificada: z.boolean(),
+  analise_debito_exequendo: z
+    .object({
+      debito_exequendo: z.number(),
+      despesa_condominio: z.boolean(),
+      justificativa: z.string(),
+    })
+    .nullable(),
+  analise_debito_exequendo_verificada: z.boolean(),
+  analise_resumo_matricula: z
+    .object({
+      numero_penhoras_ativas: z.number(),
+      eventos: z.array(z.string()),
+    })
+    .nullable(),
+  analise_resumo_matricula_verificada: z.boolean(),
 });
 
 function Formulario({ scrap }: { scrap: Scrap }) {
+  function normalizeEmptyObject<T extends Record<string, unknown>>(
+    obj: T | null | undefined,
+  ) {
+    if (obj == null) {
+      return null;
+    }
+    return Object.values(obj).some((value) => value !== undefined) ? obj : null;
+  }
+
   const { mutate } = useUpdateScrapMutation();
   const form = useForm<z.infer<typeof Schema>>({
     resolver: zodResolver(Schema),
@@ -114,18 +151,39 @@ function Formulario({ scrap }: { scrap: Scrap }) {
         scrap.analise_porcentagem_titularidade ?? undefined,
       analise_porcentagem_titularidade_verificada:
         !!scrap.analise_porcentagem_titularidade_verificada,
-      analise_hipoteca: scrap.analise_hipoteca ?? {
-        data_constituicao: undefined,
-        credor: undefined,
-        valor: undefined,
-        ativo: undefined,
-        justificativa: undefined,
-      },
+      analise_hipoteca: normalizeEmptyObject(scrap.analise_hipoteca),
       analise_hipoteca_verificada: !!scrap.analise_hipoteca_verificada,
+      analise_alienacao_fiduciaria: normalizeEmptyObject(
+        scrap.analise_alienacao_fiduciaria,
+      ),
+      analise_alienacao_fiduciaria_verificada:
+        !!scrap.analise_alienacao_fiduciaria_verificada,
+      analise_debito_exequendo: normalizeEmptyObject(
+        scrap.analise_debito_exequendo,
+      ),
+      analise_debito_exequendo_verificada:
+        !!scrap.analise_debito_exequendo_verificada,
+      analise_resumo_matricula: normalizeEmptyObject(
+        scrap.analise_resumo_matricula,
+      ),
+      analise_resumo_matricula_verificada:
+        !!scrap.analise_resumo_matricula_verificada,
     },
   });
 
   function onSubmit(data: z.infer<typeof Schema>) {
+    // normaliza os objetos nulos
+    data.analise_alienacao_fiduciaria = normalizeEmptyObject(
+      data.analise_alienacao_fiduciaria,
+    );
+    data.analise_hipoteca = normalizeEmptyObject(data.analise_hipoteca);
+    data.analise_debito_exequendo = normalizeEmptyObject(
+      data.analise_debito_exequendo,
+    );
+    data.analise_resumo_matricula = normalizeEmptyObject(
+      data.analise_resumo_matricula,
+    );
+    // atualiza o status de verificação
     data.analise_tipo_direito_verificada =
       data.analise_tipo_direito_verificada ||
       data.analise_tipo_direito !== scrap.analise_tipo_direito;
@@ -139,6 +197,7 @@ function Formulario({ scrap }: { scrap: Scrap }) {
     data.analise_hipoteca_verificada =
       data.analise_hipoteca_verificada ||
       data.analise_hipoteca !== scrap.analise_hipoteca;
+
     mutate(
       {
         id: scrap.id,
@@ -167,6 +226,8 @@ function Formulario({ scrap }: { scrap: Scrap }) {
         <CampoTipoDireito />
         <CampoPorcentagemTitularidade />
         <CampoHipoteca />
+        <CampoAlienacaoFiduciaria />
+        <CampoDebitoExequendo />
         <div className="flex items-center gap-2">
           <Button type="submit">Salvar</Button>
           <Button type="button" variant="outline" onClick={() => form.reset()}>
@@ -323,15 +384,9 @@ function CampoPorcentagemTitularidade() {
 
 function CampoHipoteca() {
   const form = useFormContext<z.infer<typeof Schema>>();
-  return (
+  const temHipoteca = !!form.watch("analise_hipoteca");
+  const fields = (
     <>
-      <div className="flex items-center gap-2">
-        <h1 className="text-lg font-bold">Informações da hipoteca</h1>
-        <StatusVerificado
-          campo="analise_hipoteca"
-          campoVerificacao="analise_hipoteca_verificada"
-        />
-      </div>
       <FormField
         control={form.control}
         name="analise_hipoteca.credor"
@@ -424,6 +479,270 @@ function CampoHipoteca() {
           </FormItem>
         )}
       />
+    </>
+  );
+  return (
+    <>
+      <div className="flex items-center gap-2">
+        <h1 className="text-lg font-bold">Hipoteca</h1>
+        <StatusVerificado
+          campo="analise_hipoteca"
+          campoVerificacao="analise_hipoteca_verificada"
+        />
+      </div>
+      <Switch
+        checked={temHipoteca}
+        onCheckedChange={(checked) => {
+          if (!checked) {
+            form.setValue("analise_hipoteca", null, { shouldDirty: true });
+          } else {
+            form.setValue(
+              "analise_hipoteca",
+              {
+                data_constituicao: null,
+                credor: "",
+                valor: null,
+                ativo: false,
+                justificativa: "",
+              },
+              { shouldDirty: true },
+            );
+          }
+        }}
+      />
+      {temHipoteca && fields}
+    </>
+  );
+}
+
+function CampoDebitoExequendo() {
+  const form = useFormContext<z.infer<typeof Schema>>();
+  const temDebitoExequendo = !!form.watch("analise_debito_exequendo");
+  const fields = (
+    <>
+      <FormField
+        control={form.control}
+        name="analise_debito_exequendo.debito_exequendo"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Valor do débito exequendo</FormLabel>
+            <FormControl>
+              <Input
+                {...field}
+                className="w-15"
+                type="number"
+                step={0.01}
+                value={field.value || ""}
+                onChange={(e) => field.onChange(Number(e.target.value))}
+              />
+            </FormControl>
+            <FormDescription></FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name="analise_debito_exequendo.despesa_condominio"
+        render={({ field }) => (
+          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+            <FormControl>
+              <Checkbox
+                checked={field.value}
+                onCheckedChange={(checked) => field.onChange(checked)}
+              />
+            </FormControl>
+            <FormLabel>Despesa condominial</FormLabel>
+            <FormDescription></FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name="analise_debito_exequendo.justificativa"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Justificativa</FormLabel>
+            <FormControl>
+              <Textarea
+                {...field}
+                value={field.value || ""}
+                onChange={(e) => field.onChange(e.target.value)}
+              />
+            </FormControl>
+            <FormDescription></FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    </>
+  );
+  return (
+    <>
+      <div className="flex items-center gap-2">
+        <h1 className="text-lg font-bold">Débito Exequendo</h1>
+        <StatusVerificado
+          campo="analise_debito_exequendo"
+          campoVerificacao="analise_debito_exequendo_verificada"
+        />
+      </div>
+      <Switch
+        checked={temDebitoExequendo}
+        onCheckedChange={(checked) => {
+          if (!checked) {
+            form.setValue("analise_debito_exequendo", null, {
+              shouldDirty: true,
+            });
+          } else {
+            form.setValue(
+              "analise_debito_exequendo",
+              {
+                debito_exequendo: 0,
+                despesa_condominio: false,
+                justificativa: "",
+              },
+              { shouldDirty: true },
+            );
+          }
+        }}
+      />
+      {temDebitoExequendo && fields}
+    </>
+  );
+}
+
+function CampoAlienacaoFiduciaria() {
+  const form = useFormContext<z.infer<typeof Schema>>();
+  const temAlienacaoFiduciaria = !!form.watch("analise_alienacao_fiduciaria");
+  const fields = (
+    <>
+      <FormField
+        control={form.control}
+        name="analise_alienacao_fiduciaria.credor"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Credor</FormLabel>
+            <FormControl>
+              <Input
+                {...field}
+                value={field.value || ""}
+                onChange={(e) => field.onChange(e.target.value)}
+              />
+            </FormControl>
+            <FormDescription></FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name="analise_alienacao_fiduciaria.data_constituicao"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Data de constituição</FormLabel>
+            <FormControl>
+              <Input
+                {...field}
+                className="w-15"
+                value={field.value || ""}
+                onChange={(e) => field.onChange(e.target.value)}
+              />
+            </FormControl>
+            <FormDescription></FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name="analise_alienacao_fiduciaria.valor"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Valor da hipoteca</FormLabel>
+            <FormControl>
+              <Input
+                {...field}
+                className="w-15"
+                type="number"
+                value={field.value || ""}
+                onChange={(e) => field.onChange(e.target.value)}
+              />
+            </FormControl>
+            <FormDescription></FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name="analise_alienacao_fiduciaria.ativo"
+        render={({ field }) => (
+          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+            <FormControl>
+              <Checkbox
+                checked={field.value}
+                onCheckedChange={(checked) => field.onChange(checked)}
+              />
+            </FormControl>
+            <FormLabel>Financiamento em vigor</FormLabel>
+            <FormDescription></FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name="analise_alienacao_fiduciaria.justificativa"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Justificativa</FormLabel>
+            <FormControl>
+              <Textarea
+                {...field}
+                value={field.value || ""}
+                onChange={(e) => field.onChange(e.target.value)}
+              />
+            </FormControl>
+            <FormDescription></FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    </>
+  );
+  return (
+    <>
+      <div className="flex items-center gap-2">
+        <h1 className="text-lg font-bold">Alienação Fiduciária</h1>
+        <StatusVerificado
+          campo="analise_alienacao_fiduciaria"
+          campoVerificacao="analise_alienacao_fiduciaria_verificada"
+        />
+      </div>
+      <Switch
+        checked={temAlienacaoFiduciaria}
+        onCheckedChange={(checked) => {
+          if (!checked) {
+            form.setValue("analise_alienacao_fiduciaria", null, {
+              shouldDirty: true,
+            });
+          } else {
+            form.setValue(
+              "analise_alienacao_fiduciaria",
+              {
+                data_constituicao: null,
+                credor: "",
+                valor: null,
+                ativo: false,
+                justificativa: "",
+              },
+              { shouldDirty: true },
+            );
+          }
+        }}
+      />
+      {temAlienacaoFiduciaria && fields}
     </>
   );
 }
