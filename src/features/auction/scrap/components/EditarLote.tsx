@@ -365,10 +365,8 @@ function CampoPorcentagemTitularidade() {
                 value={field.value ? field.value / 100 : ""}
                 onChange={(e) =>
                   field.onChange(
-                    Math.max(
-                      0,
-                      Math.min(Number(Number(e.target.value).toFixed(2)), 100),
-                    ) * 100,
+                    Math.max(0, Math.min(formatNumber(e.target.value), 100)) *
+                      100,
                   )
                 }
                 min={0}
@@ -441,7 +439,7 @@ function CampoHipoteca() {
                 className="w-15"
                 type="number"
                 value={field.value || ""}
-                onChange={(e) => field.onChange(e.target.value)}
+                onChange={(e) => field.onChange(formatNumber(e.target.value))}
               />
             </FormControl>
             <FormDescription></FormDescription>
@@ -538,7 +536,7 @@ function CampoDebitoExequendo() {
                 type="number"
                 step={0.01}
                 value={field.value || ""}
-                onChange={(e) => field.onChange(Number(e.target.value))}
+                onChange={(e) => field.onChange(formatNumber(e.target.value))}
               />
             </FormControl>
             <FormDescription></FormDescription>
@@ -671,7 +669,7 @@ function CampoAlienacaoFiduciaria() {
                 className="w-15"
                 type="number"
                 value={field.value || ""}
-                onChange={(e) => field.onChange(e.target.value)}
+                onChange={(e) => field.onChange(formatNumber(e.target.value))}
               />
             </FormControl>
             <FormDescription></FormDescription>
@@ -904,4 +902,8 @@ function Informacoes({ scrap }: { scrap: Scrap }) {
       {documentos.map(({ content }) => content)}
     </Tabs>
   );
+}
+
+function formatNumber(value: string) {
+  return Number(Number(value).toFixed(2));
 }
