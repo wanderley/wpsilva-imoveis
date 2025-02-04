@@ -1,6 +1,7 @@
 import { toast } from "@/components/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -19,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Tooltip,
   TooltipContent,
@@ -89,6 +91,14 @@ const Schema = z.object({
   analise_tipo_imovel_verificada: z.boolean(),
   analise_porcentagem_titularidade: z.number().min(0).max(10000),
   analise_porcentagem_titularidade_verificada: z.boolean(),
+  analise_hipoteca: z.object({
+    data_constituicao: z.string().nullable(),
+    credor: z.string(),
+    valor: z.number().nullable(),
+    ativo: z.boolean(),
+    justificativa: z.string(),
+  }),
+  analise_hipoteca_verificada: z.boolean(),
 });
 
 function Formulario({ scrap }: { scrap: Scrap }) {
@@ -104,6 +114,14 @@ function Formulario({ scrap }: { scrap: Scrap }) {
         scrap.analise_porcentagem_titularidade ?? undefined,
       analise_porcentagem_titularidade_verificada:
         !!scrap.analise_porcentagem_titularidade_verificada,
+      analise_hipoteca: scrap.analise_hipoteca ?? {
+        data_constituicao: undefined,
+        credor: undefined,
+        valor: undefined,
+        ativo: undefined,
+        justificativa: undefined,
+      },
+      analise_hipoteca_verificada: !!scrap.analise_hipoteca_verificada,
     },
   });
 
@@ -118,6 +136,9 @@ function Formulario({ scrap }: { scrap: Scrap }) {
       data.analise_porcentagem_titularidade_verificada ||
       data.analise_porcentagem_titularidade !==
         scrap.analise_porcentagem_titularidade;
+    data.analise_hipoteca_verificada =
+      data.analise_hipoteca_verificada ||
+      data.analise_hipoteca !== scrap.analise_hipoteca;
     mutate(
       {
         id: scrap.id,
@@ -132,6 +153,8 @@ function Formulario({ scrap }: { scrap: Scrap }) {
         analise_porcentagem_titularidade: data.analise_porcentagem_titularidade,
         analise_porcentagem_titularidade_verificada:
           data.analise_porcentagem_titularidade_verificada ? 1 : 0,
+        analise_hipoteca: data.analise_hipoteca,
+        analise_hipoteca_verificada: data.analise_hipoteca_verificada ? 1 : 0,
       },
       { onSuccess: (_) => toast({ title: "Dados atualizados com sucesso!" }) },
     );
@@ -143,6 +166,7 @@ function Formulario({ scrap }: { scrap: Scrap }) {
         <CampoTipoImovel />
         <CampoTipoDireito />
         <CampoPorcentagemTitularidade />
+        <CampoHipoteca />
         <div className="flex items-center gap-2">
           <Button type="submit">Salvar</Button>
           <Button type="button" variant="outline" onClick={() => form.reset()}>
@@ -294,6 +318,113 @@ function CampoPorcentagemTitularidade() {
         </FormItem>
       )}
     />
+  );
+}
+
+function CampoHipoteca() {
+  const form = useFormContext<z.infer<typeof Schema>>();
+  return (
+    <>
+      <div className="flex items-center gap-2">
+        <h1 className="text-lg font-bold">Informações da hipoteca</h1>
+        <StatusVerificado
+          campo="analise_hipoteca"
+          campoVerificacao="analise_hipoteca_verificada"
+        />
+      </div>
+      <FormField
+        control={form.control}
+        name="analise_hipoteca.credor"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Credor</FormLabel>
+            <FormControl>
+              <Input
+                {...field}
+                value={field.value || ""}
+                onChange={(e) => field.onChange(e.target.value)}
+              />
+            </FormControl>
+            <FormDescription></FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name="analise_hipoteca.data_constituicao"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Data de constituição</FormLabel>
+            <FormControl>
+              <Input
+                {...field}
+                className="w-15"
+                value={field.value || ""}
+                onChange={(e) => field.onChange(e.target.value)}
+              />
+            </FormControl>
+            <FormDescription></FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name="analise_hipoteca.valor"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Valor da hipoteca</FormLabel>
+            <FormControl>
+              <Input
+                {...field}
+                className="w-15"
+                type="number"
+                value={field.value || ""}
+                onChange={(e) => field.onChange(e.target.value)}
+              />
+            </FormControl>
+            <FormDescription></FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name="analise_hipoteca.ativo"
+        render={({ field }) => (
+          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+            <FormControl>
+              <Checkbox
+                checked={field.value}
+                onCheckedChange={(checked) => field.onChange(checked)}
+              />
+            </FormControl>
+            <FormLabel>Hipoteca em vigor</FormLabel>
+            <FormDescription></FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name="analise_hipoteca.justificativa"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Justificativa</FormLabel>
+            <FormControl>
+              <Textarea
+                {...field}
+                value={field.value || ""}
+                onChange={(e) => field.onChange(e.target.value)}
+              />
+            </FormControl>
+            <FormDescription></FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    </>
   );
 }
 

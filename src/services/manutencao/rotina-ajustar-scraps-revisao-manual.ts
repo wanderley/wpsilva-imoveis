@@ -29,6 +29,7 @@ export const rotina = updateDb({
     where: (table, { and, eq, or, inArray, isNotNull }) =>
       and(
         inArray(table.id, selectedScrapsForManualReview),
+        inArray(table.id, [866, 1, 3, 850, 67]), // while I am testing the editor
         isNotNull(table.edital_file),
         isNotNull(table.matricula_file),
         or(
@@ -38,7 +39,7 @@ export const rotina = updateDb({
           eq(table.analise_resumo_matricula_verificada, 0),
         ),
       ),
-    limit: 1,
+    limit: 5,
   }),
   workers: 100,
   update: async (scrap) => {
