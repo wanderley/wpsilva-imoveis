@@ -12,6 +12,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -36,7 +37,7 @@ import { useScrapDetails, useUpdateScrapMutation } from "@/hooks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, CheckCheck } from "lucide-react";
 import Link from "next/link";
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { useForm, useFormContext } from "react-hook-form";
 import { z } from "zod";
 
@@ -120,13 +121,6 @@ const Schema = z.object({
     })
     .nullable(),
   analise_debito_exequendo_verificada: z.boolean(),
-  analise_resumo_matricula: z
-    .object({
-      numero_penhoras_ativas: z.number(),
-      eventos: z.array(z.string()),
-    })
-    .nullable(),
-  analise_resumo_matricula_verificada: z.boolean(),
 });
 
 function Formulario({ scrap }: { scrap: Scrap }) {
@@ -163,11 +157,6 @@ function Formulario({ scrap }: { scrap: Scrap }) {
       ),
       analise_debito_exequendo_verificada:
         !!scrap.analise_debito_exequendo_verificada,
-      analise_resumo_matricula: normalizeEmptyObject(
-        scrap.analise_resumo_matricula,
-      ),
-      analise_resumo_matricula_verificada:
-        !!scrap.analise_resumo_matricula_verificada,
     },
   });
 
@@ -179,9 +168,6 @@ function Formulario({ scrap }: { scrap: Scrap }) {
     data.analise_hipoteca = normalizeEmptyObject(data.analise_hipoteca);
     data.analise_debito_exequendo = normalizeEmptyObject(
       data.analise_debito_exequendo,
-    );
-    data.analise_resumo_matricula = normalizeEmptyObject(
-      data.analise_resumo_matricula,
     );
     // atualiza o status de verificação
     data.analise_tipo_direito_verificada =
@@ -219,6 +205,20 @@ function Formulario({ scrap }: { scrap: Scrap }) {
     );
   }
 
+  const [progress, setProgress] = useState(0);
+  useEffect(() => {
+    const values = form.getValues();
+    if (values) {
+      const total = Object.entries(values).filter(([key, value]) =>
+        key.includes("_verificada"),
+      ).length;
+      const verificados = Object.entries(values).filter(
+        ([key, value]) => key.includes("_verificada") && value === true,
+      ).length;
+      setProgress((verificados / total) * 100);
+    }
+  }, [form.watch()]);
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6">
@@ -238,6 +238,11 @@ function Formulario({ scrap }: { scrap: Scrap }) {
             <Link href={`/lot/${scrap.id}`}>Voltar para o lote</Link>
           </Button>
         </div>
+        <Progress
+          className="mb-4"
+          value={progress}
+          title="Progresso da revisão"
+        />
       </form>
     </Form>
   );
