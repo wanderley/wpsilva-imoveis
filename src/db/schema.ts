@@ -4,6 +4,10 @@ import {
   ParteInteressada,
 } from "@/services/processo-judicial/tjsp/types";
 import { TextoExtraido } from "@/services/processo-judicial/types";
+import { AnaliseAlienacaoFiduciaria } from "@/services/scraper/lib/derive-alienacao-fiduciaria";
+import { AnaliseDebitoExequendo } from "@/services/scraper/lib/derive-debito-exequendo";
+import { AnaliseHipoteca } from "@/services/scraper/lib/derive-hipoteca";
+import { AnaliseResumoMatricula } from "@/services/scraper/lib/derive-resumo-matricula";
 import { relations, sql } from "drizzle-orm";
 import {
   datetime,
@@ -109,6 +113,20 @@ export const scrapsTable = mysqlTable("scraps", {
   analise_tipo_imovel_verificada: int().default(0),
   analise_porcentagem_titularidade: int(),
   analise_porcentagem_titularidade_verificada: int().default(0),
+  analise_hipoteca: json("analise_hipoteca").$type<AnaliseHipoteca>(),
+  analise_hipoteca_verificada: int().default(0),
+  analise_alienacao_fiduciaria: json(
+    "analise_alienacao_fiduciaria",
+  ).$type<AnaliseAlienacaoFiduciaria>(),
+  analise_alienacao_fiduciaria_verificada: int().default(0),
+  analise_debito_exequendo: json(
+    "analise_debito_exequendo",
+  ).$type<AnaliseDebitoExequendo>(),
+  analise_debito_exequendo_verificada: int().default(0),
+  analise_resumo_matricula: json(
+    "analise_resumo_matricula",
+  ).$type<AnaliseResumoMatricula>(),
+  analise_resumo_matricula_verificada: int().default(0),
   created_at: createdAt,
   updated_at: updatedAt,
 });
