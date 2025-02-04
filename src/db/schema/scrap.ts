@@ -19,6 +19,22 @@ import {
   varchar,
 } from "drizzle-orm/mysql-core";
 
+export const auctionStatuses = [
+  "waiting-to-start",
+  "open-for-bids",
+  "sold",
+  "closed",
+  "impaired",
+  "suspended",
+  "unknown",
+] as const;
+export type AuctionStatus = (typeof auctionStatuses)[number];
+export const auctionStatusEnum = mysqlEnum("auction_status", auctionStatuses);
+
+export const fetchStatuses = ["not-fetched", "fetched", "failed"] as const;
+export type FetchStatus = (typeof fetchStatuses)[number];
+export const fetchStatusEnum = mysqlEnum("fetch_status", fetchStatuses);
+
 export const scrapsTable = mysqlTable("scraps", {
   id: int().primaryKey().autoincrement(),
   scraper_id: varchar({ length: 767 }).notNull(),
@@ -31,15 +47,7 @@ export const scrapsTable = mysqlTable("scraps", {
   case_link: varchar({ length: 767 }),
   bid: float(),
   appraisal: float(),
-  auction_status: mysqlEnum([
-    "waiting-to-start",
-    "open-for-bids",
-    "sold",
-    "closed",
-    "impaired",
-    "suspended",
-    "unknown",
-  ]).default("unknown"),
+  auction_status: auctionStatusEnum.default("unknown"),
   first_auction_date: datetime(),
   first_auction_bid: float(),
   second_auction_date: datetime(),
@@ -50,9 +58,7 @@ export const scrapsTable = mysqlTable("scraps", {
   matricula_file: varchar({ length: 512 }),
   edital_link: varchar({ length: 767 }),
   edital_file: varchar({ length: 512 }),
-  fetch_status: mysqlEnum(["not-fetched", "fetched", "failed"]).default(
-    "not-fetched",
-  ),
+  fetch_status: fetchStatusEnum.default("not-fetched"),
   is_interesting: int(),
   // campos de análise
   analise_tipo_direito: mysqlEnum([

@@ -1,8 +1,8 @@
 import { Badge, BadgeProps } from "@/components/ui/badge";
-import { Scrap } from "@/db/schema";
+import { type AuctionStatus, Scrap } from "@/db/schema";
 import assertNever from "@/lib/assert-never";
 
-function getText(status: Scrap["auction_status"]) {
+function getText(status: AuctionStatus | null) {
   switch (status) {
     case "waiting-to-start":
       return "Aguardando Início";
@@ -24,7 +24,7 @@ function getText(status: Scrap["auction_status"]) {
   }
 }
 
-function AuctionStatusBadge({ status }: { status: Scrap["auction_status"] }) {
+function AuctionStatusBadge({ status }: { status: AuctionStatus | null }) {
   let color: BadgeProps["variant"] = undefined;
   switch (status) {
     case "waiting-to-start":
@@ -55,7 +55,7 @@ function AuctionStatusBadge({ status }: { status: Scrap["auction_status"] }) {
   return <Badge variant={color}>{getText(status)}</Badge>;
 }
 
-function AuctionStatusText({ status }: { status: Scrap["auction_status"] }) {
+function AuctionStatusText({ status }: { status: AuctionStatus | null }) {
   let color = undefined;
   switch (status) {
     case "waiting-to-start":
