@@ -55,8 +55,8 @@ export function EditarLote({ scrapId }: { scrapId: number }) {
   );
 }
 
-export type Formulario = z.infer<typeof SchemaFormulario>;
-export const SchemaFormulario = z.object({
+type Formulario = z.infer<typeof SchemaFormulario>;
+const SchemaFormulario = z.object({
   ...CampoTipoDireito.schema.shape,
   ...CampoTipoImovel.schema.shape,
   ...CampoPorcentagemTitularidade.schema.shape,
