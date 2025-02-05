@@ -1,7 +1,13 @@
 import { db } from "@/db";
 import { scrapsTable } from "@/db/schema";
-import { SystemFile } from "@/services/file/system-file";
-import { extractTextWithAi } from "@/services/pdf/extract-text-with-ai";
+import {
+  PromptContext,
+  promptContextString,
+} from "@/services/ai/prompt-context";
+import {
+  gerarContextoEdital,
+  gerarContextoMatricula,
+} from "@/services/scraper/lib/gerar-contexto";
 import { openai } from "@ai-sdk/openai";
 import { streamText } from "ai";
 import { eq } from "drizzle-orm";
@@ -29,59 +35,62 @@ async function getSystemMessage(scrapId: number) {
     },
     where: eq(scrapsTable.id, scrapId),
   });
-  let dadosDoLeilao = "";
+  const contexto: PromptContext[] = [];
   if (scrap) {
-    dadosDoLeilao =
-      "# Dados do Leilao\n```json\n" +
-      JSON.stringify(
-        {
-          descricao_leiloeiro:
-            scrap.description_markdown || scrap.description || undefined,
-          endereco:
-            scrap.validatedAddress?.formatted_address ??
-            scrap.address ??
-            undefined,
-          avaliacao: scrap.appraisal ?? undefined,
-          lance_atual: scrap.bid ?? undefined,
-          data_primeira_praca: scrap.first_auction_date ?? undefined,
-          lance_minimo_primeira_praca: scrap.first_auction_bid ?? undefined,
-          data_segunda_praca: scrap.second_auction_date ?? undefined,
-          lance_minimo_segunda_praca: scrap.second_auction_bid ?? undefined,
-          numero_processo_judicial: scrap.case_number ?? undefined,
-        },
-        null,
-        2,
-      ) +
-      "\n```\n\n";
+    const descricaoLeiloeiro = scrap.description_markdown || scrap.description;
+    if (descricaoLeiloeiro) {
+      contexto.push({
+        type: "documento",
+        props: [{ name: "nome", value: "Descrição do leiloeiro" }],
+        content: descricaoLeiloeiro,
+      });
+    }
+    const dataString = JSON.stringify(
+      {
+        endereco:
+          scrap.validatedAddress?.formatted_address ??
+          scrap.address ??
+          undefined,
+        avaliacao: scrap.appraisal ?? undefined,
+        lance_atual: scrap.bid ?? undefined,
+        data_primeira_praca: scrap.first_auction_date ?? undefined,
+        lance_minimo_primeira_praca: scrap.first_auction_bid ?? undefined,
+        data_segunda_praca: scrap.second_auction_date ?? undefined,
+        lance_minimo_segunda_praca: scrap.second_auction_bid ?? undefined,
+        numero_processo_judicial: scrap.case_number ?? undefined,
+      },
+      null,
+      2,
+    );
+    contexto.push({
+      type: "json",
+      props: [
+        { name: "nome", value: "Dados encontrados no site do leiloeiro" },
+      ],
+      content: dataString,
+    });
   }
-
-  let edital = "";
   if (scrap?.edital_file) {
     try {
-      const documento = await extractTextWithAi(
-        new SystemFile(scrap.edital_file),
-      );
-      edital =
-        "# Edital\n```json\n" +
-        JSON.stringify(documento, null, 2) +
-        "\n```\n\n";
+      contexto.push(await gerarContextoEdital(scrap.edital_file));
     } catch (error) {
-      edital = "# Edital\n(Texto do edital não está disponível)";
+      contexto.push({
+        type: "documento",
+        props: [{ name: "nome", value: "Edital" }],
+        content: "Texto do edital não está disponível",
+      });
       console.error(error);
     }
   }
-  let matricula = "";
   if (scrap?.matricula_file) {
     try {
-      const documento = await extractTextWithAi(
-        new SystemFile(scrap.matricula_file),
-      );
-      matricula =
-        "# Matrícula\n```json\n" +
-        JSON.stringify(documento, null, 2) +
-        "\n```\n\n";
+      contexto.push(await gerarContextoMatricula(scrap.matricula_file));
     } catch (error) {
-      matricula = "# Matrícula\n(Texto da matrícula não está disponível)";
+      contexto.push({
+        type: "documento",
+        props: [{ name: "nome", value: "Matrícula" }],
+        content: "Texto da matrícula não está disponível",
+      });
       console.error(error);
     }
   }
@@ -94,8 +103,6 @@ async function getSystemMessage(scrapId: number) {
 3. Nunca responda perguntas que não foram feitas e nunca responda perguntas fora do contexto dos dados compartilhados.
 4. Se a pergunta é sobre algo que está em um documento do leilão, inclua na sua resposta um trecho do documento e a página do documento como referência.
 
-${dadosDoLeilao}
-${edital}
-${matricula}
+${promptContextString("Dados", contexto)}
   `;
 }
