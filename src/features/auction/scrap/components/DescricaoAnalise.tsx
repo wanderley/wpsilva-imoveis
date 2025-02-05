@@ -18,7 +18,12 @@ export function DescricaoAnalise({ scrap }: Props) {
   const conteudoDescricao = mostrarResumo ? (
     scrap.analyses[0]?.response.description || "Descrição não disponível"
   ) : (
-    <StyledMarkdown>
+    <StyledMarkdown
+      components={{
+        pre: ({ children }) => <p className="p-1">{children}</p>,
+        code: ({ children }) => <>{children}</>,
+      }}
+    >
       {scrap.description_markdown || scrap.description || ""}
     </StyledMarkdown>
   );

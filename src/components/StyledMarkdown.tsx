@@ -1,10 +1,12 @@
 import Markdown from "react-markdown";
 
+type Props = React.ComponentPropsWithoutRef<typeof Markdown>;
+
 export default function StyledMarkdown({
+  components,
   children,
-}: {
-  children: string | null | undefined;
-}) {
+  ...rest
+}: Props) {
   return (
     <Markdown
       components={{
@@ -21,7 +23,9 @@ export default function StyledMarkdown({
         ol: ({ children }) => <ol className="list-decimal pl-4">{children}</ol>,
         li: ({ children }) => <li className="p-1">{children}</li>,
         p: ({ children }) => <p className="p-1">{children}</p>,
+        ...components,
       }}
+      {...rest}
     >
       {children}
     </Markdown>
