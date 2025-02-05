@@ -52,19 +52,19 @@ export function EditarLote({ scrapId }: { scrapId: number }) {
         <LoteImagens scrap={data} className="w-full" />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <Card className="col-span-2">
-          <CardHeader>
+        <Card className="col-span-2 flex flex-col lg:h-[calc(100vh-100px)] overflow-hidden">
+          <CardHeader className="flex-none">
             <CardTitle>Revisão dos dados</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex-grow min-h-0">
             <Formulario scrap={data} />
           </CardContent>
         </Card>
-        <Card className="col-span-3">
-          <CardHeader>
+        <Card className="col-span-3 flex flex-col lg:h-[calc(100vh-100px)]">
+          <CardHeader className="flex-none">
             <CardTitle>Informações do lote</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex-grow min-h-0">
             <Informacoes scrap={data} />
           </CardContent>
         </Card>
@@ -233,28 +233,42 @@ function Formulario({ scrap }: { scrap: Scrap }) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6">
-        <CampoTipoImovel />
-        <CampoTipoDireito />
-        <CampoPorcentagemTitularidade />
-        <CampoHipoteca />
-        <CampoAlienacaoFiduciaria />
-        <CampoDebitoExequendo />
-        <div className="flex items-center gap-2">
-          <Button type="submit">Salvar</Button>
-          <Button type="button" variant="outline" onClick={() => form.reset()}>
-            Restaurar
-          </Button>
-          <Button className="ml-auto" type="button" variant="ghost">
-            <ArrowLeft />
-            <Link href={`/lot/${scrap.id}`}>Voltar para o lote</Link>
-          </Button>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="h-full w-full space-y-6"
+      >
+        <div className="flex flex-col h-full">
+          <div className="flex-grow overflow-auto pb-4 grid grid-cols-1 gap-4">
+            <CampoTipoImovel />
+            <CampoTipoDireito />
+            <CampoPorcentagemTitularidade />
+            <CampoHipoteca />
+            <CampoAlienacaoFiduciaria />
+            <CampoDebitoExequendo />
+          </div>
+          <div className="flex-none grid grid-cols-1 gap-4">
+            <div className="h-1" />
+            <div className="flex items-center gap-2">
+              <Button type="submit">Salvar</Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => form.reset()}
+              >
+                Restaurar
+              </Button>
+              <Button className="ml-auto" type="button" variant="ghost">
+                <ArrowLeft />
+                <Link href={`/lot/${scrap.id}`}>Voltar para o lote</Link>
+              </Button>
+            </div>
+            <Progress
+              className="mb-4"
+              value={progress}
+              title="Progresso da revisão"
+            />
+          </div>
         </div>
-        <Progress
-          className="mb-4"
-          value={progress}
-          title="Progresso da revisão"
-        />
       </form>
     </Form>
   );
@@ -844,14 +858,14 @@ function Informacoes({ scrap }: { scrap: Scrap }) {
         </TabsTrigger>
       ),
       content: (
-        <TabsContent key="edital" value="edital" className="w-full h-full">
+        <TabsContent key="edital" value="edital" className="flex-grow">
           <iframe
             src={
               scrap.edital_file
                 ? `/api/file/${scrap.edital_file}`
                 : scrap.edital_link
             }
-            className="w-full h-full min-h-[600px]"
+            className="w-full h-full"
           />
         </TabsContent>
       ),
@@ -866,14 +880,14 @@ function Informacoes({ scrap }: { scrap: Scrap }) {
         </TabsTrigger>
       ),
       content: (
-        <TabsContent key="matricula" value="matricula">
+        <TabsContent key="matricula" value="matricula" className="flex-grow">
           <iframe
             src={
               scrap.matricula_file
                 ? `/api/file/${scrap.matricula_file}`
                 : scrap.matricula_link
             }
-            className="w-full h-full min-h-[600px]"
+            className="w-full h-full"
           />
         </TabsContent>
       ),
@@ -888,14 +902,14 @@ function Informacoes({ scrap }: { scrap: Scrap }) {
         </TabsTrigger>
       ),
       content: (
-        <TabsContent key="laudo" value="laudo">
+        <TabsContent key="laudo" value="laudo" className="flex-grow">
           <iframe
             src={
               scrap.laudo_file
                 ? `/api/file/${scrap.laudo_file}`
                 : scrap.laudo_link
             }
-            className="w-full h-full min-h-[600px]"
+            className="w-full h-full"
           />
         </TabsContent>
       ),
@@ -903,12 +917,12 @@ function Informacoes({ scrap }: { scrap: Scrap }) {
   }
 
   return (
-    <Tabs defaultValue="descricao" className="w-full">
-      <TabsList className="w-full">
+    <Tabs defaultValue="descricao" className="flex flex-col h-full w-full">
+      <TabsList className="w-full flex-none">
         <TabsTrigger value="descricao">Descrição do lote</TabsTrigger>
         {documentos.map(({ trigger }) => trigger)}
       </TabsList>
-      <TabsContent value="descricao" className="max-h-[600px] overflow-y-auto">
+      <TabsContent value="descricao" className="flex-grow overflow-auto">
         <DescricaoAnalise scrap={scrap} />
       </TabsContent>
       {documentos.map(({ content }) => content)}
