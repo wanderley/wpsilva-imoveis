@@ -20,101 +20,22 @@ export async function extrairHipoteca(
   contextoEdital: PromptContext,
   contextoMatricula: PromptContext,
 ): Promise<AnaliseHipoteca | null> {
-  const prompt = `{contexto}
-{persona}
-
-### Passos
-1. Leia {o documento} na íntegra para entender completamente o contexto do leilão.
-2. Localize o trecho específico d{o documento} que menciona {a hipoteca}.
-3. Retorne apenas o trecho completo e na íntegra d{o documento} que faz referência {a hipoteca} e nada mais.
-  3a. Caso não exista um trecho que mencione {a hipoteca}, retorne a mensagem "{não há hipoteca}
-{passos-adicionais}".
-`;
-  const trechoHipotecaNaEditalNaoEncontrado =
-    "Nenhuma hipotéca foi encontrada no edital";
-  const trechoHipotecaNoEdital = await generateText({
-    model: openaiCached("gpt-4o-mini"),
-    temperature: 0,
-    prompt: prompt
-      .replace("{contexto}", promptContextString("Contexto", [contextoEdital]))
-      .replace("{persona}", PERSONA)
-      .replace("{o documento}", "o edital")
-      .replace("{não há hipoteca}", trechoHipotecaNaEditalNaoEncontrado)
-      .replace(
-        "{a hipoteca}",
-        "a hipoteca (não confunda com alienação fiduciária)",
-      )
-      .replace("{passos-adicionais}", ""),
-  });
-  if (
-    trechoHipotecaNoEdital.text.includes(trechoHipotecaNaEditalNaoEncontrado)
-  ) {
+  const trechoHipotecaNoEdital = await extrairHipotecaDoEdital(contextoEdital);
+  if (!trechoHipotecaNoEdital) {
     return null;
   }
 
-  const trechoHipotecaNaMatriculaNaoEncontrado =
-    "Nenhuma hipoteca foi encontrada na matrícula";
-  const trechoHipotecaNaMatriculaPassosAdicionais = `4. **Caso o trecho da hipoteca finalize com indicações como "continua na ficha N" ou "continua no verso"**, prossiga a leitura na próxima página da matrícula até localizar o próximo evento relevante.`;
-  const trechoHipotecaNaMatricula = await generateText({
-    model: openaiCached("gpt-4o-mini"),
-    temperature: 0,
-    prompt: prompt
-      .replace(
-        "{contexto}",
-        promptContextString("Contexto", [contextoMatricula]),
-      )
-      .replace("{persona}", PERSONA)
-      .replace("{o documento}", "a matrícula")
-      .replace("{não há hipoteca}", trechoHipotecaNaMatriculaNaoEncontrado)
-      .replace("{a hipoteca}", "ao cancelamento da hipoteca")
-      .replace(
-        "{passos-adicionais}",
-        trechoHipotecaNaMatriculaPassosAdicionais,
-      ),
-  });
-
-  if (
-    trechoHipotecaNaMatricula.text.includes(
-      trechoHipotecaNaMatriculaNaoEncontrado,
-    )
-  ) {
+  const trechoHipotecaNaMatricula =
+    await extrairHipotecaDaMatricula(contextoMatricula);
+  if (!trechoHipotecaNaMatricula) {
     return null;
   }
 
-  const trechoCancelamentoDaHipotecaNaMatriculaNaoEncontrado =
-    "Nenhum cancelamento da hipoteca foi encontrado na matrícula";
-  const trechoCancelamentoDaHipotecaNaMatricula = await generateText({
-    model: openaiCached("gpt-4o-mini"),
-    temperature: 0,
-    prompt: prompt
-      .replace(
-        "{contexto}",
-        promptContextString("Contexto", [
-          contextoMatricula,
-          {
-            type: "trecho-documento",
-            props: [
-              {
-                name: "nome",
-                value: "matricula-para-verificacao-cancelamento",
-              },
-            ],
-            content: trechoHipotecaNaMatricula.text.trim(),
-          },
-        ]),
-      )
-      .replace("{persona}", PERSONA)
-      .replace("{o documento}", "a matrícula")
-      .replace("{a hipoteca}", "ao cancelamento da hipoteca")
-      .replace(
-        "{não há hipoteca}",
-        trechoCancelamentoDaHipotecaNaMatriculaNaoEncontrado,
-      )
-      .replace(
-        "{passos-adicionais}",
-        "4. O registro de cancelamento tem que ser um novo registro na matrícula e deve contar uma menção explita ao cancelamento ou baixa da hipoteca.",
-      ),
-  });
+  const trechoCancelamentoDaHipotecaNaMatricula =
+    await extrairTrechoCancelamentoDaHipotecaNaMatricula(
+      contextoEdital,
+      trechoHipotecaNaMatricula.text.trim(),
+    );
 
   const hipoteca = await generateObject({
     model: openaiCached("gpt-4o-mini"),
@@ -174,4 +95,134 @@ ${promptContextString("Dados", [
   });
 
   return hipoteca.object;
+}
+
+async function extrairHipotecaDoEdital(contextoEdital: PromptContext) {
+  const prompt = `{contexto}
+{persona}
+
+### Passos
+1. Leia {o documento} na íntegra para entender completamente o contexto do leilão.
+2. Localize o trecho específico d{o documento} que menciona {a hipoteca}.
+3. Retorne apenas o trecho completo e na íntegra d{o documento} que faz referência {a hipoteca} e nada mais.
+  3a. Caso não exista um trecho que mencione {a hipoteca}, retorne a mensagem "{não há hipoteca}
+{passos-adicionais}".
+`;
+  const trechoHipotecaNaEditalNaoEncontrado =
+    "Nenhuma hipotéca foi encontrada no edital";
+  const trechoHipotecaNoEdital = await generateText({
+    model: openaiCached("gpt-4o-mini"),
+    temperature: 0,
+    prompt: prompt
+      .replace("{contexto}", promptContextString("Contexto", [contextoEdital]))
+      .replace("{persona}", PERSONA)
+      .replace("{o documento}", "o edital")
+      .replace("{não há hipoteca}", trechoHipotecaNaEditalNaoEncontrado)
+      .replace(
+        "{a hipoteca}",
+        "a hipoteca (não confunda com alienação fiduciária)",
+      )
+      .replace("{passos-adicionais}", ""),
+  });
+  if (
+    trechoHipotecaNoEdital.text.includes(trechoHipotecaNaEditalNaoEncontrado)
+  ) {
+    return null;
+  }
+  return trechoHipotecaNoEdital;
+}
+
+async function extrairHipotecaDaMatricula(contextoMatricula: PromptContext) {
+  const prompt = `{contexto}
+{persona}
+
+### Passos
+1. Leia {o documento} na íntegra para entender completamente o contexto do leilão.
+2. Localize o trecho específico d{o documento} que menciona {a hipoteca}.
+3. Retorne apenas o trecho completo e na íntegra d{o documento} que faz referência {a hipoteca} e nada mais.
+  3a. Caso não exista um trecho que mencione {a hipoteca}, retorne a mensagem "{não há hipoteca}
+{passos-adicionais}".
+`;
+
+  const trechoHipotecaNaMatriculaNaoEncontrado =
+    "Nenhuma hipoteca foi encontrada na matrícula";
+  const trechoHipotecaNaMatriculaPassosAdicionais = `4. **Caso o trecho da hipoteca finalize com indicações como "continua na ficha N" ou "continua no verso"**, prossiga a leitura na próxima página da matrícula até localizar o próximo evento relevante.`;
+  const trechoHipotecaNaMatricula = await generateText({
+    model: openaiCached("gpt-4o-mini"),
+    temperature: 0,
+    prompt: prompt
+      .replace(
+        "{contexto}",
+        promptContextString("Contexto", [contextoMatricula]),
+      )
+      .replace("{persona}", PERSONA)
+      .replace("{o documento}", "a matrícula")
+      .replace("{não há hipoteca}", trechoHipotecaNaMatriculaNaoEncontrado)
+      .replace("{a hipoteca}", "ao cancelamento da hipoteca")
+      .replace(
+        "{passos-adicionais}",
+        trechoHipotecaNaMatriculaPassosAdicionais,
+      ),
+  });
+
+  if (
+    trechoHipotecaNaMatricula.text.includes(
+      trechoHipotecaNaMatriculaNaoEncontrado,
+    )
+  ) {
+    return null;
+  }
+  return trechoHipotecaNaMatricula;
+}
+
+async function extrairTrechoCancelamentoDaHipotecaNaMatricula(
+  contextoMatricula: PromptContext,
+  trechoHipotecaNaMatricula: string,
+) {
+  const prompt = `{contexto}
+{persona}
+
+### Passos
+1. Leia {o documento} na íntegra para entender completamente o contexto do leilão.
+2. Localize o trecho específico d{o documento} que menciona {a hipoteca}.
+3. Retorne apenas o trecho completo e na íntegra d{o documento} que faz referência {a hipoteca} e nada mais.
+  3a. Caso não exista um trecho que mencione {a hipoteca}, retorne a mensagem "{não há hipoteca}
+{passos-adicionais}".
+`;
+
+  const trechoCancelamentoDaHipotecaNaMatriculaNaoEncontrado =
+    "Nenhum cancelamento da hipoteca foi encontrado na matrícula";
+  const trechoCancelamentoDaHipotecaNaMatricula = await generateText({
+    model: openaiCached("gpt-4o-mini"),
+    temperature: 0,
+    prompt: prompt
+      .replace(
+        "{contexto}",
+        promptContextString("Contexto", [
+          contextoMatricula,
+          {
+            type: "trecho-documento",
+            props: [
+              {
+                name: "nome",
+                value: "matricula-para-verificacao-cancelamento",
+              },
+            ],
+            content: trechoHipotecaNaMatricula,
+          },
+        ]),
+      )
+      .replace("{persona}", PERSONA)
+      .replace("{o documento}", "a matrícula")
+      .replace("{a hipoteca}", "ao cancelamento da hipoteca")
+      .replace(
+        "{não há hipoteca}",
+        trechoCancelamentoDaHipotecaNaMatriculaNaoEncontrado,
+      )
+      .replace(
+        "{passos-adicionais}",
+        "4. O registro de cancelamento tem que ser um novo registro na matrícula e deve contar uma menção explita ao cancelamento ou baixa da hipoteca.",
+      ),
+  });
+  return trechoCancelamentoDaHipotecaNaMatricula;
 }
