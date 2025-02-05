@@ -1,7 +1,7 @@
 import { openaiCached } from "@/services/ai/providers";
 import { generateObject } from "ai";
 
-export async function deriveTipoImovel(
+export async function extrairTipoImovel(
   description: string,
   model: string = "gpt-4o-mini",
 ): Promise<

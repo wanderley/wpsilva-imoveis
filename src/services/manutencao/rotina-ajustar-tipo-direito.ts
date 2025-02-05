@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { scrapsTable } from "@/db/schema";
 import { updateDb } from "@/services/manutencao/lib/update-db";
-import { deriveTipoDireito } from "@/services/scraper/lib/derive-tipo-direito";
+import { extrairTipoDireito } from "@/services/scraper/lib/derive-tipo-direito";
 import { eq } from "drizzle-orm";
 
 export const descricao = "Atualiza o tipo de direito dos scraps";
@@ -20,7 +20,7 @@ export const rotina = updateDb({
   }),
   workers: 100,
   update: async (scrap) => {
-    const tipoDireito = await deriveTipoDireito(scrap.description!);
+    const tipoDireito = await extrairTipoDireito(scrap.description!);
     await db
       .update(scrapsTable)
       .set({ analise_tipo_direito: tipoDireito })

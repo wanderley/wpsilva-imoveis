@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { scrapsTable } from "@/db/schema";
 import { updateDb } from "@/services/manutencao/lib/update-db";
-import { deriveTipoImovel } from "@/services/scraper/lib/derive-tipo-imovel";
+import { extrairTipoImovel } from "@/services/scraper/lib/derive-tipo-imovel";
 import { eq } from "drizzle-orm";
 
 export const descricao = "Atualiza o tipo de imóvel dos scraps";
@@ -20,7 +20,7 @@ export const rotina = updateDb({
   }),
   workers: 100,
   update: async (scrap) => {
-    const tipoImovel = await deriveTipoImovel(scrap.description!);
+    const tipoImovel = await extrairTipoImovel(scrap.description!);
     await db
       .update(scrapsTable)
       .set({ analise_tipo_imovel: tipoImovel })

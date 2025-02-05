@@ -10,7 +10,7 @@ const TIPO_DIREITO = z.enum([
   "Direitos do compromissário comprador",
 ]);
 
-export async function deriveTipoDireito(
+export async function extrairTipoDireito(
   description: string,
   model: string = "gpt-4o-mini",
 ): Promise<z.infer<typeof TIPO_DIREITO> | undefined> {

@@ -16,8 +16,8 @@ import { updateAnalysis } from "@/services/analyser/actions";
 import { SystemFilePath } from "@/services/file/system-file";
 import { validateAddress } from "@/services/google/address-validation";
 import { derivePorcentagemTitularidade } from "@/services/scraper/lib/derive-porcentagem-titularidade";
-import { deriveTipoDireito } from "@/services/scraper/lib/derive-tipo-direito";
-import { deriveTipoImovel } from "@/services/scraper/lib/derive-tipo-imovel";
+import { extrairTipoDireito } from "@/services/scraper/lib/derive-tipo-direito";
+import { extrairTipoImovel } from "@/services/scraper/lib/derive-tipo-imovel";
 import { waitPageToBeReady } from "@/services/scraper/lib/puppeteer";
 import { Lot, Scraper } from "@/services/scraper/scraper";
 import { getScraper } from "@/services/scraper/scrapers";
@@ -471,7 +471,7 @@ async function genTipoDireito(
     return scrap.analise_tipo_direito;
   }
   return (
-    scrap.analise_tipo_direito ?? (await deriveTipoDireito(newDescription))
+    scrap.analise_tipo_direito ?? (await extrairTipoDireito(newDescription))
   );
 }
 
@@ -482,7 +482,7 @@ async function genTipoImovel(
   if (newDescription == null) {
     return scrap.analise_tipo_imovel;
   }
-  return scrap.analise_tipo_imovel ?? (await deriveTipoImovel(newDescription));
+  return scrap.analise_tipo_imovel ?? (await extrairTipoImovel(newDescription));
 }
 
 async function genPorcentagemTitularidade(
