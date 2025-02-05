@@ -240,7 +240,13 @@ function Formulario({ scrap }: { scrap: Scrap }) {
         className="h-full w-full space-y-6"
       >
         <div className="flex flex-col h-full">
-          <div className="flex-grow overflow-auto pb-4 grid grid-cols-1 gap-4">
+          <div
+            className="flex-grow overflow-auto pb-4 pr-2 grid grid-cols-1 gap-4"
+            style={{
+              scrollbarColor: "hsl(0 0% 87% / 1) white",
+              scrollbarWidth: "thin",
+            }}
+          >
             <CampoTipoImovel />
             <CampoTipoDireito />
             <CampoPorcentagemTitularidade />
