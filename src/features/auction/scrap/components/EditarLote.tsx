@@ -508,6 +508,7 @@ function CampoHipoteca() {
               <Textarea
                 {...field}
                 value={field.value || ""}
+                className="field-sizing-content"
                 onChange={(e) => field.onChange(e.target.value)}
               />
             </FormControl>
@@ -606,6 +607,7 @@ function CampoDebitoExequendo() {
                 {...field}
                 value={field.value || ""}
                 onChange={(e) => field.onChange(e.target.value)}
+                className="field-sizing-content"
               />
             </FormControl>
             <FormDescription></FormDescription>
