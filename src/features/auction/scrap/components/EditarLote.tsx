@@ -37,7 +37,7 @@ import { useScrapDetails, useUpdateScrapMutation } from "@/hooks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, CheckCheck } from "lucide-react";
 import Link from "next/link";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useMemo } from "react";
 import { useForm, useFormContext } from "react-hook-form";
 import { z } from "zod";
 
@@ -217,19 +217,21 @@ function Formulario({ scrap }: { scrap: Scrap }) {
     );
   }
 
-  const [progress, setProgress] = useState(0);
-  useEffect(() => {
-    const values = form.getValues();
-    if (values) {
-      const total = Object.keys(values).filter((key) =>
-        key.includes("_verificada"),
-      ).length;
-      const verificados = Object.entries(values).filter(
-        ([key, value]) => key.includes("_verificada") && value === true,
-      ).length;
-      setProgress((verificados / total) * 100);
-    }
-  }, [form, form.watch()]);
+  const formValues = form.watch();
+  const progress = useMemo(() => {
+    if (!formValues) return 0;
+
+    const verificationFields = Object.entries(formValues).filter(([key]) =>
+      key.includes("_verificada"),
+    );
+
+    const total = verificationFields.length;
+    const verified = verificationFields.filter(
+      ([, value]) => value === true,
+    ).length;
+
+    return total > 0 ? Math.round((verified / total) * 100) : 0;
+  }, [formValues]);
 
   return (
     <Form {...form}>
