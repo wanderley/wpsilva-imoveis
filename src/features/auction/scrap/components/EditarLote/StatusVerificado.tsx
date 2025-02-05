@@ -5,7 +5,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { type Formulario } from "@/features/auction/scrap/components/EditarLote/lib/schema";
+import { type Formulario } from "@/features/auction/scrap/components/EditarLote/schema";
 import { CheckCheck } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 
