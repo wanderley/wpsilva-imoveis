@@ -38,12 +38,13 @@ Sua tarefa é extrair o valor do débito exequendo do edital.
 1. Leia o edital na íntegra.
 2. Localize o trecho que menciona o débito exequendo.
   2a. Não confunda o débito exequendo com o valor da hipoteca ou da alienação fiduciária que aparecerem na seção de ônus no edital.
-  2b. Se não conseguir identificar o valor do débito exequendo, retorne o valor da segunda praça.
-  2c. Se não existir valor para a segunda praça, retorne o valor da primeira praça.
+  2b. Se não conseguir identificar o valor do débito exequendo, retorne zero e inclua uma justificativa para não ter conseguido identificar o valor.  
 3. Verifique se o débito é relacionado a dívidas de condomínio.
   3a. Como não temos acesso ao processo, então vamos assumir que ações movidas por condomínios são despesas de condomínio.
-  3b. Caso contrário, assuma que o débito não é uma despesa de condomínio.
-4. Retorne o valor do débito exequendo e a indicação se é uma despesa de condomínio no formato de saída esperado.`,
+    3a1. Identifique o nome do autor da ação judicial.
+    3a2. Verifique se o nome do autor da ação é o nome de um condomínio. Normalmente, você encontrará a palavra "condominio" no nome do autor da ação.
+    3a3. Caso identifique que o autor da ação é um condomínio, considere o débito como uma despesa de condomínio.
+  3b. Caso contrário, assuma que o débito **não é uma despesa de condomínio**.`,
   });
   return debito.object;
 }
