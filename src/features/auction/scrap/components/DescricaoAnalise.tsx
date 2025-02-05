@@ -15,16 +15,16 @@ export function DescricaoAnalise({ scrap }: Props) {
   const toggleVisualizacao = () => setMostrarResumo((prev) => !prev);
   const handleHover = (hoverState: boolean) => () => setIsHovered(hoverState);
 
-  const conteudoDescricao = mostrarResumo ? (
-    scrap.analyses[0]?.response.description || "Descrição não disponível"
-  ) : (
+  const conteudoDescricao = (
     <StyledMarkdown
       components={{
         pre: ({ children }) => <p className="p-1">{children}</p>,
         code: ({ children }) => <>{children}</>,
       }}
     >
-      {scrap.description_markdown || scrap.description || ""}
+      {mostrarResumo
+        ? scrap.analyses[0]?.response.description || "Descrição não disponível"
+        : scrap.description_markdown || scrap.description || ""}
     </StyledMarkdown>
   );
 
