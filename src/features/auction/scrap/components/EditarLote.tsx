@@ -13,6 +13,10 @@ import { CampoHipoteca } from "@/features/auction/scrap/components/EditarLote/Ca
 import { CampoPorcentagemTitularidade } from "@/features/auction/scrap/components/EditarLote/CampoPorcentagemTitularidade";
 import { CampoTipoDireito } from "@/features/auction/scrap/components/EditarLote/CampoTipoDireito";
 import { CampoTipoImovel } from "@/features/auction/scrap/components/EditarLote/CampoTipoImovel";
+import {
+  type Formulario,
+  SchemaFormulario,
+} from "@/features/auction/scrap/components/EditarLote/schema";
 import { LoteImagens } from "@/features/auction/scrap/components/LotCarousel";
 import { useScrapDetails, useUpdateScrapMutation } from "@/hooks";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,7 +24,6 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { ReactNode, useMemo } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 
 export function EditarLote({ scrapId }: { scrapId: number }) {
   const { data, isLoading } = useScrapDetails(scrapId);
@@ -54,16 +57,6 @@ export function EditarLote({ scrapId }: { scrapId: number }) {
     </>
   );
 }
-
-type Formulario = z.infer<typeof SchemaFormulario>;
-const SchemaFormulario = z.object({
-  ...CampoTipoDireito.schema.shape,
-  ...CampoTipoImovel.schema.shape,
-  ...CampoPorcentagemTitularidade.schema.shape,
-  ...CampoHipoteca.schema.shape,
-  ...CampoAlienacaoFiduciaria.schema.shape,
-  ...CampoDebitoExequendo.schema.shape,
-});
 
 function Formulario({ scrap }: { scrap: Scrap }) {
   const { mutate } = useUpdateScrapMutation();

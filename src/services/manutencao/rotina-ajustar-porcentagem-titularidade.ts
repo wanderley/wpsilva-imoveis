@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { scrapsTable } from "@/db/schema";
 import { updateDb } from "@/services/manutencao/lib/update-db";
-import { derivePorcentagemTitularidade } from "@/services/scraper/lib/derive-porcentagem-titularidade";
+import { extrairPorcentagemTitularidade } from "@/services/scraper/analises/extrair-porcentagem-titularidade";
 import { eq } from "drizzle-orm";
 
 export const descricao = "Atualiza a porcentagem de titularidade dos scraps";
@@ -20,7 +20,9 @@ export const rotina = updateDb({
   }),
   workers: 100,
   update: async (scrap) => {
-    const porcentagem = await derivePorcentagemTitularidade(scrap.description!);
+    const porcentagem = await extrairPorcentagemTitularidade(
+      scrap.description!,
+    );
     await db
       .update(scrapsTable)
       .set({ analise_porcentagem_titularidade: porcentagem })

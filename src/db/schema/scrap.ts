@@ -3,10 +3,10 @@ import { scrapAnalysesTable } from "@/db/schema/scrapAnalysis";
 import { scrapFilesTable } from "@/db/schema/scrapFile";
 import { ScrapProfit, scrapProfitTable } from "@/db/schema/scrapProfit";
 import { validatedAddressTable } from "@/db/schema/validatedAddress";
-import { AnaliseAlienacaoFiduciaria } from "@/services/scraper/lib/derive-alienacao-fiduciaria";
-import { AnaliseDebitoExequendo } from "@/services/scraper/lib/derive-debito-exequendo";
-import { AnaliseHipoteca } from "@/services/scraper/lib/derive-hipoteca";
-import { AnaliseResumoMatricula } from "@/services/scraper/lib/derive-resumo-matricula";
+import { AnaliseAlienacaoFiduciaria } from "@/services/scraper/analises/extrair-alienacao-fiduciaria";
+import { AnaliseDebitoExequendo } from "@/services/scraper/analises/extrair-debito-exequendo";
+import { AnaliseHipoteca } from "@/services/scraper/analises/extrair-hipoteca";
+import { AnaliseResumoMatricula } from "@/services/scraper/analises/extrair-resumo-matricula";
 import { relations } from "drizzle-orm";
 import {
   datetime,

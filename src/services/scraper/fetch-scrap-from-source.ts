@@ -15,9 +15,9 @@ import { formatTextAsMarkdown } from "@/services/ai/format-text-as-markdown";
 import { updateAnalysis } from "@/services/analyser/actions";
 import { SystemFilePath } from "@/services/file/system-file";
 import { validateAddress } from "@/services/google/address-validation";
-import { derivePorcentagemTitularidade } from "@/services/scraper/lib/derive-porcentagem-titularidade";
-import { extrairTipoDireito } from "@/services/scraper/lib/derive-tipo-direito";
-import { extrairTipoImovel } from "@/services/scraper/lib/derive-tipo-imovel";
+import { extrairPorcentagemTitularidade } from "@/services/scraper/analises/extrair-porcentagem-titularidade";
+import { extrairTipoDireito } from "@/services/scraper/analises/extrair-tipo-direito";
+import { extrairTipoImovel } from "@/services/scraper/analises/extrair-tipo-imovel";
 import { waitPageToBeReady } from "@/services/scraper/lib/puppeteer";
 import { Lot, Scraper } from "@/services/scraper/scraper";
 import { getScraper } from "@/services/scraper/scrapers";
@@ -494,7 +494,7 @@ async function genPorcentagemTitularidade(
   }
   return (
     scrap.analise_porcentagem_titularidade ??
-    (await derivePorcentagemTitularidade(newDescription))
+    (await extrairPorcentagemTitularidade(newDescription))
   );
 }
 

@@ -14,7 +14,7 @@ export async function extrairTipoDireito(
   description: string,
   model: string = "gpt-4o-mini",
 ): Promise<z.infer<typeof TIPO_DIREITO> | undefined> {
-  const res = await deriveTipoDireito_INTERNAL(description, model);
+  const res = await extrairTipoDireito_INTERNAL(description, model);
   // In the last test, the revision improves error rate from 25% to 4%.
   if (TIPO_DIREITO.safeParse(res.revisao.tipo_direito).success) {
     return res.revisao.tipo_direito;
@@ -27,7 +27,7 @@ type Schema = {
   justificativa: string;
 };
 
-export async function deriveTipoDireito_INTERNAL(
+export async function extrairTipoDireito_INTERNAL(
   description: string,
   model: string = "gpt-4o-mini",
   shouldReview: boolean = true,

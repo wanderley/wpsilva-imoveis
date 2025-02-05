@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { scrapsTable } from "@/db/schema";
 import { updateDb } from "@/services/manutencao/lib/update-db";
-import { extrairTipoImovel } from "@/services/scraper/lib/derive-tipo-imovel";
+import { extrairTipoImovel } from "@/services/scraper/analises/extrair-tipo-imovel";
 import { eq } from "drizzle-orm";
 
 export const descricao = "Atualiza o tipo de imóvel dos scraps";

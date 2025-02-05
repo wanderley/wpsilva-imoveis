@@ -2,14 +2,14 @@ import { db } from "@/db";
 import { scrapsTable } from "@/db/schema";
 import { selectedScrapsForManualReview } from "@/selected-scraps";
 import { updateDb } from "@/services/manutencao/lib/update-db";
-import { extrairAlienacaoFiduciaria } from "@/services/scraper/lib/derive-alienacao-fiduciaria";
-import { extrairDebitoExequendo } from "@/services/scraper/lib/derive-debito-exequendo";
-import { extrairHipoteca } from "@/services/scraper/lib/derive-hipoteca";
-import { resumirMatricula } from "@/services/scraper/lib/derive-resumo-matricula";
+import { extrairAlienacaoFiduciaria } from "@/services/scraper/analises/extrair-alienacao-fiduciaria";
+import { extrairDebitoExequendo } from "@/services/scraper/analises/extrair-debito-exequendo";
+import { extrairHipoteca } from "@/services/scraper/analises/extrair-hipoteca";
+import { extrairResumoMatricula } from "@/services/scraper/analises/extrair-resumo-matricula";
 import {
   gerarContextoEdital,
   gerarContextoMatricula,
-} from "@/services/scraper/lib/gerar-contexto";
+} from "@/services/scraper/analises/gerar-contexto";
 import { eq } from "drizzle-orm";
 
 export const descricao =
@@ -68,7 +68,7 @@ export const rotina = updateDb({
         analise_resumo_matricula:
           scrap.analise_resumo_matricula_verificada === 1
             ? undefined
-            : await resumirMatricula(contextoMatricula),
+            : await extrairResumoMatricula(contextoMatricula),
       })
       .where(eq(scrapsTable.id, scrap.id));
   },

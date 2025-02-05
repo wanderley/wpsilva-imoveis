@@ -2,7 +2,7 @@ import { openaiCached } from "@/services/ai/providers";
 import { generateObject } from "ai";
 import { z } from "zod";
 
-export async function derivePorcentagemTitularidade(
+export async function extrairPorcentagemTitularidade(
   description: string,
   model: string = "gpt-4o-mini",
 ): Promise<number> {

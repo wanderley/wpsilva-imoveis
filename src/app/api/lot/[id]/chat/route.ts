@@ -7,7 +7,7 @@ import {
 import {
   gerarContextoEdital,
   gerarContextoMatricula,
-} from "@/services/scraper/lib/gerar-contexto";
+} from "@/services/scraper/analises/gerar-contexto";
 import { openai } from "@ai-sdk/openai";
 import { streamText } from "ai";
 import { eq } from "drizzle-orm";

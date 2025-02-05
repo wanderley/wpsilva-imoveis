@@ -13,7 +13,7 @@ export type AnaliseResumoMatricula = {
 
 const PERSONA = `Você é um especialista em leilões judiciais, com mais de 20 anos de experiência na análise de editais e matrículas de imóveis.`;
 
-export async function resumirMatricula(
+export async function extrairResumoMatricula(
   contextoMatricula: PromptContext,
 ): Promise<AnaliseResumoMatricula> {
   const matricula = await generateObject({

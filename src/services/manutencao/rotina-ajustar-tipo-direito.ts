@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { scrapsTable } from "@/db/schema";
 import { updateDb } from "@/services/manutencao/lib/update-db";
-import { extrairTipoDireito } from "@/services/scraper/lib/derive-tipo-direito";
+import { extrairTipoDireito } from "@/services/scraper/analises/extrair-tipo-direito";
 import { eq } from "drizzle-orm";
 
 export const descricao = "Atualiza o tipo de direito dos scraps";
