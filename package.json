@@ -42,6 +42,7 @@
     "commander": "^13.0.0",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
+    "deep-equal": "^2.2.3",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.35.2",
     "flowbite-react": "^0.10.2",
@@ -70,6 +71,7 @@
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@types/chroma-js": "^2.4.4",
+    "@types/deep-equal": "^1.0.4",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

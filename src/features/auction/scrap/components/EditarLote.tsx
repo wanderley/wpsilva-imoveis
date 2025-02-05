@@ -35,6 +35,7 @@ import { DescricaoAnalise } from "@/features/auction/scrap/components/DescricaoA
 import { LoteImagens } from "@/features/auction/scrap/components/LotCarousel";
 import { useScrapDetails, useUpdateScrapMutation } from "@/hooks";
 import { zodResolver } from "@hookform/resolvers/zod";
+import deepEqual from "deep-equal";
 import { ArrowLeft, CheckCheck } from "lucide-react";
 import Link from "next/link";
 import { ReactNode, useMemo } from "react";
@@ -182,13 +183,16 @@ function Formulario({ scrap }: { scrap: Scrap }) {
         scrap.analise_porcentagem_titularidade;
     data.analise_hipoteca_verificada =
       data.analise_hipoteca_verificada ||
-      data.analise_hipoteca !== scrap.analise_hipoteca;
+      !deepEqual(data.analise_hipoteca, scrap.analise_hipoteca);
     data.analise_alienacao_fiduciaria_verificada =
       data.analise_alienacao_fiduciaria_verificada ||
-      data.analise_alienacao_fiduciaria !== scrap.analise_alienacao_fiduciaria;
+      !deepEqual(
+        data.analise_alienacao_fiduciaria,
+        scrap.analise_alienacao_fiduciaria,
+      );
     data.analise_debito_exequendo_verificada =
       data.analise_debito_exequendo_verificada ||
-      data.analise_debito_exequendo !== scrap.analise_debito_exequendo;
+      !deepEqual(data.analise_debito_exequendo, scrap.analise_debito_exequendo);
 
     mutate(
       {
