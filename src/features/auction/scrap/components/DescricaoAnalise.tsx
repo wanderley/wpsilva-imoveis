@@ -4,36 +4,50 @@ import { type Scrap } from "@/db/schema";
 import { ArrowLeftRight } from "lucide-react";
 import { useState } from "react";
 
-export function DescricaoAnalise({ scrap }: { scrap: Scrap }) {
+interface Props {
+  scrap: Scrap;
+}
+
+export function DescricaoAnalise({ scrap }: Props) {
   const [mostrarResumo, setMostrarResumo] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
+
+  const toggleVisualizacao = () => setMostrarResumo((prev) => !prev);
+  const handleHover = (hoverState: boolean) => () => setIsHovered(hoverState);
+
+  const conteudoDescricao = mostrarResumo ? (
+    scrap.analyses[0]?.response.description || "Descrição não disponível"
+  ) : (
+    <StyledMarkdown>
+      {scrap.description_markdown || scrap.description || ""}
+    </StyledMarkdown>
+  );
+
   return (
     <div
-      className="relative"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      className="relative group"
+      onMouseEnter={handleHover(true)}
+      onMouseLeave={handleHover(false)}
     >
-      <div className="text-muted-foreground h-full">
-        {mostrarResumo ? (
-          scrap.analyses[0].response.description
-        ) : (
-          <StyledMarkdown>
-            {scrap.description_markdown || scrap.description || ""}
-          </StyledMarkdown>
-        )}
+      <div className="text-muted-foreground h-full transition-opacity duration-200">
+        {conteudoDescricao}
       </div>
-      {isHovered && (
-        <div className="absolute top-0 right-4 translate-y-1/2">
-          <Button
-            variant="secondary"
-            size="icon"
-            className="rounded-full shadow-lg"
-            onClick={() => setMostrarResumo(!mostrarResumo)}
-          >
-            <ArrowLeftRight className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
+
+      <div
+        className={`absolute top-0 right-4 translate-y-1/2 transition-opacity duration-200 ${isHovered ? "opacity-100" : "opacity-0"}`}
+      >
+        <Button
+          variant="secondary"
+          size="icon"
+          className="rounded-full shadow-lg transform transition-transform hover:scale-105"
+          onClick={toggleVisualizacao}
+          aria-label={
+            mostrarResumo ? "Mostrar descrição completa" : "Mostrar resumo"
+          }
+        >
+          <ArrowLeftRight className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 }
