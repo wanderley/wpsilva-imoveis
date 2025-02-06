@@ -10,29 +10,34 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Scrap } from "@/db/schema";
 import { StatusVerificado } from "@/features/auction/scrap/components/EditarLote/StatusVerificado";
-import { formatNumber } from "@/features/auction/scrap/components/EditarLote/lib/helpers";
+import {
+  formatNumber,
+  normalizeEmptyObject,
+} from "@/features/auction/scrap/components/EditarLote/lib/helpers";
 import deepEqual from "deep-equal";
-import { useFieldArray, useFormContext } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 import { z } from "zod";
 
 export function CampoDebitoOutros() {
   const form = useFormContext<z.infer<typeof CampoDebitoOutros.schema>>();
-  const analiseDebitoOutros = form.watch("analise_debito_outros");
-  const temDebitoOutros =
-    !!analiseDebitoOutros && analiseDebitoOutros.length > 0;
-  const { fields: debitos } = useFieldArray({
-    name: "analise_debito_outros",
-  });
-  const fields = debitos.map((debito, index) => (
-    <div key={debito.id} className="grid grid-cols-4 gap-2">
+  const temDebitoOutros = !!form.watch("analise_debito_outros");
+  const fields = (
+    <div className="grid grid-cols-2 gap-2">
       <FormField
         control={form.control}
-        name={`analise_debito_outros.${index}.tipo`}
+        name={`analise_debito_outros.iptu`}
         render={({ field }) => (
           <FormItem className="col-span-1">
-            <FormLabel>Tipo</FormLabel>
+            <FormLabel>IPTU</FormLabel>
             <FormControl>
-              <p>{field.value}</p>
+              <Input
+                {...field}
+                className="w-15"
+                type="number"
+                step={0.01}
+                value={field.value || ""}
+                onChange={(e) => field.onChange(formatNumber(e.target.value))}
+              />
             </FormControl>
             <FormDescription></FormDescription>
             <FormMessage />
@@ -41,10 +46,52 @@ export function CampoDebitoOutros() {
       />
       <FormField
         control={form.control}
-        name={`analise_debito_outros.${index}.valor`}
+        name={`analise_debito_outros.divida_ativa`}
         render={({ field }) => (
-          <FormItem className="col-span-3">
-            <FormLabel>Valor</FormLabel>
+          <FormItem className="col-span-1">
+            <FormLabel>Dívida Ativa</FormLabel>
+            <FormControl>
+              <Input
+                {...field}
+                className="w-15"
+                type="number"
+                step={0.01}
+                value={field.value || ""}
+                onChange={(e) => field.onChange(formatNumber(e.target.value))}
+              />
+            </FormControl>
+            <FormDescription></FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name={`analise_debito_outros.condominio`}
+        render={({ field }) => (
+          <FormItem className="col-span-1">
+            <FormLabel>Condomínio</FormLabel>
+            <FormControl>
+              <Input
+                {...field}
+                className="w-15"
+                type="number"
+                step={0.01}
+                value={field.value || ""}
+                onChange={(e) => field.onChange(formatNumber(e.target.value))}
+              />
+            </FormControl>
+            <FormDescription></FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name={`analise_debito_outros.outros`}
+        render={({ field }) => (
+          <FormItem className="col-span-1">
+            <FormLabel>Outros</FormLabel>
             <FormControl>
               <Input
                 {...field}
@@ -61,7 +108,7 @@ export function CampoDebitoOutros() {
         )}
       />
     </div>
-  ));
+  );
 
   return (
     <>
@@ -82,20 +129,12 @@ export function CampoDebitoOutros() {
           } else {
             form.setValue(
               "analise_debito_outros",
-              [
-                {
-                  tipo: "IPTU",
-                  valor: 0,
-                },
-                {
-                  tipo: "Dívida Ativa",
-                  valor: 0,
-                },
-                {
-                  tipo: "Condomínio",
-                  valor: 0,
-                },
-              ],
+              {
+                iptu: 0,
+                divida_ativa: 0,
+                condominio: 0,
+                outros: 0,
+              },
               { shouldDirty: true },
             );
           }
@@ -108,12 +147,12 @@ export function CampoDebitoOutros() {
 
 CampoDebitoOutros.schema = z.object({
   analise_debito_outros: z
-    .array(
-      z.object({
-        tipo: z.enum(["IPTU", "Dívida Ativa", "Condomínio", "Outros"]),
-        valor: z.number(),
-      }),
-    )
+    .object({
+      iptu: z.number(),
+      divida_ativa: z.number(),
+      condominio: z.number(),
+      outros: z.number(),
+    })
     .nullable(),
   analise_debito_outros_verificada: z.boolean(),
 });
@@ -127,14 +166,16 @@ CampoDebitoOutros.reduce = (
   scrap: Scrap,
   form: z.infer<typeof CampoDebitoOutros.schema>,
 ) => {
-  const debitos = form.analise_debito_outros?.filter(
-    (debito) => debito.valor > 0,
-  );
   return {
-    analise_debito_outros: debitos?.length ? debitos : null,
+    analise_debito_outros: normalizeEmptyObject(form.analise_debito_outros)
+      ? form.analise_debito_outros
+      : null,
     analise_debito_outros_verificada:
       form.analise_debito_outros_verificada ||
-      !deepEqual(debitos || [], scrap.analise_debito_outros || [])
+      !deepEqual(
+        normalizeEmptyObject(form.analise_debito_outros),
+        normalizeEmptyObject(scrap.analise_debito_outros),
+      )
         ? 1
         : 0,
   };
