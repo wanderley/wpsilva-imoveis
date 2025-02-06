@@ -27,7 +27,6 @@ export function CampoDebitoOutros() {
     <div key={debito.id} className="grid grid-cols-4 gap-2">
       <FormField
         control={form.control}
-        key={debito.id}
         name={`analise_debito_outros.${index}.tipo`}
         render={({ field }) => (
           <FormItem className="col-span-1">
@@ -42,7 +41,6 @@ export function CampoDebitoOutros() {
       />
       <FormField
         control={form.control}
-        key={debito.id}
         name={`analise_debito_outros.${index}.valor`}
         render={({ field }) => (
           <FormItem className="col-span-3">
