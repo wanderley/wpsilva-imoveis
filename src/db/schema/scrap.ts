@@ -5,6 +5,7 @@ import { ScrapProfit, scrapProfitTable } from "@/db/schema/scrapProfit";
 import { validatedAddressTable } from "@/db/schema/validatedAddress";
 import { AnaliseAlienacaoFiduciaria } from "@/services/scraper/analises/extrair-alienacao-fiduciaria";
 import { AnaliseDebitoExequendo } from "@/services/scraper/analises/extrair-debito-exequendo";
+import { AnaliseDebitoOutros } from "@/services/scraper/analises/extrair-debito-outros";
 import { AnaliseHipoteca } from "@/services/scraper/analises/extrair-hipoteca";
 import { AnaliseResumoMatricula } from "@/services/scraper/analises/extrair-resumo-matricula";
 import { relations } from "drizzle-orm";
@@ -93,6 +94,10 @@ export const scrapsTable = mysqlTable("scraps", {
     "analise_resumo_matricula",
   ).$type<AnaliseResumoMatricula>(),
   analise_resumo_matricula_verificada: int().default(0),
+  analise_debito_outros: json(
+    "analise_debito_outros",
+  ).$type<AnaliseDebitoOutros>(),
+  analise_debito_outros_verificada: int().default(0),
   created_at: createdAt,
   updated_at: updatedAt,
 });

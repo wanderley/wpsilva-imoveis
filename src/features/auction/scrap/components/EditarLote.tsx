@@ -9,6 +9,7 @@ import Chat from "@/features/auction/scrap/components/Chat";
 import { DescricaoAnalise } from "@/features/auction/scrap/components/DescricaoAnalise";
 import { CampoAlienacaoFiduciaria } from "@/features/auction/scrap/components/EditarLote/CampoAlienacaoFiduciaria";
 import { CampoDebitoExequendo } from "@/features/auction/scrap/components/EditarLote/CampoDebitoExequendo";
+import { CampoDebitoOutros } from "@/features/auction/scrap/components/EditarLote/CampoDebitoOutros";
 import { CampoHipoteca } from "@/features/auction/scrap/components/EditarLote/CampoHipoteca";
 import { CampoPorcentagemTitularidade } from "@/features/auction/scrap/components/EditarLote/CampoPorcentagemTitularidade";
 import { CampoTipoDireito } from "@/features/auction/scrap/components/EditarLote/CampoTipoDireito";
@@ -69,6 +70,7 @@ function Formulario({ scrap }: { scrap: Scrap }) {
       ...CampoHipoteca.defaultValues(scrap),
       ...CampoAlienacaoFiduciaria.defaultValues(scrap),
       ...CampoDebitoExequendo.defaultValues(scrap),
+      ...CampoDebitoOutros.defaultValues(scrap),
     },
   });
 
@@ -82,6 +84,7 @@ function Formulario({ scrap }: { scrap: Scrap }) {
         ...CampoHipoteca.reduce(scrap, data),
         ...CampoAlienacaoFiduciaria.reduce(scrap, data),
         ...CampoDebitoExequendo.reduce(scrap, data),
+        ...CampoDebitoOutros.reduce(scrap, data),
       },
       { onSuccess: (_) => toast({ title: "Dados atualizados com sucesso!" }) },
     );
@@ -123,6 +126,7 @@ function Formulario({ scrap }: { scrap: Scrap }) {
             <CampoHipoteca />
             <CampoAlienacaoFiduciaria />
             <CampoDebitoExequendo />
+            <CampoDebitoOutros />
           </div>
           <div className="flex-none grid grid-cols-1 gap-4">
             <div className="h-1" />

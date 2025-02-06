@@ -1,5 +1,6 @@
 import { CampoAlienacaoFiduciaria } from "@/features/auction/scrap/components/EditarLote/CampoAlienacaoFiduciaria";
 import { CampoDebitoExequendo } from "@/features/auction/scrap/components/EditarLote/CampoDebitoExequendo";
+import { CampoDebitoOutros } from "@/features/auction/scrap/components/EditarLote/CampoDebitoOutros";
 import { CampoHipoteca } from "@/features/auction/scrap/components/EditarLote/CampoHipoteca";
 import { CampoPorcentagemTitularidade } from "@/features/auction/scrap/components/EditarLote/CampoPorcentagemTitularidade";
 import { CampoTipoDireito } from "@/features/auction/scrap/components/EditarLote/CampoTipoDireito";
@@ -14,4 +15,5 @@ export const SchemaFormulario = z.object({
   ...CampoHipoteca.schema.shape,
   ...CampoAlienacaoFiduciaria.schema.shape,
   ...CampoDebitoExequendo.schema.shape,
+  ...CampoDebitoOutros.schema.shape,
 });
