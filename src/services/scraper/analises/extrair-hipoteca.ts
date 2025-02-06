@@ -33,14 +33,64 @@ export async function extrairHipoteca(
     return null;
   }
 
+  const trechoPenhoraCredorHipotecarioNaMatricula =
+    await extrairPenhoraCredorHipotecarioNaMatricula(
+      contextoMatricula,
+      trechoHipotecaNaMatricula.text.trim(),
+    );
+
   const trechoCancelamentoDaHipotecaNaMatricula =
     await extrairTrechoCancelamentoDaHipotecaNaMatricula(
       contextoEdital,
       trechoHipotecaNaMatricula.text.trim(),
     );
 
+  const contexto = promptContextString("Dados", [
+    {
+      type: "trecho-documento",
+      props: [
+        { name: "tipo", value: "Edital" },
+        { name: "detalhes", value: "Trecho do edital que menciona a hipoteca" },
+      ],
+      content: trechoHipotecaNoEdital.text.trim(),
+    },
+    {
+      type: "trecho-documento",
+      props: [
+        { name: "tipo", value: "Matrícula" },
+        {
+          name: "detalhes",
+          value: "Trecho da matrícula que menciona a hipoteca",
+        },
+      ],
+      content: trechoHipotecaNaMatricula.text.trim(),
+    },
+    {
+      type: "pesquisa-em-documento",
+      props: [
+        { name: "documento", value: "Matrícula" },
+        {
+          name: "termo",
+          value: "Penhora do credor hipotecário",
+        },
+      ],
+      content: trechoPenhoraCredorHipotecarioNaMatricula.text.trim(),
+    },
+    {
+      type: "trecho-documento",
+      props: [
+        { name: "tipo", value: "Matrícula" },
+        {
+          name: "detalhes",
+          value: "Trecho da matrícula que menciona o cancelamento da hipoteca",
+        },
+      ],
+      content: trechoCancelamentoDaHipotecaNaMatricula.text.trim(),
+    },
+  ]);
   const hipoteca = await generateObject({
     model: openaiCached("gpt-4o-mini"),
+    temperature: 0,
     schema: z.object({
       data_constituicao: z
         .string()
@@ -64,9 +114,10 @@ Sua tarefa é analisar a situação da hipoteca e retornar os dados da hipoteca 
 ### Passos
 1. Analise o trecho do edital e da matrícula que mencionam a hipoteca.
 2. Verifique se o valor da hipoteca está em reais.
-  2a. Se o valor da hipoteca aparece no edital, use esse valor porque ele é mais atualizado.
-  2b. Se o valor da hipoteca não aparece no edital, então use o valor que aparece na matrícula.
-  2c. Se o valor da hipoteca não está em reais, então retorne null para o valor.
+  2a. Se o valor da hipoteca for identificado no edital, utilize-o, pois é o mais atualizado.
+  2b. Caso o valor da hipoteca não esteja presente no edital, mas haja referência à penhora do credor hipotecário na matrícula, utilize o valor atualizado da ação movida pelo credor para determinar o montante da hipoteca.  Dê preferência para o valor da execução quando estiver presente.
+  2c. Se não houver indicação de penhora na matrícula, opte pelo valor registrado da hipoteca na matrícula.
+  2d. Se o valor da hipoteca não estiver expresso em reais, retorne null para esse campo.
 3. Verifique a data de constituição da hipoteca.
   3a. Se não conseguir identificar a data de constituição, então use a data do evento da matrícula.
   3b. Se ainda não conseguir identificar a data de constituição, então use a data que aparece no trecho do edital.
@@ -77,23 +128,7 @@ Sua tarefa é analisar a situação da hipoteca e retornar os dados da hipoteca 
   4c. Caso contrário, retorne true para o ativo.
 5. Retorne os dados da hipoteca no formato de saída esperado.
 
-${promptContextString("Dados", [
-  {
-    type: "trecho-documento",
-    props: [{ name: "nome", value: "Edital" }],
-    content: trechoHipotecaNoEdital.text.trim(),
-  },
-  {
-    type: "trecho-documento",
-    props: [{ name: "nome", value: "Matrícula" }],
-    content: trechoHipotecaNaMatricula.text.trim(),
-  },
-  {
-    type: "trecho-documento",
-    props: [{ name: "nome", value: "Cancelamento da hipoteca" }],
-    content: trechoCancelamentoDaHipotecaNaMatricula.text.trim(),
-  },
-])}`,
+${contexto}`,
   });
   return hipoteca.object;
 }
@@ -101,6 +136,7 @@ ${promptContextString("Dados", [
 async function extrairHipotecaDoEdital(contextoEdital: PromptContext) {
   const trechoHipotecaNaEditalNaoEncontrado =
     "Nenhuma hipotéca foi encontrada no edital";
+  // TODO: replace matricula por edital in 2b.
   const trechoHipotecaNoEdital = await generateText({
     model: openaiCached("gpt-4o-mini"),
     temperature: 0,
@@ -166,6 +202,42 @@ ${PERSONA}
   return trechoHipotecaNaMatricula;
 }
 
+async function extrairPenhoraCredorHipotecarioNaMatricula(
+  contextoMatricula: PromptContext,
+  trechoHipotecaNaMatricula: string,
+) {
+  const trechoPenhoraCredorHipotecarioNaMatriculaNaoEncontrado =
+    "Nenhuma penhora do credor hipotecário foi encontrada na matrícula";
+  const contexto = promptContextString("Contexto", [
+    contextoMatricula,
+    {
+      type: "trecho-matricula",
+      props: [
+        {
+          name: "detalhes",
+          value: "Trecho da matrícula que menciona a hipoteca",
+        },
+      ],
+      content: trechoHipotecaNaMatricula,
+    },
+  ]);
+  return await generateText({
+    model: openaiCached("gpt-4o-mini"),
+    temperature: 0,
+    prompt: `${contexto}
+${PERSONA}
+
+### Passos
+1. Analise cuidadosamente toda a matrícula, revisando cada registro para compreender todos os eventos documentados.
+2. Identifique o registro **mais recente** que indique a penhora realizada exclusivamente pelo banco credor hipotecário na matrícula.  
+  2a. Se o trecho contiver o nome exato do banco credor hipotecário, utilize essa informação para localizar o registro de penhora.  
+  2b. Verifique se há variações ou atualizações no nome desse banco que possam indicar alterações, garantindo a identificação correta do registro.
+3. Extraia e retorne somente o trecho completo da matrícula que contenha a referência à penhora, sem incluir informações adicionais.
+  3a. Se nenhum registro de penhora for encontrado, retorne a mensagem "${trechoPenhoraCredorHipotecarioNaMatriculaNaoEncontrado}".
+`,
+  });
+}
+
 async function extrairTrechoCancelamentoDaHipotecaNaMatricula(
   contextoMatricula: PromptContext,
   trechoHipotecaNaMatricula: string,
@@ -185,7 +257,7 @@ async function extrairTrechoCancelamentoDaHipotecaNaMatricula(
   ]);
   const trechoCancelamentoDaHipotecaNaMatriculaNaoEncontrado =
     "Nenhum cancelamento da hipoteca foi encontrado na matrícula";
-
+  // TODO: replace contar->conter 4.
   const trechoCancelamentoDaHipotecaNaMatricula = await generateText({
     model: openaiCached("gpt-4o-mini"),
     temperature: 0,
