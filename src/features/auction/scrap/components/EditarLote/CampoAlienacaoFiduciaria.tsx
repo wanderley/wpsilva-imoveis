@@ -44,45 +44,47 @@ export function CampoAlienacaoFiduciaria() {
           </FormItem>
         )}
       />
-      <FormField
-        control={form.control}
-        name="analise_alienacao_fiduciaria.data_constituicao"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Data de constituição</FormLabel>
-            <FormControl>
-              <Input
-                {...field}
-                className="w-15"
-                value={field.value || ""}
-                onChange={(e) => field.onChange(e.target.value)}
-              />
-            </FormControl>
-            <FormDescription></FormDescription>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-      <FormField
-        control={form.control}
-        name="analise_alienacao_fiduciaria.valor"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Valor do Financiamento</FormLabel>
-            <FormControl>
-              <Input
-                {...field}
-                className="w-15"
-                type="number"
-                value={field.value || ""}
-                onChange={(e) => field.onChange(formatNumber(e.target.value))}
-              />
-            </FormControl>
-            <FormDescription></FormDescription>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      <div className="grid grid-cols-2 gap-2">
+        <FormField
+          control={form.control}
+          name="analise_alienacao_fiduciaria.data_constituicao"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Data de constituição</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  className="w-15"
+                  value={field.value || ""}
+                  onChange={(e) => field.onChange(e.target.value)}
+                />
+              </FormControl>
+              <FormDescription></FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="analise_alienacao_fiduciaria.valor"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Valor do Financiamento</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  className="w-15"
+                  type="number"
+                  value={field.value || ""}
+                  onChange={(e) => field.onChange(formatNumber(e.target.value))}
+                />
+              </FormControl>
+              <FormDescription></FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
       <FormField
         control={form.control}
         name="analise_alienacao_fiduciaria.ativo"

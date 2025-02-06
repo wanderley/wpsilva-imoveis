@@ -43,45 +43,47 @@ export function CampoHipoteca() {
           </FormItem>
         )}
       />
-      <FormField
-        control={form.control}
-        name="analise_hipoteca.data_constituicao"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Data de constituição</FormLabel>
-            <FormControl>
-              <Input
-                {...field}
-                className="w-15"
-                value={field.value || ""}
-                onChange={(e) => field.onChange(e.target.value)}
-              />
-            </FormControl>
-            <FormDescription></FormDescription>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-      <FormField
-        control={form.control}
-        name="analise_hipoteca.valor"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Valor da hipoteca</FormLabel>
-            <FormControl>
-              <Input
-                {...field}
-                className="w-15"
-                type="number"
-                value={field.value || ""}
-                onChange={(e) => field.onChange(formatNumber(e.target.value))}
-              />
-            </FormControl>
-            <FormDescription></FormDescription>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      <div className="grid grid-cols-2 gap-2">
+        <FormField
+          control={form.control}
+          name="analise_hipoteca.data_constituicao"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Data de constituição</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  className="w-15"
+                  value={field.value || ""}
+                  onChange={(e) => field.onChange(e.target.value)}
+                />
+              </FormControl>
+              <FormDescription></FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="analise_hipoteca.valor"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Valor da hipoteca</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  className="w-15"
+                  type="number"
+                  value={field.value || ""}
+                  onChange={(e) => field.onChange(formatNumber(e.target.value))}
+                />
+              </FormControl>
+              <FormDescription></FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
       <FormField
         control={form.control}
         name="analise_hipoteca.ativo"
