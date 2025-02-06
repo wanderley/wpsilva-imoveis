@@ -3,10 +3,9 @@ import {
   promptContextString,
 } from "@/services/ai/prompt-context";
 import { openaiCached } from "@/services/ai/providers";
+import { AnaliseDebitoExequendo } from "@/services/scraper/analises/extrair-debito-exequendo";
 import { generateObject } from "ai";
 import { z } from "zod";
-
-import { AnaliseDebitoExequendo } from "./extrair-debito-exequendo";
 
 export type AnaliseDebitoOutros = {
   iptu: number;
