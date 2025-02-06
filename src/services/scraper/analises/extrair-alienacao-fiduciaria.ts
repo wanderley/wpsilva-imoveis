@@ -123,6 +123,7 @@ ${PERSONA}
 2. Localize o trecho específico do edital que menciona alienação/débito fiduciário.
   2a. Não confunda hipoteca com alienação/débito fiduciária, pois são dois eventos distintos.  
   2b. Caso não exista um trecho que mencione a alienação/débito fiduciário no edital (por exemplo, "AV.N", "Av.N", "AV-N", "Av-N" ou "R.N."), retorne a mensagem "${trechoAlienacaoFiduciariaNoEditalNaoEncontrado}".
+  2c. Caso o trecho não contenha explicitamente o valor do débito fiduciário, utilize o número do registro fornecido para localizar o valor em outras partes do edital.
 3. Retorne apenas o trecho completo e na íntegra do edital que faz referência a alienação/débito fiduciário e nada mais.
 `,
   });
