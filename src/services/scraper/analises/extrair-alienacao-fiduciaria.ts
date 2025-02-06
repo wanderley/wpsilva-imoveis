@@ -6,7 +6,7 @@ import { openaiCached } from "@/services/ai/providers";
 import { generateObject, generateText } from "ai";
 import { z } from "zod";
 
-const PERSONA = `Você é um especialista em leilões judiciais, com mais de 20 anos de experiência na análise de editais e matrículas de imóveis.`;
+const PERSONA = `Você é um advogado especializado em leilões judiciais, com mais de 20 anos de experiência na análise de editais e matrículas de imóveis.`;
 
 export type AnaliseAlienacaoFiduciaria = {
   data_constituicao: string | null;
@@ -20,96 +20,24 @@ export async function extrairAlienacaoFiduciaria(
   contextoEdital: PromptContext,
   contextoMatricula: PromptContext,
 ): Promise<AnaliseAlienacaoFiduciaria | null> {
-  const promptTemplate = ({
-    contexto,
-    persona,
-    oDocumento,
-    aAlienacaoFiduciaria,
-    passosAdicionais,
-    naoHaAlienacaoFiduciaria,
-  }: {
-    [K in
-      | "contexto"
-      | "persona"
-      | "oDocumento"
-      | "aAlienacaoFiduciaria"
-      | "passosAdicionais"
-      | "naoHaAlienacaoFiduciaria"]: string;
-  }) => `${contexto}
-${persona}
+  const trechoAlienacaoFiduriciariaNoEdital =
+    await extrairTrechoAlienacaoFiduriciariaNoEdital(contextoEdital);
 
-### Passos
-1. Leia ${oDocumento} na íntegra para entender completamente o documento.
-2. Localize o trecho específico d${oDocumento} que menciona ${aAlienacaoFiduciaria}.
-3. Retorne apenas o trecho completo e na íntegra d${oDocumento} que faz referência ${aAlienacaoFiduciaria} e nada mais.
-  3a. Caso não exista um trecho que mencione ${aAlienacaoFiduciaria}, retorne a mensagem "${naoHaAlienacaoFiduciaria}".
-${passosAdicionais}`;
-
-  const trechoAlienacaoFiduciariaNoEditalNaoEncontrado =
-    "Nenhuma alienação fiduciária foi encontrada **no edital**";
-  const trechoAlienacaoFiduriciariaNoEdital = await generateText({
-    model: openaiCached("gpt-4o-mini"),
-    temperature: 0,
-    prompt: promptTemplate({
-      contexto: promptContextString("Contexto", [contextoEdital]),
-      persona: PERSONA,
-      oDocumento: "o edital",
-      aAlienacaoFiduciaria: "a alienação fiduciária",
-      naoHaAlienacaoFiduciaria: trechoAlienacaoFiduciariaNoEditalNaoEncontrado,
-      passosAdicionais: "",
-    }),
-  });
-
-  if (
-    trechoAlienacaoFiduriciariaNoEdital.text.includes(
-      trechoAlienacaoFiduciariaNoEditalNaoEncontrado,
-    )
-  ) {
+  if (!trechoAlienacaoFiduriciariaNoEdital) {
     return null;
   }
 
-  const trechoAlienacaoFiduciariaNaMatricula = await generateText({
-    model: openaiCached("gpt-4o-mini"),
-    temperature: 0,
-    prompt: promptTemplate({
-      contexto: promptContextString("Contexto", [contextoMatricula]),
-      persona: PERSONA,
-      oDocumento: "a matrícula",
-      aAlienacaoFiduciaria: "a alienação fiduciária",
-      naoHaAlienacaoFiduciaria:
-        "Nenhuma alienação fiduciaria foi encontrada **na matrícula**",
-      passosAdicionais: "",
-    }),
-  });
+  const trechoAlienacaoFiduciariaNaMatricula =
+    await extrairTrechoAlienacaoFiduciariaNaMatricula(
+      contextoMatricula,
+      trechoAlienacaoFiduriciariaNoEdital.text.trim(),
+    );
 
-  const trechoCancelamentoDaAlienacaoFiduciariaNaMatricula = await generateText(
-    {
-      model: openaiCached("gpt-4o-mini"),
-      temperature: 0,
-      prompt: promptTemplate({
-        contexto: promptContextString("Contexto", [
-          contextoMatricula,
-          {
-            type: "trecho-documento",
-            props: [
-              {
-                name: "nome",
-                value: "matricula-para-verificacao-cancelamento",
-              },
-            ],
-            content: trechoAlienacaoFiduciariaNaMatricula.text.trim(),
-          },
-        ]),
-        persona: PERSONA,
-        oDocumento: "a matrícula",
-        aAlienacaoFiduciaria: "ao cancelamento da alienação fiduciária",
-        naoHaAlienacaoFiduciaria:
-          "Nenhum cancelamento da alienação fiduciária foi encontrado **na matrícula**",
-        passosAdicionais:
-          "4. O registro de cancelamento tem que ser um novo registro na matrícula e deve contar uma menção explita ao cancelamento ou baixa da alienação fiduciária.",
-      }),
-    },
-  );
+  const trechoCancelamentoDaAlienacaoFiduciariaNaMatricula =
+    await extrairTrechoCancelamentoDaAlienacaoFiduciariaNaMatricula(
+      contextoMatricula,
+      trechoAlienacaoFiduciariaNaMatricula.text.trim(),
+    );
 
   const alienacaoFiduciaria = await generateObject({
     model: openaiCached("gpt-4o-mini"),
@@ -138,7 +66,7 @@ ${passosAdicionais}`;
     }),
     prompt: `${PERSONA}
 
-Sua tarefa é analisar a situação da hipoteca e retornar os dados da hipoteca no formato de saída esperado.
+Sua tarefa é analisar a situação da alienação fiduciária e retornar os dados da alienação fiduciária no formato de saída esperado.
 
 ### Passos
 1. Analise o trecho do edital e da matrícula que mencionam a alienação fiduciária.
@@ -176,4 +104,107 @@ ${promptContextString("Dados", [
 ])}`,
   });
   return alienacaoFiduciaria.object;
+}
+
+async function extrairTrechoAlienacaoFiduriciariaNoEdital(
+  contextoEdital: PromptContext,
+) {
+  const trechoAlienacaoFiduciariaNoEditalNaoEncontrado =
+    "Nenhuma alienação fiduciária foi encontrada **no edital**";
+  const trechoAlienacaoFiduriciariaNoEdital = await generateText({
+    model: openaiCached("gpt-4o-mini"),
+    temperature: 0,
+    prompt: `${promptContextString("Contexto", [contextoEdital])}
+${PERSONA}
+
+### Passos
+
+1. Leia o edital na íntegra para entender completamente o contexto do leilão.
+2. Localize o trecho específico do edital que menciona alienação/débito fiduciário.
+  2a. Não confunda hipoteca com alienação/débito fiduciária, pois são dois eventos distintos.  
+  2b. Caso não exista um trecho que mencione a alienação/débito fiduciário no edital (por exemplo, "AV.N", "Av.N", "AV-N", "Av-N" ou "R.N."), retorne a mensagem "${trechoAlienacaoFiduciariaNoEditalNaoEncontrado}".
+3. Retorne apenas o trecho completo e na íntegra do edital que faz referência a alienação/débito fiduciário e nada mais.
+`,
+  });
+
+  if (
+    trechoAlienacaoFiduriciariaNoEdital.text.includes(
+      trechoAlienacaoFiduciariaNoEditalNaoEncontrado,
+    )
+  ) {
+    return null;
+  }
+  return trechoAlienacaoFiduriciariaNoEdital;
+}
+
+async function extrairTrechoAlienacaoFiduciariaNaMatricula(
+  contextoMatricula: PromptContext,
+  trechoAlienacaoFiduriciariaNoEdital: string,
+) {
+  const trechoAlienacaoFiduciariaNaMatriculaNaoEncontrado =
+    "Nenhuma alienação fiduciária foi encontrada na matrícula";
+  const contexto = promptContextString("Contexto", [
+    contextoMatricula,
+    {
+      type: "trecho-edital",
+      props: [
+        {
+          name: "detalhes",
+          value: "Trecho do edital que menciona a alienação fiduciária",
+        },
+      ],
+      content: trechoAlienacaoFiduriciariaNoEdital,
+    },
+  ]);
+  return await generateText({
+    model: openaiCached("gpt-4o-mini"),
+    temperature: 0,
+    prompt: `${contexto}
+${PERSONA}
+
+### Passos
+1. Leia a matrícula na íntegra para entender todos os eventos registrados.
+2. Localize o trecho específico da matrícula que menciona a alienação fiduciária.
+  2a. Se o trecho incluir um número de registro (por exemplo, AV.N, Av.N, AV-N, Av-N ou R.N.), utilize esse número como ponto de referência para identificar com precisão o segmento da matrícula que menciona a alienação fiduciária.
+  2b. Se o número de registro não estiver presente, recorra à data de registro indicada no trecho do edital para localizar o segmento correspondente na matrícula.
+  2c. Na ausência de ambos os critérios, identifique o registro mais recente na matrícula que se assemelhe à referência fornecida no edital e utilize-o para delimitar o segmento relacionado à alienação fiduciária.
+3. Retorne apenas o trecho completo e na íntegra da matrícula que faz referência a alienação fiduciária e nada mais.
+  3a. Caso não exista um trecho que mencione a alienação fiduciária, retorne a mensagem "${trechoAlienacaoFiduciariaNaMatriculaNaoEncontrado}"
+`,
+  });
+}
+
+async function extrairTrechoCancelamentoDaAlienacaoFiduciariaNaMatricula(
+  contextoMatricula: PromptContext,
+  trechoAlienacaoFiduciariaNaMatricula: string,
+) {
+  const contexto = promptContextString("Contexto", [
+    contextoMatricula,
+    {
+      type: "trecho-documento",
+      props: [
+        {
+          name: "nome",
+          value: "matricula-para-verificacao-cancelamento",
+        },
+      ],
+      content: trechoAlienacaoFiduciariaNaMatricula,
+    },
+  ]);
+  const trechoCancelamentoDaAlienacaoFiduciariaNaMatriculaNaoEncontrado =
+    "Nenhum cancelamento da alienação fiduciária foi encontrada na matrícula";
+  return await generateText({
+    model: openaiCached("gpt-4o-mini"),
+    temperature: 0,
+    prompt: `${contexto}
+${PERSONA}
+
+### Passos
+1. Leia a matrícula na íntegra para entender todos os eventos registrados.
+2. Localize o trecho específico da matrícula que menciona o cancelamento da alienação fiduciária.
+3. Retorne apenas o trecho completo e na íntegra da matrícula que faz referência ao cancelamento da alienação fiduciária e nada mais.
+  3a. Caso não exista um trecho que mencione o cancelamento da alienação fiduciária, retorne a mensagem "${trechoCancelamentoDaAlienacaoFiduciariaNaMatriculaNaoEncontrado}" 
+4. O registro de cancelamento tem que ser um novo registro na matrícula e deve conter uma menção explita ao cancelamento ou baixa da alienação fiduciária.
+`,
+  });
 }
