@@ -3,6 +3,7 @@ import { scrapAnalysesTable } from "@/db/schema/scrapAnalysis";
 import { scrapFilesTable } from "@/db/schema/scrapFile";
 import { ScrapProfit, scrapProfitTable } from "@/db/schema/scrapProfit";
 import { validatedAddressTable } from "@/db/schema/validatedAddress";
+import { tipoExecucaoEnum } from "@/services/scraper/analises/consts";
 import { AnaliseAlienacaoFiduciaria } from "@/services/scraper/analises/extrair-alienacao-fiduciaria";
 import { AnaliseDebitoExequendo } from "@/services/scraper/analises/extrair-debito-exequendo";
 import { AnaliseDebitoOutros } from "@/services/scraper/analises/extrair-debito-outros";
@@ -78,6 +79,8 @@ export const scrapsTable = mysqlTable("scraps", {
     "Imóvel comercial",
   ]),
   analise_tipo_imovel_verificada: int().default(0),
+  analise_tipo_execucao: mysqlEnum(tipoExecucaoEnum),
+  analise_tipo_execucao_verificada: int().default(0),
   analise_porcentagem_titularidade: int(),
   analise_porcentagem_titularidade_verificada: int().default(0),
   analise_hipoteca: json("analise_hipoteca").$type<AnaliseHipoteca>(),

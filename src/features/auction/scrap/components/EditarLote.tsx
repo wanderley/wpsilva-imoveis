@@ -13,6 +13,7 @@ import { CampoDebitoOutros } from "@/features/auction/scrap/components/EditarLot
 import { CampoHipoteca } from "@/features/auction/scrap/components/EditarLote/CampoHipoteca";
 import { CampoPorcentagemTitularidade } from "@/features/auction/scrap/components/EditarLote/CampoPorcentagemTitularidade";
 import { CampoTipoDireito } from "@/features/auction/scrap/components/EditarLote/CampoTipoDireito";
+import { CampoTipoExecucao } from "@/features/auction/scrap/components/EditarLote/CampoTipoExecucao";
 import { CampoTipoImovel } from "@/features/auction/scrap/components/EditarLote/CampoTipoImovel";
 import {
   type Formulario,
@@ -66,6 +67,7 @@ function Formulario({ scrap }: { scrap: Scrap }) {
     defaultValues: {
       ...CampoTipoDireito.defaultValues(scrap),
       ...CampoTipoImovel.defaultValues(scrap),
+      ...CampoTipoExecucao.defaultValues(scrap),
       ...CampoPorcentagemTitularidade.defaultValues(scrap),
       ...CampoHipoteca.defaultValues(scrap),
       ...CampoAlienacaoFiduciaria.defaultValues(scrap),
@@ -80,6 +82,7 @@ function Formulario({ scrap }: { scrap: Scrap }) {
         id: scrap.id,
         ...CampoTipoDireito.reduce(scrap, data),
         ...CampoTipoImovel.reduce(scrap, data),
+        ...CampoTipoExecucao.reduce(scrap, data),
         ...CampoPorcentagemTitularidade.reduce(scrap, data),
         ...CampoHipoteca.reduce(scrap, data),
         ...CampoAlienacaoFiduciaria.reduce(scrap, data),
@@ -123,6 +126,7 @@ function Formulario({ scrap }: { scrap: Scrap }) {
             <CampoTipoImovel />
             <CampoTipoDireito />
             <CampoPorcentagemTitularidade />
+            <CampoTipoExecucao />
             <CampoHipoteca />
             <CampoAlienacaoFiduciaria />
             <CampoDebitoExequendo />

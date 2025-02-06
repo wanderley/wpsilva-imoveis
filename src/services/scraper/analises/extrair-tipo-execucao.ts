@@ -3,6 +3,10 @@ import {
   promptContextString,
 } from "@/services/ai/prompt-context";
 import { openaiCached } from "@/services/ai/providers";
+import {
+  TipoExecucao,
+  tipoExecucaoEnum,
+} from "@/services/scraper/analises/consts";
 import { generateObject } from "ai";
 
 const PERSONA = `Você é um advogado especializado em leilões judiciais, com mais de 20 anos de experiência na análise de editais e matrículas de imóveis.`;
@@ -11,13 +15,7 @@ export async function extrairTipoExecucao(contextoEdital: PromptContext) {
   const debito = await generateObject({
     model: openaiCached("gpt-4o-mini"),
     output: "enum",
-    enum: [
-      "Execução Hipotecária",
-      "Cobrança de Despesas Condominiais",
-      "Execução Trabalhista",
-      "Leilão Extrajudicial (Alienação Fiduciária)",
-      "Outras Execuções",
-    ],
+    enum: tipoExecucaoEnum as unknown as TipoExecucao[],
     prompt: `${promptContextString("Contexto", [contextoEdital])}
 ${PERSONA}
 Sua tarefa é classificar o edital em uma das seguintes categorias: "Execução Hipotecária", "Cobrança de Despesas Condominiais", "Execução Trabalhista", "Leilão Extrajudicial (Alienação Fiduciária)" ou "Outras Execuções".
