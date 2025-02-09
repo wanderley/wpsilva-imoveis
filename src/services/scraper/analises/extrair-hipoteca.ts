@@ -33,18 +33,6 @@ export async function extrairHipoteca(
     return null;
   }
 
-  const trechoPenhoraCredorHipotecarioNaMatricula =
-    await extrairPenhoraCredorHipotecarioNaMatricula(
-      contextoMatricula,
-      trechoHipotecaNaMatricula.text.trim(),
-    );
-
-  const trechoCancelamentoDaHipotecaNaMatricula =
-    await extrairTrechoCancelamentoDaHipotecaNaMatricula(
-      contextoEdital,
-      trechoHipotecaNaMatricula.text.trim(),
-    );
-
   const contexto = promptContextString("Dados", [
     {
       type: "trecho-documento",
@@ -74,7 +62,12 @@ export async function extrairHipoteca(
           value: "Penhora do credor hipotecário",
         },
       ],
-      content: trechoPenhoraCredorHipotecarioNaMatricula.text.trim(),
+      content: (
+        await extrairPenhoraCredorHipotecarioNaMatricula(
+          contextoMatricula,
+          trechoHipotecaNaMatricula.text.trim(),
+        )
+      ).text.trim(),
     },
     {
       type: "trecho-documento",
@@ -82,10 +75,32 @@ export async function extrairHipoteca(
         { name: "tipo", value: "Matrícula" },
         {
           name: "detalhes",
-          value: "Trecho da matrícula que menciona o cancelamento da hipoteca",
+          value:
+            "Trecho **da matrícula** que menciona o cancelamento da hipoteca",
         },
       ],
-      content: trechoCancelamentoDaHipotecaNaMatricula.text.trim(),
+      content: (
+        await extrairTrechoCancelamentoDaHipotecaNaMatricula(
+          contextoEdital,
+          trechoHipotecaNaMatricula.text.trim(),
+        )
+      ).text.trim(),
+    },
+    {
+      type: "trecho-documento",
+      props: [
+        { name: "documento", value: "Edital" },
+        {
+          name: "detalhes",
+          value: "Trecho **do edital** que menciona o cancelamento da hipoteca",
+        },
+      ],
+      content: (
+        await extrairTrechoCancelamentoDaHipotecaNoEdital(
+          contextoEdital,
+          trechoHipotecaNoEdital.text.trim(),
+        )
+      ).text.trim(),
     },
   ]);
   const hipoteca = await generateObject({
@@ -114,19 +129,24 @@ Sua tarefa é analisar a situação da hipoteca e retornar os dados da hipoteca 
 ### Passos
 1. Analise o trecho do edital e da matrícula que mencionam a hipoteca.
 2. Verifique se o valor da hipoteca está em reais.
-  2a. Se o valor da hipoteca for identificado no edital, utilize-o, pois é o mais atualizado.
-  2b. Caso o valor da hipoteca não esteja presente no edital, mas haja referência à penhora do credor hipotecário na matrícula, utilize o valor atualizado da ação movida pelo credor para determinar o montante da hipoteca.  Dê preferência para o valor da execução quando estiver presente.
-  2c. Se não houver indicação de penhora na matrícula, opte pelo valor registrado da hipoteca na matrícula.
-  2d. Se o valor da hipoteca não estiver expresso em reais, retorne null para esse campo.
+  2a. Se o edital informar o valor, use-o.
+  2b. Caso contrário, se a matrícula mencionar penhora do credor, use o valor atualizado da ação (preferindo o valor de execução, se disponível).
+  2c. Se não houver penhora, use o valor do registro na matrícula.
+  2d. Se o valor não estiver em reais, retorne null.
 3. Verifique a data de constituição da hipoteca.
-  3a. Se não conseguir identificar a data de constituição, então use a data do evento da matrícula.
+  3a. Se não conseguir identificar a data de constituição, então use a data do evento do registro na matrícula.
   3b. Se ainda não conseguir identificar a data de constituição, então use a data que aparece no trecho do edital.
   3c. Caso contrário, retorne null para a data de constituição.
-4. Verifique se a hipoteca está ativa ou cancelada/extinta.
-  4a. Se existe um cancelamento da hipoteca na matrícula, então retorne false para o ativo.
-  4b. Se existe o edital explicitamente mencionando que a hipoteca foi extinta (ex.: "hipoteca extingue-se pela arrematação ou adjudicação" ou menções ao Art. 1.499, VI/CC), então retorne false para o ativo.
-  4c. Caso contrário, retorne true para o ativo.
-5. Retorne os dados da hipoteca no formato de saída esperado.
+4. Determine se a hipoteca está ativa:
+  a. Se houver cancelamento na matrícula, retorne false.
+  b. Se o edital afirmar que a hipoteca está extinta (por exemplo, "hipoteca extingue-se pela arrematação ou adjudicação" ou referência ao Art. 1.499, VI/CC), retorne false.
+  c. Se o edital indicar que a hipoteca foi liquidada, retorne false.
+  d. Caso contrário, retorne true.
+5. Detalhe de forma clara e precisa a origem de cada informação utilizada na justificativa, garantindo total rastreabilidade.
+  5a. Padronize todas as datas para o formato dd/mm/yyyy.
+  5b. Sempre que possível, inclua os números de registro pertinentes (por exemplo, Av.N, Av-N, R.N) para facilitar a identificação e verificação.
+  5c. Se aplicável, especifique a seção ou parte exata do edital de onde a informação foi extraída.
+6. Retorne os dados da hipoteca no formato de saída esperado.
 
 ${contexto}`,
   });
@@ -188,7 +208,9 @@ ${PERSONA}
   2b. Se o número de registro não estiver presente, recorra à data de registro indicada no trecho do edital para localizar o segmento correspondente na matrícula.
   2c. Na ausência de ambos os critérios, identifique o registro mais recente na matrícula que se assemelhe à referência fornecida no edital e utilize-o para delimitar o segmento relacionado à hipoteca.
 3. Retorne apenas o trecho completo e na íntegra da matrícula que faz referência a hipoteca e nada mais.
-  3a. Caso não exista um trecho que mencione a hipoteca, retorne a mensagem "${trechoHipotecaNaMatriculaNaoEncontrado}"
+  3a. Certifique-se de que o trecho retornado contenha o número de registro, identificável por formatos como AV.N, Av.N, AV-N, ou R.N.
+  3b. Adicionalmente, inclua no trecho retornado a data de registro, utilizando o formato dd/mm/yyyy.
+  3c. Caso não exista um trecho que mencione a hipoteca, retorne a mensagem "${trechoHipotecaNaMatriculaNaoEncontrado}"
 `,
   });
 
@@ -247,9 +269,11 @@ async function extrairTrechoCancelamentoDaHipotecaNaMatricula(
     {
       type: "trecho-documento",
       props: [
+        { name: "documento", value: "Matrícula" },
         {
-          name: "nome",
-          value: "matricula-para-verificacao-cancelamento",
+          name: "detalhes",
+          value:
+            "Trecho da hipoteca na matrícula para verificação de cancelamento",
         },
       ],
       content: trechoHipotecaNaMatricula,
@@ -257,7 +281,6 @@ async function extrairTrechoCancelamentoDaHipotecaNaMatricula(
   ]);
   const trechoCancelamentoDaHipotecaNaMatriculaNaoEncontrado =
     "Nenhum cancelamento da hipoteca foi encontrado na matrícula";
-  // TODO: replace contar->conter 4.
   const trechoCancelamentoDaHipotecaNaMatricula = await generateText({
     model: openaiCached("gpt-4o-mini"),
     temperature: 0,
@@ -269,7 +292,47 @@ ${PERSONA}
 2. Localize o trecho específico da matrícula que menciona ao cancelamento da hipoteca.
 3. Retorne apenas o trecho completo e na íntegra da matrícula que faz referência ao cancelamento da hipoteca e nada mais.
   3a. Caso não exista um trecho que mencione o cancelamento da hipoteca, retorne a mensagem "${trechoCancelamentoDaHipotecaNaMatriculaNaoEncontrado}" 
-4. O registro de cancelamento tem que ser um novo registro na matrícula e deve contar uma menção explita ao cancelamento ou baixa da hipoteca.
+4. O registro de cancelamento tem que ser um novo registro na matrícula e deve conter uma menção explita ao cancelamento ou baixa da hipoteca.
+`,
+  });
+  return trechoCancelamentoDaHipotecaNaMatricula;
+}
+
+async function extrairTrechoCancelamentoDaHipotecaNoEdital(
+  contextoEdital: PromptContext,
+  trechoHipotecaNoEdital: string,
+) {
+  const contexto = promptContextString("Contexto", [
+    contextoEdital,
+    {
+      type: "trecho-documento",
+      props: [
+        {
+          name: "documento",
+          value: "Edital",
+        },
+        {
+          name: "detalhes",
+          value: "Trecho do edital que menciona a hipoteca",
+        },
+      ],
+      content: trechoHipotecaNoEdital,
+    },
+  ]);
+  const trechoCancelamentoDaHipotecaNoEditalNaoEncontrado =
+    "Nenhum cancelamento da hipoteca foi encontrado no edital";
+  // TODO: replace contar->conter 4.
+  const trechoCancelamentoDaHipotecaNaMatricula = await generateText({
+    model: openaiCached("gpt-4o-mini"),
+    temperature: 0,
+    prompt: `${contexto}
+${PERSONA}
+
+### Passos
+1. Leia o edital na íntegra para entender completamente o contexto do leilão.
+2. Localize o trecho específico do edital que menciona ao cancelamento/extinção/liquidação da hipoteca.
+3. Retorne apenas o trecho completo e na íntegra do edital que faz referência ao cancelamento/extinção/liquidação da hipoteca e nada mais.
+  3a. Caso não exista um trecho que mencione o cancelamento/extinção/liquidação da hipoteca, retorne a mensagem "${trechoCancelamentoDaHipotecaNoEditalNaoEncontrado}" 
 `,
   });
   return trechoCancelamentoDaHipotecaNaMatricula;
