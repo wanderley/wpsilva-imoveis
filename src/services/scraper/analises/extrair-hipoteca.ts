@@ -156,7 +156,6 @@ ${contexto}`,
 async function extrairHipotecaDoEdital(contextoEdital: PromptContext) {
   const trechoHipotecaNaEditalNaoEncontrado =
     "Nenhuma hipotéca foi encontrada no edital";
-  // TODO: replace matricula por edital in 2b.
   const trechoHipotecaNoEdital = await generateText({
     model: openaiCached("gpt-4o-mini"),
     temperature: 0,
@@ -321,7 +320,6 @@ async function extrairTrechoCancelamentoDaHipotecaNoEdital(
   ]);
   const trechoCancelamentoDaHipotecaNoEditalNaoEncontrado =
     "Nenhum cancelamento da hipoteca foi encontrado no edital";
-  // TODO: replace contar->conter 4.
   const trechoCancelamentoDaHipotecaNaMatricula = await generateText({
     model: openaiCached("gpt-4o-mini"),
     temperature: 0,
