@@ -13,11 +13,10 @@ const PERSONA = `Você é um advogado especializado em leilões judiciais, com m
 
 export async function extrairTipoExecucao(contextoEdital: PromptContext) {
   const debito = await generateObject({
-    model: openaiCached("gpt-4o-mini"),
+    model: openaiCached("gpt-4o"),
     output: "enum",
     enum: tipoExecucaoEnum as unknown as TipoExecucao[],
-    prompt: `${promptContextString("Contexto", [contextoEdital])}
-${PERSONA}
+    system: `${PERSONA}
 Sua tarefa é classificar o edital em uma das seguintes categorias: "Execução Hipotecária", "Cobrança de Despesas Condominiais", "Execução Trabalhista", "Leilão Extrajudicial (Alienação Fiduciária)" ou "Outras Execuções".
 
 ### Passos
@@ -42,6 +41,7 @@ Sua tarefa é classificar o edital em uma das seguintes categorias: "Execução 
     - A ação deve ser movida por uma instituição financeira.    
   - Outras execuções: Neste grupo, enquadram-se processos de execução que não se encaixam claramente nas categorias acima, podendo incluir características mistas ou indefinidas.
 `,
+    prompt: `${promptContextString("Dados", [contextoEdital])}`,
   });
   return debito.object;
 }
