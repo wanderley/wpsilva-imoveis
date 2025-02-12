@@ -2,8 +2,9 @@ import {
   PromptContext,
   promptContextString,
 } from "@/services/ai/prompt-context";
-import { openaiCached } from "@/services/ai/providers";
+import { googleCached } from "@/services/ai/providers";
 import { AnaliseDebitoExequendo } from "@/services/scraper/analises/extrair-debito-exequendo";
+import { extrairListaDebitosOnus } from "@/services/scraper/analises/extrair-lista-debitos-onus";
 import { generateObject } from "ai";
 import { z } from "zod";
 
@@ -21,8 +22,36 @@ export async function extrairDebitoOutros(
   tipoExecucao: string,
   debitoExequendo: AnaliseDebitoExequendo,
 ): Promise<AnaliseDebitoOutros> {
+  const contexto = promptContextString("Contexto", [
+    contextoEdital,
+    {
+      type: "informacao",
+      props: [
+        { name: "sobre", value: "Tipo de execução que originou o leilão" },
+        { name: "origem", value: "Edital" },
+      ],
+      content: tipoExecucao,
+    },
+    {
+      type: "json",
+      props: [{ name: "tipo", value: "Débito exequendo" }],
+      content: JSON.stringify(debitoExequendo, null, 2),
+    },
+    {
+      type: "analise",
+      props: [
+        { name: "documento", value: "Edital" },
+        {
+          name: "detalhes",
+          value: "Lista de débitos e ônus listados no edital",
+        },
+      ],
+      content: await extrairListaDebitosOnus(contextoEdital),
+    },
+  ]);
   const debito = await generateObject({
-    model: openaiCached("gpt-4o-mini"),
+    model: googleCached("gemini-2.0-flash"),
+    temperature: 0,
     schema: z.object({
       iptu: z.number().describe("Valor do débito de IPTU em reais"),
       divida_ativa: z
@@ -31,31 +60,17 @@ export async function extrairDebitoOutros(
       condominio: z.number().describe("Valor do débito de Condomínio em reais"),
       outros: z.number().describe("Valor do débito de Outros em reais"),
     }),
-    prompt: `${promptContextString("Contexto", [
-      contextoEdital,
-      {
-        type: "informacao",
-        props: [
-          { name: "sobre", value: "Tipo de execução que originou o leilão" },
-          { name: "origem", value: "Edital" },
-        ],
-        content: tipoExecucao,
-      },
-      {
-        type: "json",
-        props: [{ name: "tipo", value: "Débito exequendo" }],
-        content: JSON.stringify(debitoExequendo, null, 2),
-      },
-    ])}
+    prompt: `${contexto}
 ${PERSONA}
 Sua tarefa é extrair os débitos que não se referem à hipoteca, à alienação fiduciária ou ao débito exequendo do edital.
 
 ### Passos
 1. Leia o edital na íntegra.
 2. Identifique o trecho do edital que menciona débitos referentes ao IPTU (débito pertinente ao imóvel perante a prefeitura).
-  2a. Se o valor do IPTU for superior a zero, extraia o valor e classifique-o como "IPTU".
-  2b. Se o valor do IPTU estiver somado ao da dívida ativa, extraia o valor total definindo-o como "IPTU".
-  2c. Caso contrário, descarte essa informação referente ao IPTU.
+  2a. Se o valor do IPTU estiver somado ao da dívida ativa, extraia o valor total definindo-o como "IPTU".
+  2b. Se o valor da dívida ativa estiver separado do IPTU, extraia apenas o valor do IPTU e classifique-o como "IPTU".
+  2c. Se o valor do IPTU for superior a zero, extraia o valor e classifique-o como "IPTU".
+  2d. Caso contrário, descarte essa informação referente ao IPTU.
 3. Identifique o trecho que menciona débitos de Dívida Ativa.
   3a. Se o valor da dívida ativa for superior a zero, extraia o valor e classifique-o como "Dívida Ativa".
   3b. Se o valor da dívida ativa estiver somado ao da IPTU, descarte essa informação referente à Dívida Ativa.
