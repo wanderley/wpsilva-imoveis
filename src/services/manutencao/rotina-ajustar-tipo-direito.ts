@@ -20,7 +20,10 @@ export const rotina = updateDb({
   }),
   workers: 100,
   update: async (scrap) => {
-    const tipoDireito = await extrairTipoDireito(scrap.description!);
+    if (!scrap.description) {
+      return;
+    }
+    const tipoDireito = await extrairTipoDireito(scrap.description);
     await db
       .update(scrapsTable)
       .set({ analise_tipo_direito: tipoDireito })
