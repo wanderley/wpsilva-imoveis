@@ -3,7 +3,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { GoogleApiProvider } from "@/features/google/components/GoogleApiProvider";
 import { SessionProvider } from "@/features/login/components/SessionProvider";
 import { QueryClientProvider } from "@/features/react-query/components/QueryClientProvider";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 
@@ -38,13 +37,12 @@ export default function RootLayout({
       >
         <SessionProvider>
           <Navbar />
-          <QueryClientProvider>
+          <QueryClientProvider
+            isDevelopmentEnvironment={process.env.NODE_ENV === "development"}
+          >
             <GoogleApiProvider apiKey={process.env.GOOGLE_MAPS_API_KEY!}>
               <div className="p-4">{children}</div>
             </GoogleApiProvider>
-            {process.env.NODE_ENV === "development" && (
-              <ReactQueryDevtools buttonPosition="bottom-left" />
-            )}
           </QueryClientProvider>
         </SessionProvider>
         <Toaster />
