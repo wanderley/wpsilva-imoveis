@@ -4,7 +4,6 @@ import { z } from "zod";
 
 export async function extrairPorcentagemTitularidade(
   description: string,
-  model: string = "gpt-4o-mini",
 ): Promise<number> {
   description = description
     .replace(/[ \t]+/g, " ")

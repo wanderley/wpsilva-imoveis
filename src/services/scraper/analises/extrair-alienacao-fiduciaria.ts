@@ -3,10 +3,9 @@ import {
   promptContextString,
 } from "@/services/ai/prompt-context";
 import { googleCached } from "@/services/ai/providers";
+import { extrairListaDebitosOnus } from "@/services/scraper/analises/extrair-lista-debitos-onus";
 import { generateObject, generateText } from "ai";
 import { z } from "zod";
-
-import { extrairListaDebitosOnus } from "./extrair-lista-debitos-onus";
 
 const PERSONA = `Você é um advogado especializado em leilões judiciais, com mais de 20 anos de experiência na análise de editais e matrículas de imóveis.`;
 

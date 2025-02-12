@@ -12,7 +12,6 @@ const TIPO_DIREITO = z.enum([
 
 export async function extrairTipoDireito(
   description: string,
-  model: string = "gpt-4o-mini",
 ): Promise<z.infer<typeof TIPO_DIREITO> | undefined> {
   description = description
     .replace(/[ \t]+/g, " ")
