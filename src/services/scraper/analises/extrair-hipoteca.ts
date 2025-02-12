@@ -2,7 +2,7 @@ import {
   PromptContext,
   promptContextString,
 } from "@/services/ai/prompt-context";
-import { openaiCached } from "@/services/ai/providers";
+import { googleCached } from "@/services/ai/providers";
 import { generateObject, generateText } from "ai";
 import { z } from "zod";
 
@@ -104,7 +104,7 @@ export async function extrairHipoteca(
     },
   ]);
   const hipoteca = await generateObject({
-    model: openaiCached("gpt-4o-mini"),
+    model: googleCached("gemini-2.0-flash"),
     temperature: 0,
     schema: z.object({
       data_constituicao: z
@@ -129,7 +129,7 @@ Sua tarefa é analisar a situação da hipoteca e retornar os dados da hipoteca 
 ### Passos
 1. Analise o trecho do edital e da matrícula que mencionam a hipoteca.
 2. Verifique se o valor da hipoteca está em reais.
-  2a. Se o edital informar o valor, use-o.
+  2a. Se o edital informar o valor do débito hipotecário, use-o.
   2b. Caso contrário, se a matrícula mencionar penhora do credor, use o valor atualizado da ação (preferindo o valor de execução, se disponível).
   2c. Se não houver penhora, use o valor do registro na matrícula.
   2d. Se o valor não estiver em reais, retorne null.
@@ -142,11 +142,12 @@ Sua tarefa é analisar a situação da hipoteca e retornar os dados da hipoteca 
   b. Se o edital afirmar que a hipoteca está extinta (por exemplo, "hipoteca extingue-se pela arrematação ou adjudicação" ou referência ao Art. 1.499, VI/CC), retorne false.
   c. Se o edital indicar que a hipoteca foi liquidada, retorne false.
   d. Caso contrário, retorne true.
-5. Detalhe de forma clara e precisa a origem de cada informação utilizada na justificativa, garantindo total rastreabilidade.
-  5a. Padronize todas as datas para o formato dd/mm/yyyy.
-  5b. Sempre que possível, inclua os números de registro pertinentes (por exemplo, Av.N, Av-N, R.N) para facilitar a identificação e verificação.
-  5c. Se aplicável, especifique a seção ou parte exata do edital de onde a informação foi extraída.
-6. Retorne os dados da hipoteca no formato de saída esperado.
+5. Dê preferência ao nome do credor que aparece no edital sempre que possível.
+6. Detalhe de forma clara e precisa a origem de cada informação utilizada na justificativa, garantindo total rastreabilidade.
+  6a. Padronize todas as datas para o formato dd/mm/yyyy.
+  6b. Sempre que possível, inclua os números de registro pertinentes (por exemplo, Av.N, Av-N, R.N) para facilitar a identificação e verificação.  
+  6c. Se aplicável, especifique a seção ou parte exata do edital de onde a informação foi extraída.
+7. Retorne os dados da hipoteca no formato de saída esperado.
 
 ${contexto}`,
   });
@@ -157,7 +158,7 @@ async function extrairHipotecaDoEdital(contextoEdital: PromptContext) {
   const trechoHipotecaNaEditalNaoEncontrado =
     "Nenhuma hipotéca foi encontrada no edital";
   const trechoHipotecaNoEdital = await generateText({
-    model: openaiCached("gpt-4o-mini"),
+    model: googleCached("gemini-2.0-flash"),
     temperature: 0,
     prompt: `${promptContextString("Contexto", [contextoEdital])}
 ${PERSONA}
@@ -167,7 +168,7 @@ ${PERSONA}
 2. Localize o trecho específico do edital que menciona hipotecas.
   2a. Não confunda hipoteca com alienação fiduciária, pois são dois eventos distintos.  
   2b. Caso não exista um trecho que mencione o registro da hipoteca na matrícula (por exemplo, "AV.N", "Av.N", "AV-N", "Av-N" ou "R.N."), retorne a mensagem "${trechoHipotecaNaEditalNaoEncontrado}".
-3. Retorne apenas o trecho completo e na íntegra do edital que faz referência a hipoteca e nada mais.
+3. Retorne apenas o trecho completo e na íntegra do edital que faz referência ao registro da matrícula da hipoteca e nada mais.
 `,
   });
   if (
@@ -195,7 +196,7 @@ async function extrairHipotecaDaMatricula(
     },
   ]);
   const trechoHipotecaNaMatricula = await generateText({
-    model: openaiCached("gpt-4o-mini"),
+    model: googleCached("gemini-2.0-flash"),
     temperature: 0,
     prompt: `${contexto}
 ${PERSONA}
@@ -243,7 +244,7 @@ async function extrairPenhoraCredorHipotecarioNaMatricula(
     },
   ]);
   return await generateText({
-    model: openaiCached("gpt-4o-mini"),
+    model: googleCached("gemini-2.0-flash"),
     temperature: 0,
     prompt: `${contexto}
 ${PERSONA}
@@ -281,7 +282,7 @@ async function extrairTrechoCancelamentoDaHipotecaNaMatricula(
   const trechoCancelamentoDaHipotecaNaMatriculaNaoEncontrado =
     "Nenhum cancelamento da hipoteca foi encontrado na matrícula";
   const trechoCancelamentoDaHipotecaNaMatricula = await generateText({
-    model: openaiCached("gpt-4o-mini"),
+    model: googleCached("gemini-2.0-flash"),
     temperature: 0,
     prompt: `${contexto}
 ${PERSONA}
@@ -321,7 +322,7 @@ async function extrairTrechoCancelamentoDaHipotecaNoEdital(
   const trechoCancelamentoDaHipotecaNoEditalNaoEncontrado =
     "Nenhum cancelamento da hipoteca foi encontrado no edital";
   const trechoCancelamentoDaHipotecaNaMatricula = await generateText({
-    model: openaiCached("gpt-4o-mini"),
+    model: googleCached("gemini-2.0-flash"),
     temperature: 0,
     prompt: `${contexto}
 ${PERSONA}
