@@ -2,7 +2,7 @@ import {
   PromptContext,
   promptContextString,
 } from "@/services/ai/prompt-context";
-import { openaiCached } from "@/services/ai/providers";
+import { googleCached } from "@/services/ai/providers";
 import {
   TipoExecucao,
   tipoExecucaoEnum,
@@ -13,7 +13,7 @@ const PERSONA = `Você é um advogado especializado em leilões judiciais, com m
 
 export async function extrairTipoExecucao(contextoEdital: PromptContext) {
   const debito = await generateObject({
-    model: openaiCached("gpt-4o"),
+    model: googleCached("gemini-2.0-flash"),
     output: "enum",
     enum: tipoExecucaoEnum as unknown as TipoExecucao[],
     system: `${PERSONA}
@@ -27,10 +27,11 @@ Sua tarefa é classificar o edital em uma das seguintes categorias: "Execução 
       - Menções isoladas à hipoteca não são suficientes para classificar o edital como execução hipotecária.
       - Procure explicitamente pela expressão "execução hipotecária" ou termos equivalentes.
       - Verifique a presença de nomes de bancos atuando como exequente da ação.  
-  - Cobrança de despesas condominiais: Designa processos em que o débito decorre da cobrança de encargos condominiais.
+  - Cobrança de despesas condominiais: Designa processos em que o débito decorre da cobrança de despesas condominiais.
     Critérios:
-      - A ação deve ser proposta por um condomínio ou indicar explicitamente que se trata de despesas condominiais.
-      - No nome do autor da ação, a palavra "condominio" deve estar presente, independentemente de variações de maiúsculas ou minúsculas.
+      - A ação deve ser proposta, movida ou requerida por um condomínio ou indicar explicitamente que se trata de despesas condominiais.
+      - No nome do autor da ação, a palavra "condominio" ou "condomínio" deve estar presente, independentemente de variações de maiúsculas ou minúsculas.
+      - É uma Execuação de Título Extrajudicial - Despesas Condominiais.
   - Execução Trabalhista: Aplicada quando o leilão se destina a quitar dívidas decorrentes de litígios trabalhistas.
     Critérios:
     - Verifique a presença de termos que indiquem a ocorrência de processos ou disputas no âmbito trabalhista, bem como obrigações associadas às relações de emprego.
