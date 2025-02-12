@@ -1,5 +1,6 @@
 import { db } from "@/db";
 import { scrapsTable } from "@/db/schema";
+import { benchmark } from "@/services/scraper/benchmark";
 import { fetchScrapFromSource } from "@/services/scraper/fetch-scrap-from-source";
 import { launchBrowser, newPage } from "@/services/scraper/lib/puppeteer";
 import { refreshScraps } from "@/services/scraper/refresh-scraps";
@@ -48,6 +49,11 @@ export default function ScraperCommand() {
         }
       },
     );
+
+  program
+    .command("benchmark")
+    .description("Benchmark analises")
+    .action(benchmark);
 
   return program;
 }
