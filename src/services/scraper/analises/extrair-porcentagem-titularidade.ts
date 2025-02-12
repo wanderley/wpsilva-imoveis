@@ -1,4 +1,4 @@
-import { openaiCached } from "@/services/ai/providers";
+import { googleCached } from "@/services/ai/providers";
 import { generateObject } from "ai";
 import { z } from "zod";
 
@@ -14,7 +14,7 @@ export async function extrairPorcentagemTitularidade(
     .join("\n")
     .replace(/\n+/g, "\n");
   const resposta = await generateObject({
-    model: openaiCached(model),
+    model: googleCached("gemini-2.0-flash"),
     schema: z.object({
       porcentagem: z
         .number()
