@@ -4,7 +4,7 @@ import {
   QueryClientProvider as Provider,
   QueryClient,
 } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools/production";
 import { useSearchParams } from "next/navigation";
 
 const queryClient = new QueryClient();
