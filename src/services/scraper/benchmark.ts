@@ -1,5 +1,7 @@
 import { db } from "@/db";
+import { ScrapProfit } from "@/db/schema";
 import { mapAsync } from "@/lib/promise";
+import { computeProfit } from "@/models/scraps/helpers";
 import { selectedScrapsForManualReview } from "@/selected-scraps";
 import { extrairAlienacaoFiduciaria } from "@/services/scraper/analises/extrair-alienacao-fiduciaria";
 import { extrairDebitoExequendo } from "@/services/scraper/analises/extrair-debito-exequendo";
@@ -33,6 +35,28 @@ const knownProblemsCanBeIgnored: Record<
 };
 
 const focusScrapIds: number[] = [];
+
+type Analise = {
+  analise_tipo_imovel: string | null;
+  analise_tipo_direito: string | null;
+  analise_tipo_execucao: string | null;
+  analise_hipoteca: {
+    ativo: boolean;
+    valor: number;
+  } | null;
+  analise_alienacao_fiduciaria: {
+    ativo: boolean;
+    valor: number;
+  } | null;
+  analise_debito_exequendo: {
+    despesa_condominio: boolean;
+    debito_exequendo: number;
+  } | null;
+  analise_debito_outros: {
+    outros: number;
+    condominio: number;
+  } | null;
+};
 
 export async function benchmark() {
   const scraps = await db.query.scrapsTable.findMany({
@@ -68,6 +92,7 @@ export async function benchmark() {
         const debitoExequendo = await extrairDebitoExequendo(contextoEdital);
         return {
           id: scrap.id,
+          scrap,
           actual: {
             analise_tipo_imovel: scrap.analise_tipo_imovel,
             analise_tipo_direito: scrap.analise_tipo_direito,
@@ -186,7 +211,7 @@ export async function benchmark() {
   }
   for (const key in counters) {
     console.log(
-      key.padEnd(35).replaceAll(" ", "."),
+      key.padEnd(35, "."),
       Number(
         (counters[key as keyof typeof counters].correct /
           counters[key as keyof typeof counters].total) *
@@ -202,4 +227,103 @@ export async function benchmark() {
         : "",
     );
   }
+  console.log("\n\n");
+  console.log(
+    "".padEnd(11),
+    "Current profit".padStart(14),
+    "New profit".padStart(15),
+    "Cur %".padStart(6),
+    "New %".padStart(6),
+  );
+  let oldOpportunities = 0;
+  let newOpportunities = 0;
+  for (const resultado of resultados) {
+    if (!resultado) continue;
+    const profit = await db.query.scrapProfitTable.findFirst({
+      where: (table, { eq }) => eq(table.scrap_id, resultado.id),
+    });
+    if (!profit || profit.lucro_percentual < 30) {
+      continue;
+    }
+    const newProfit = calculateNewProfit(profit, resultado.new as Analise);
+    console.log(
+      "Scrap",
+      resultado.id.toString().padStart(4),
+      Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      })
+        .format(profit.lucro)
+        .padStart(15),
+      Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      })
+        .format(newProfit.lucro)
+        .padStart(15),
+      Number(profit.lucro_percentual).toFixed(2).padStart(6),
+      Number(newProfit.lucro_percentual).toFixed(2).padStart(6),
+      resultado.scrap.auction_status?.padEnd(10),
+      `https://wpsilva-imoveis-production.up.railway.app/lot/${resultado.id}/review`,
+    );
+    if (profit.lucro_percentual >= 30) {
+      oldOpportunities++;
+    }
+    if (newProfit.lucro_percentual >= 30) {
+      newOpportunities++;
+    }
+  }
+  console.log({ oldOpportunities, newOpportunities });
+}
+
+function calculateNewProfit(profit: ScrapProfit, analise: Analise) {
+  const valorCondominio = analise.analise_debito_exequendo?.despesa_condominio
+    ? analise.analise_debito_exequendo.debito_exequendo
+    : analise.analise_debito_outros?.condominio || 0;
+
+  let saldoArrematacao = profit.valor_arrematacao;
+  let dividaCondominio = 0;
+
+  if (saldoArrematacao > valorCondominio) {
+    saldoArrematacao -= valorCondominio;
+  } else {
+    dividaCondominio = valorCondominio - saldoArrematacao;
+    saldoArrematacao = 0;
+  }
+
+  let outros = analise.analise_debito_outros?.outros || 0;
+  if (
+    analise.analise_alienacao_fiduciaria?.ativo &&
+    analise.analise_alienacao_fiduciaria.valor &&
+    analise.analise_tipo_execucao !==
+      "Leilão Extrajudicial (Alienação Fiduciária)"
+  ) {
+    if (saldoArrematacao > analise.analise_alienacao_fiduciaria.valor) {
+      saldoArrematacao -= analise.analise_alienacao_fiduciaria.valor;
+    } else {
+      outros += analise.analise_alienacao_fiduciaria.valor - saldoArrematacao;
+      saldoArrematacao = 0;
+    }
+  }
+  if (
+    analise.analise_hipoteca?.ativo &&
+    analise.analise_hipoteca.valor &&
+    analise.analise_tipo_execucao !== "Execução Hipotecária"
+  ) {
+    if (saldoArrematacao > analise.analise_hipoteca.valor) {
+      saldoArrematacao -= analise.analise_hipoteca.valor;
+    } else {
+      outros += analise.analise_hipoteca.valor - saldoArrematacao;
+      saldoArrematacao = 0;
+    }
+  }
+  const newProfitValues = {
+    custo_arrematacao_comissao_leiloeiro_percentual: 0.05,
+    custo_pos_imissao_divida_condominio: dividaCondominio,
+    custo_pos_imissao_outros: outros,
+  };
+  return computeProfit({
+    ...profit,
+    ...newProfitValues,
+  });
 }
